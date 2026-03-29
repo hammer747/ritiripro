@@ -9,7 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
+import { Trash2, Pencil, FileText, Lock } from "lucide-react";
 import { toast } from "sonner";
 
 const DOC_LABELS: Record<string, string> = {
@@ -22,9 +22,10 @@ const DOC_LABELS: Record<string, string> = {
 interface Props {
   ritiri: Ritiro[];
   onChanged: () => void;
+  onEdit: (ritiro: Ritiro) => void;
 }
 
-export default function RitiriTable({ ritiri, onChanged }: Props) {
+export default function RitiriTable({ ritiri, onChanged, onEdit }: Props) {
   const handleDelete = (id: string) => {
     if (!confirm("Eliminare questo ritiro?")) return;
     deleteRitiro(id);
@@ -50,7 +51,7 @@ export default function RitiriTable({ ritiri, onChanged }: Props) {
             <TableHead>Documento</TableHead>
             <TableHead>Articolo</TableHead>
             <TableHead className="text-right">Prezzo</TableHead>
-            <TableHead className="w-12"></TableHead>
+            <TableHead className="w-24"></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -70,16 +71,25 @@ export default function RitiriTable({ ritiri, onChanged }: Props) {
                 )}
               </TableCell>
               <TableCell className="text-sm">
-                <span className="font-medium">
-                  {DOC_LABELS[r.tipoDocumento] || r.tipoDocumento}
-                </span>
-                <br />
+                <div className="flex items-center gap-1">
+                  <span className="font-medium">
+                    {DOC_LABELS[r.tipoDocumento] || r.tipoDocumento}
+                  </span>
+                  {r.documentoIdentitaBase64 && (
+                    <FileText className="h-3.5 w-3.5 text-primary" />
+                  )}
+                </div>
                 <span className="text-xs text-muted-foreground">
                   {r.numeroDocumento}
                 </span>
               </TableCell>
               <TableCell>
-                <div className="font-medium text-sm">{r.articolo}</div>
+                <div className="font-medium text-sm flex items-center gap-1">
+                  {r.articolo}
+                  {r.pinDispositivo && (
+                    <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+                  )}
+                </div>
                 {r.descrizione && (
                   <div className="text-xs text-muted-foreground max-w-[200px] truncate">
                     {r.descrizione}
@@ -90,14 +100,24 @@ export default function RitiriTable({ ritiri, onChanged }: Props) {
                 € {r.prezzo.toFixed(2)}
               </TableCell>
               <TableCell>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-destructive hover:text-destructive"
-                  onClick={() => handleDelete(r.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <div className="flex gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                    onClick={() => onEdit(r)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-destructive hover:text-destructive"
+                    onClick={() => handleDelete(r.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </TableCell>
             </TableRow>
           ))}
