@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { getRitiri } from "@/lib/storage";
 import { Ritiro } from "@/lib/types";
@@ -9,6 +9,8 @@ import { Search, Smartphone, Package, Euro } from "lucide-react";
 export default function Index() {
   const [ritiri, setRitiri] = useState<Ritiro[]>(getRitiri);
   const [search, setSearch] = useState("");
+  const [editingRitiro, setEditingRitiro] = useState<Ritiro | null>(null);
+  const formRef = useRef<HTMLDivElement>(null);
 
   const reload = useCallback(() => setRitiri(getRitiri()), []);
 
@@ -27,9 +29,13 @@ export default function Index() {
 
   const totale = ritiri.reduce((s, r) => s + r.prezzo, 0);
 
+  const handleEdit = (ritiro: Ritiro) => {
+    setEditingRitiro(ritiro);
+    formRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
     <div className="min-h-screen">
-      {/* Header */}
       <header className="bg-header-bg text-header-foreground">
         <div className="container max-w-5xl py-6 flex items-center gap-3">
           <Smartphone className="h-8 w-8" />
@@ -45,34 +51,31 @@ export default function Index() {
       </header>
 
       <main className="container max-w-5xl py-8 space-y-8">
-        {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
           <div className="rounded-lg bg-stat-bg p-4 flex items-center gap-3">
             <Package className="h-5 w-5 text-stat-foreground" />
             <div>
-              <p className="text-2xl font-bold text-stat-foreground">
-                {ritiri.length}
-              </p>
+              <p className="text-2xl font-bold text-stat-foreground">{ritiri.length}</p>
               <p className="text-xs text-muted-foreground">Ritiri totali</p>
             </div>
           </div>
           <div className="rounded-lg bg-stat-bg p-4 flex items-center gap-3">
             <Euro className="h-5 w-5 text-stat-foreground" />
             <div>
-              <p className="text-2xl font-bold text-stat-foreground">
-                € {totale.toFixed(2)}
-              </p>
+              <p className="text-2xl font-bold text-stat-foreground">€ {totale.toFixed(2)}</p>
               <p className="text-xs text-muted-foreground">Totale speso</p>
             </div>
           </div>
         </div>
 
-        {/* Form */}
-        <div className="rounded-xl bg-card p-6 shadow-sm border">
-          <RitiroForm onSaved={reload} />
+        <div ref={formRef} className="rounded-xl bg-card p-6 shadow-sm border">
+          <RitiroForm
+            onSaved={reload}
+            editingRitiro={editingRitiro}
+            onCancelEdit={() => setEditingRitiro(null)}
+          />
         </div>
 
-        {/* Search + Table */}
         <div className="space-y-4">
           <div className="relative max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -83,7 +86,7 @@ export default function Index() {
               className="pl-9"
             />
           </div>
-          <RitiriTable ritiri={filtered} onChanged={reload} />
+          <RitiriTable ritiri={filtered} onChanged={reload} onEdit={handleEdit} />
         </div>
       </main>
     </div>
