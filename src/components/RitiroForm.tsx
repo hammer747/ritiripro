@@ -16,7 +16,7 @@ import { toast } from "sonner";
 import { UserPlus, Pencil, Upload, X, FileText } from "lucide-react";
 
 interface Props {
-  onSaved: () => void;
+  onSaved: (ritiro: Ritiro) => void;
   editingRitiro?: Ritiro | null;
   onCancelEdit?: () => void;
 }
@@ -131,7 +131,7 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
 
     setForm(emptyForm);
     if (fileInputRef.current) fileInputRef.current.value = "";
-    onSaved();
+    onSaved(ritiro);
   };
 
   const handleCancel = () => {
@@ -190,7 +190,6 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
             <Input id="numdoc" value={form.numeroDocumento} onChange={(e) => set("numeroDocumento", e.target.value)} placeholder="AX1234567" />
           </div>
         </div>
-        {/* Upload documento */}
         <div className="space-y-1.5">
           <Label>Foto / Scan Documento</Label>
           {form.documentoIdentitaNome ? (
