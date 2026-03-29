@@ -1,16 +1,91 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState, useMemo, useCallback } from "react";
+import { Input } from "@/components/ui/input";
+import { getRitiri } from "@/lib/storage";
+import { Ritiro } from "@/lib/types";
+import RitiroForm from "@/components/RitiroForm";
+import RitiriTable from "@/components/RitiriTable";
+import { Search, Smartphone, Package, Euro } from "lucide-react";
 
-// IMPORTANT: Fully REPLACE this with your own code
-const PlaceholderIndex = () => {
-  // PLACEHOLDER: Replace this entire return statement with the user's app.
-  // The inline background color is intentionally not part of the design system.
+export default function Index() {
+  const [ritiri, setRitiri] = useState<Ritiro[]>(getRitiri);
+  const [search, setSearch] = useState("");
+
+  const reload = useCallback(() => setRitiri(getRitiri()), []);
+
+  const filtered = useMemo(() => {
+    if (!search.trim()) return ritiri;
+    const q = search.toLowerCase();
+    return ritiri.filter(
+      (r) =>
+        r.nomeCliente.toLowerCase().includes(q) ||
+        r.cognomeCliente.toLowerCase().includes(q) ||
+        r.articolo.toLowerCase().includes(q) ||
+        r.codiceFiscale.toLowerCase().includes(q) ||
+        r.numeroDocumento.toLowerCase().includes(q)
+    );
+  }, [ritiri, search]);
+
+  const totale = ritiri.reduce((s, r) => s + r.prezzo, 0);
+
   return (
-    <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: '#fcfbf8' }}>
-      <img data-lovable-blank-page-placeholder="REMOVE_THIS" src="/placeholder.svg" alt="Your app will live here!" />
+    <div className="min-h-screen">
+      {/* Header */}
+      <header className="bg-header-bg text-header-foreground">
+        <div className="container max-w-5xl py-6 flex items-center gap-3">
+          <Smartphone className="h-8 w-8" />
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">
+              Registro Ritiri Usato
+            </h1>
+            <p className="text-sm opacity-80">
+              Gestione acquisti articoli elettronici usati
+            </p>
+          </div>
+        </div>
+      </header>
+
+      <main className="container max-w-5xl py-8 space-y-8">
+        {/* Stats */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          <div className="rounded-lg bg-stat-bg p-4 flex items-center gap-3">
+            <Package className="h-5 w-5 text-stat-foreground" />
+            <div>
+              <p className="text-2xl font-bold text-stat-foreground">
+                {ritiri.length}
+              </p>
+              <p className="text-xs text-muted-foreground">Ritiri totali</p>
+            </div>
+          </div>
+          <div className="rounded-lg bg-stat-bg p-4 flex items-center gap-3">
+            <Euro className="h-5 w-5 text-stat-foreground" />
+            <div>
+              <p className="text-2xl font-bold text-stat-foreground">
+                € {totale.toFixed(2)}
+              </p>
+              <p className="text-xs text-muted-foreground">Totale speso</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Form */}
+        <div className="rounded-xl bg-card p-6 shadow-sm border">
+          <RitiroForm onSaved={reload} />
+        </div>
+
+        {/* Search + Table */}
+        <div className="space-y-4">
+          <div className="relative max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Cerca per nome, articolo, documento..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          <RitiriTable ritiri={filtered} onChanged={reload} />
+        </div>
+      </main>
     </div>
   );
-};
-
-const Index = PlaceholderIndex;
-
-export default Index;
+}

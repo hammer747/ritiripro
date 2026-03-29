@@ -14,6 +14,10 @@ export default {
     },
     extend: {
       colors: {
+        "header-bg": "hsl(var(--header-bg))",
+        "header-foreground": "hsl(var(--header-foreground))",
+        "stat-bg": "hsl(var(--stat-bg))",
+        "stat-foreground": "hsl(var(--stat-foreground))",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
