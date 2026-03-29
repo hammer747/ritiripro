@@ -13,6 +13,11 @@ export function saveRitiro(ritiro: Ritiro): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(ritiri));
 }
 
+export function updateRitiro(updated: Ritiro): void {
+  const ritiri = getRitiri().map((r) => (r.id === updated.id ? updated : r));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(ritiri));
+}
+
 export function deleteRitiro(id: string): void {
   const ritiri = getRitiri().filter((r) => r.id !== id);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(ritiri));
