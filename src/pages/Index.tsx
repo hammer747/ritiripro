@@ -4,12 +4,14 @@ import { getRitiri } from "@/lib/storage";
 import { Ritiro } from "@/lib/types";
 import RitiroForm from "@/components/RitiroForm";
 import RitiriTable from "@/components/RitiriTable";
+import EtichettaLabel from "@/components/EtichettaLabel";
 import { Search, Smartphone, Package, Euro } from "lucide-react";
 
 export default function Index() {
   const [ritiri, setRitiri] = useState<Ritiro[]>(getRitiri);
   const [search, setSearch] = useState("");
   const [editingRitiro, setEditingRitiro] = useState<Ritiro | null>(null);
+  const [labelRitiro, setLabelRitiro] = useState<Ritiro | null>(null);
   const formRef = useRef<HTMLDivElement>(null);
 
   const reload = useCallback(() => setRitiri(getRitiri()), []);
@@ -23,7 +25,8 @@ export default function Index() {
         r.cognomeCliente.toLowerCase().includes(q) ||
         r.articolo.toLowerCase().includes(q) ||
         r.codiceFiscale.toLowerCase().includes(q) ||
-        r.numeroDocumento.toLowerCase().includes(q)
+        r.numeroDocumento.toLowerCase().includes(q) ||
+        r.id.toLowerCase().includes(q)
     );
   }, [ritiri, search]);
 
@@ -32,6 +35,13 @@ export default function Index() {
   const handleEdit = (ritiro: Ritiro) => {
     setEditingRitiro(ritiro);
     formRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleSaved = (ritiro: Ritiro) => {
+    reload();
+    if (!editingRitiro) {
+      setLabelRitiro(ritiro);
+    }
   };
 
   return (
@@ -70,7 +80,7 @@ export default function Index() {
 
         <div ref={formRef} className="rounded-xl bg-card p-6 shadow-sm border">
           <RitiroForm
-            onSaved={reload}
+            onSaved={handleSaved}
             editingRitiro={editingRitiro}
             onCancelEdit={() => setEditingRitiro(null)}
           />
@@ -80,7 +90,7 @@ export default function Index() {
           <div className="relative max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Cerca per nome, articolo, documento..."
+              placeholder="Cerca per nome, articolo, documento, ID..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"
@@ -89,6 +99,12 @@ export default function Index() {
           <RitiriTable ritiri={filtered} onChanged={reload} onEdit={handleEdit} />
         </div>
       </main>
+
+      <EtichettaLabel
+        ritiro={labelRitiro}
+        open={!!labelRitiro}
+        onClose={() => setLabelRitiro(null)}
+      />
     </div>
   );
 }
