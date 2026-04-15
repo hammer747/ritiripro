@@ -13,6 +13,8 @@ export interface Ritiro {
   articolo: string;
   descrizione: string;
   prezzo: number;
+  prezzoVendita?: number;
+  venduto: boolean;
   pinDispositivo?: string;
   dataAcquisto: string;
   note: string;
