@@ -29,6 +29,7 @@ const emptyForm = {
   numeroDocumento: "",
   documentoIdentitaBase64: "",
   documentoIdentitaNome: "",
+  tipoArticolo: "",
   articolo: "",
   descrizione: "",
   prezzo: "",
@@ -53,6 +54,7 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
         numeroDocumento: editingRitiro.numeroDocumento,
         documentoIdentitaBase64: editingRitiro.documentoIdentitaBase64 || "",
         documentoIdentitaNome: editingRitiro.documentoIdentitaNome || "",
+        tipoArticolo: editingRitiro.tipoArticolo || "",
         articolo: editingRitiro.articolo,
         descrizione: editingRitiro.descrizione,
         prezzo: editingRitiro.prezzo.toString(),
@@ -94,6 +96,7 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
     if (
       !form.nomeCliente.trim() ||
       !form.cognomeCliente.trim() ||
+      !form.tipoArticolo ||
       !form.articolo.trim() ||
       !form.prezzo ||
       !form.tipoDocumento ||
@@ -112,6 +115,7 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
       numeroDocumento: form.numeroDocumento.trim(),
       documentoIdentitaBase64: form.documentoIdentitaBase64 || undefined,
       documentoIdentitaNome: form.documentoIdentitaNome || undefined,
+      tipoArticolo: form.tipoArticolo as Ritiro["tipoArticolo"],
       articolo: form.articolo.trim(),
       descrizione: form.descrizione.trim(),
       prezzo: parseFloat(form.prezzo),
@@ -222,10 +226,27 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
         <legend className="px-2 text-sm font-medium text-muted-foreground">
           Articolo Ritirato
         </legend>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="space-y-1.5">
+            <Label>Tipo Articolo *</Label>
+            <Select value={form.tipoArticolo} onValueChange={(v) => set("tipoArticolo", v)}>
+              <SelectTrigger><SelectValue placeholder="Seleziona..." /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="smartphone">Smartphone</SelectItem>
+                <SelectItem value="computer">Computer</SelectItem>
+                <SelectItem value="console">Console</SelectItem>
+                <SelectItem value="camera">Camera</SelectItem>
+                <SelectItem value="altro">Altro</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <div className="space-y-1.5">
             <Label htmlFor="articolo">Articolo *</Label>
             <Input id="articolo" value={form.articolo} onChange={(e) => set("articolo", e.target.value)} placeholder="iPhone 13 Pro 128GB" />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="prezzo">Prezzo Acquisto (€) *</Label>
+            <Input id="prezzo" type="number" step="0.01" min="0" value={form.prezzo} onChange={(e) => set("prezzo", e.target.value)} placeholder="150.00" />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="prezzo">Prezzo Acquisto (€) *</Label>

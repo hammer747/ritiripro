@@ -1,3 +1,5 @@
+export type TipoArticolo = "smartphone" | "computer" | "console" | "camera" | "altro";
+
 export interface Ritiro {
   id: string;
   nomeCliente: string;
@@ -5,12 +7,13 @@ export interface Ritiro {
   codiceFiscale: string;
   tipoDocumento: string;
   numeroDocumento: string;
-  documentoIdentitaBase64?: string; // foto/scan del documento
-  documentoIdentitaNome?: string;   // nome file originale
+  documentoIdentitaBase64?: string;
+  documentoIdentitaNome?: string;
+  tipoArticolo: TipoArticolo;
   articolo: string;
   descrizione: string;
   prezzo: number;
-  pinDispositivo?: string; // PIN del dispositivo se presente
+  pinDispositivo?: string;
   dataAcquisto: string;
   note: string;
 }
