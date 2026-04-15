@@ -10,6 +10,7 @@ export interface Ritiro {
   documentoIdentitaBase64?: string;
   documentoIdentitaNome?: string;
   tipoArticolo: TipoArticolo;
+  serialeImei?: string;
   articolo: string;
   descrizione: string;
   prezzo: number;
