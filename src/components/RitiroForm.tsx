@@ -31,6 +31,7 @@ const emptyForm = {
   documentoIdentitaBase64: "",
   documentoIdentitaNome: "",
   tipoArticolo: "",
+  serialeImei: "",
   articolo: "",
   descrizione: "",
   prezzo: "",
@@ -252,6 +253,10 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="serialeImei">Seriale / IMEI</Label>
+            <Input id="serialeImei" value={form.serialeImei} onChange={(e) => set("serialeImei", e.target.value)} placeholder="356938035643809" />
+          </div>
           <div className="space-y-1.5">
             <Label htmlFor="pin">PIN Dispositivo</Label>
             <Input id="pin" value={form.pinDispositivo} onChange={(e) => set("pinDispositivo", e.target.value)} placeholder="1234" />
