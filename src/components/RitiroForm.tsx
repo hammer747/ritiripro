@@ -226,7 +226,7 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
         <legend className="px-2 text-sm font-medium text-muted-foreground">
           Articolo Ritirato
         </legend>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <Label>Tipo Articolo *</Label>
             <Select value={form.tipoArticolo} onValueChange={(v) => set("tipoArticolo", v)}>
@@ -239,10 +239,6 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
                 <SelectItem value="altro">Altro</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="articolo">Articolo *</Label>
-            <Input id="articolo" value={form.articolo} onChange={(e) => set("articolo", e.target.value)} placeholder="iPhone 13 Pro 128GB" />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="prezzo">Prezzo Acquisto (€) *</Label>
