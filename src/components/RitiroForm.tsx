@@ -283,8 +283,8 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
               </p>
             )}
           </div>
-        )
-        </div>
+        )}
+        
         <div className="space-y-1.5">
           <Label htmlFor="desc">Descrizione / Condizioni</Label>
           <Textarea id="desc" value={form.descrizione} onChange={(e) => set("descrizione", e.target.value)} placeholder="Graffi sul retro, batteria all'85%..." rows={2} />
