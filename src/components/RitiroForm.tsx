@@ -122,6 +122,7 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
       documentoIdentitaBase64: form.documentoIdentitaBase64 || undefined,
       documentoIdentitaNome: form.documentoIdentitaNome || undefined,
       tipoArticolo: form.tipoArticolo as Ritiro["tipoArticolo"],
+      serialeImei: form.serialeImei.trim() || undefined,
       articolo: form.articolo.trim(),
       descrizione: form.descrizione.trim(),
       prezzo: parseFloat(form.prezzo),
