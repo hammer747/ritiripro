@@ -14,6 +14,7 @@ import { Ritiro } from "@/lib/types";
 import { saveRitiro, updateRitiro } from "@/lib/storage";
 import { toast } from "sonner";
 import { UserPlus, Pencil, Upload, X, FileText } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface Props {
   onSaved: (ritiro: Ritiro) => void;
@@ -33,6 +34,8 @@ const emptyForm = {
   articolo: "",
   descrizione: "",
   prezzo: "",
+  prezzoVendita: "",
+  venduto: false,
   pinDispositivo: "",
   dataAcquisto: new Date().toISOString().split("T")[0],
   note: "",
