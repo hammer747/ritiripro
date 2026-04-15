@@ -59,6 +59,7 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
         documentoIdentitaBase64: editingRitiro.documentoIdentitaBase64 || "",
         documentoIdentitaNome: editingRitiro.documentoIdentitaNome || "",
         tipoArticolo: editingRitiro.tipoArticolo || "",
+        serialeImei: editingRitiro.serialeImei || "",
         articolo: editingRitiro.articolo,
         descrizione: editingRitiro.descrizione,
         prezzo: editingRitiro.prezzo.toString(),
