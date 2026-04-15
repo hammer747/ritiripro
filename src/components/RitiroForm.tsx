@@ -97,7 +97,6 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
       !form.nomeCliente.trim() ||
       !form.cognomeCliente.trim() ||
       !form.tipoArticolo ||
-      !form.articolo.trim() ||
       !form.prezzo ||
       !form.tipoDocumento ||
       !form.numeroDocumento.trim()
