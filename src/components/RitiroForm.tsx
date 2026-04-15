@@ -250,10 +250,6 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
             <Label htmlFor="prezzo">Prezzo Acquisto (€) *</Label>
             <Input id="prezzo" type="number" step="0.01" min="0" value={form.prezzo} onChange={(e) => set("prezzo", e.target.value)} placeholder="150.00" />
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="prezzo">Prezzo Acquisto (€) *</Label>
-            <Input id="prezzo" type="number" step="0.01" min="0" value={form.prezzo} onChange={(e) => set("prezzo", e.target.value)} placeholder="150.00" />
-          </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
@@ -264,6 +260,30 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
             <Label htmlFor="data">Data Acquisto *</Label>
             <Input id="data" type="date" value={form.dataAcquisto} onChange={(e) => set("dataAcquisto", e.target.value)} />
           </div>
+        </div>
+        <div className="flex items-center gap-2 pt-2">
+          <Checkbox
+            id="venduto"
+            checked={form.venduto}
+            onCheckedChange={(checked) =>
+              setForm((f) => ({ ...f, venduto: !!checked, prezzoVendita: checked ? f.prezzoVendita : "" }))
+            }
+          />
+          <Label htmlFor="venduto" className="cursor-pointer">Articolo venduto</Label>
+        </div>
+        {form.venduto && (
+          <div className="space-y-1.5 rounded-md border border-primary/30 bg-primary/5 p-3">
+            <Label htmlFor="prezzoVendita">Prezzo di Vendita (€) *</Label>
+            <Input id="prezzoVendita" type="number" step="0.01" min="0" value={form.prezzoVendita} onChange={(e) => set("prezzoVendita", e.target.value)} placeholder="250.00" />
+            {form.prezzo && form.prezzoVendita && (
+              <p className="text-sm text-muted-foreground">
+                Margine: <span className={parseFloat(form.prezzoVendita) - parseFloat(form.prezzo) >= 0 ? "text-green-600 font-semibold" : "text-red-600 font-semibold"}>
+                  € {(parseFloat(form.prezzoVendita) - parseFloat(form.prezzo)).toFixed(2)}
+                </span>
+              </p>
+            )}
+          </div>
+        )
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="desc">Descrizione / Condizioni</Label>
