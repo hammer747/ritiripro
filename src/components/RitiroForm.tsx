@@ -29,8 +29,10 @@ const emptyForm = {
   telefonoCliente: "",
   tipoDocumento: "",
   numeroDocumento: "",
-  documentoIdentitaBase64: "",
-  documentoIdentitaNome: "",
+  documentoFronteBase64: "",
+  documentoFronteNome: "",
+  documentoRetroBase64: "",
+  documentoRetroNome: "",
   tipoArticolo: "",
   marcaModello: "",
   serialeImei: "",
@@ -47,7 +49,8 @@ const emptyForm = {
 
 export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Props) {
   const [form, setForm] = useState(emptyForm);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileFronteRef = useRef<HTMLInputElement>(null);
+  const fileRetroRef = useRef<HTMLInputElement>(null);
 
   const isEditing = !!editingRitiro;
 
@@ -60,8 +63,10 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
         telefonoCliente: editingRitiro.telefonoCliente || "",
         tipoDocumento: editingRitiro.tipoDocumento,
         numeroDocumento: editingRitiro.numeroDocumento,
-        documentoIdentitaBase64: editingRitiro.documentoIdentitaBase64 || "",
-        documentoIdentitaNome: editingRitiro.documentoIdentitaNome || "",
+        documentoFronteBase64: editingRitiro.documentoFronteBase64 || "",
+        documentoFronteNome: editingRitiro.documentoFronteNome || "",
+        documentoRetroBase64: editingRitiro.documentoRetroBase64 || "",
+        documentoRetroNome: editingRitiro.documentoRetroNome || "",
         tipoArticolo: editingRitiro.tipoArticolo || "",
         marcaModello: editingRitiro.marcaModello || "",
         serialeImei: editingRitiro.serialeImei || "",
@@ -85,7 +90,7 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
   const set = (key: string, value: string) =>
     setForm((f) => ({ ...f, [key]: value }));
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (side: "fronte" | "retro") => (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) {
@@ -94,18 +99,23 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
     }
     const reader = new FileReader();
     reader.onload = () => {
+      const base64Key = side === "fronte" ? "documentoFronteBase64" : "documentoRetroBase64";
+      const nomeKey = side === "fronte" ? "documentoFronteNome" : "documentoRetroNome";
       setForm((f) => ({
         ...f,
-        documentoIdentitaBase64: reader.result as string,
-        documentoIdentitaNome: file.name,
+        [base64Key]: reader.result as string,
+        [nomeKey]: file.name,
       }));
     };
     reader.readAsDataURL(file);
   };
 
-  const removeFile = () => {
-    setForm((f) => ({ ...f, documentoIdentitaBase64: "", documentoIdentitaNome: "" }));
-    if (fileInputRef.current) fileInputRef.current.value = "";
+  const removeFile = (side: "fronte" | "retro") => {
+    const base64Key = side === "fronte" ? "documentoFronteBase64" : "documentoRetroBase64";
+    const nomeKey = side === "fronte" ? "documentoFronteNome" : "documentoRetroNome";
+    setForm((f) => ({ ...f, [base64Key]: "", [nomeKey]: "" }));
+    const ref = side === "fronte" ? fileFronteRef : fileRetroRef;
+    if (ref.current) ref.current.value = "";
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -130,8 +140,10 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
       telefonoCliente: form.telefonoCliente.trim() || undefined,
       tipoDocumento: form.tipoDocumento,
       numeroDocumento: form.numeroDocumento.trim(),
-      documentoIdentitaBase64: form.documentoIdentitaBase64 || undefined,
-      documentoIdentitaNome: form.documentoIdentitaNome || undefined,
+      documentoFronteBase64: form.documentoFronteBase64 || undefined,
+      documentoFronteNome: form.documentoFronteNome || undefined,
+      documentoRetroBase64: form.documentoRetroBase64 || undefined,
+      documentoRetroNome: form.documentoRetroNome || undefined,
       tipoArticolo: form.tipoArticolo as Ritiro["tipoArticolo"],
       marcaModello: form.marcaModello.trim() || undefined,
       serialeImei: form.serialeImei.trim() || undefined,
@@ -156,13 +168,15 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
     }
 
     setForm(emptyForm);
-    if (fileInputRef.current) fileInputRef.current.value = "";
+    if (fileFronteRef.current) fileFronteRef.current.value = "";
+    if (fileRetroRef.current) fileRetroRef.current.value = "";
     onSaved(ritiro);
   };
 
   const handleCancel = () => {
     setForm(emptyForm);
-    if (fileInputRef.current) fileInputRef.current.value = "";
+    if (fileFronteRef.current) fileFronteRef.current.value = "";
+    if (fileRetroRef.current) fileRetroRef.current.value = "";
     onCancelEdit?.();
   };
 

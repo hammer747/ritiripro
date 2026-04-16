@@ -8,8 +8,10 @@ export interface Ritiro {
   telefonoCliente?: string;
   tipoDocumento: string;
   numeroDocumento: string;
-  documentoIdentitaBase64?: string;
-  documentoIdentitaNome?: string;
+  documentoFronteBase64?: string;
+  documentoFronteNome?: string;
+  documentoRetroBase64?: string;
+  documentoRetroNome?: string;
   tipoArticolo: TipoArticolo;
   marcaModello?: string;
   serialeImei?: string;
