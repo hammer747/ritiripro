@@ -26,17 +26,20 @@ const emptyForm = {
   nomeCliente: "",
   cognomeCliente: "",
   codiceFiscale: "",
+  telefonoCliente: "",
   tipoDocumento: "",
   numeroDocumento: "",
   documentoIdentitaBase64: "",
   documentoIdentitaNome: "",
   tipoArticolo: "",
+  marcaModello: "",
   serialeImei: "",
   articolo: "",
   descrizione: "",
   prezzo: "",
   prezzoVendita: "",
   venduto: false,
+  dataVendita: "",
   pinDispositivo: "",
   dataAcquisto: new Date().toISOString().split("T")[0],
   note: "",
@@ -54,23 +57,30 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
         nomeCliente: editingRitiro.nomeCliente,
         cognomeCliente: editingRitiro.cognomeCliente,
         codiceFiscale: editingRitiro.codiceFiscale,
+        telefonoCliente: editingRitiro.telefonoCliente || "",
         tipoDocumento: editingRitiro.tipoDocumento,
         numeroDocumento: editingRitiro.numeroDocumento,
         documentoIdentitaBase64: editingRitiro.documentoIdentitaBase64 || "",
         documentoIdentitaNome: editingRitiro.documentoIdentitaNome || "",
         tipoArticolo: editingRitiro.tipoArticolo || "",
+        marcaModello: editingRitiro.marcaModello || "",
         serialeImei: editingRitiro.serialeImei || "",
         articolo: editingRitiro.articolo,
         descrizione: editingRitiro.descrizione,
         prezzo: editingRitiro.prezzo.toString(),
         prezzoVendita: editingRitiro.prezzoVendita?.toString() || "",
         venduto: editingRitiro.venduto || false,
+        dataVendita: editingRitiro.dataVendita || "",
         pinDispositivo: editingRitiro.pinDispositivo || "",
         dataAcquisto: editingRitiro.dataAcquisto,
         note: editingRitiro.note,
       });
     }
   }, [editingRitiro]);
+
+  const capitalizeFirstLetter = (value: string) => {
+    return value.replace(/(?:^|\s)\S/g, (char) => char.toUpperCase());
+  };
 
   const set = (key: string, value: string) =>
     setForm((f) => ({ ...f, [key]: value }));
@@ -117,17 +127,20 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
       nomeCliente: form.nomeCliente.trim(),
       cognomeCliente: form.cognomeCliente.trim(),
       codiceFiscale: form.codiceFiscale.trim().toUpperCase(),
+      telefonoCliente: form.telefonoCliente.trim() || undefined,
       tipoDocumento: form.tipoDocumento,
       numeroDocumento: form.numeroDocumento.trim(),
       documentoIdentitaBase64: form.documentoIdentitaBase64 || undefined,
       documentoIdentitaNome: form.documentoIdentitaNome || undefined,
       tipoArticolo: form.tipoArticolo as Ritiro["tipoArticolo"],
+      marcaModello: form.marcaModello.trim() || undefined,
       serialeImei: form.serialeImei.trim() || undefined,
       articolo: form.articolo.trim(),
       descrizione: form.descrizione.trim(),
       prezzo: parseFloat(form.prezzo),
       prezzoVendita: form.venduto && form.prezzoVendita ? parseFloat(form.prezzoVendita) : undefined,
       venduto: form.venduto,
+      dataVendita: form.venduto ? form.dataVendita || undefined : undefined,
       pinDispositivo: form.pinDispositivo.trim() || undefined,
       dataAcquisto: form.dataAcquisto,
       note: form.note.trim(),
@@ -183,6 +196,10 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
           <div className="space-y-1.5">
             <Label htmlFor="cf">Codice Fiscale</Label>
             <Input id="cf" value={form.codiceFiscale} onChange={(e) => set("codiceFiscale", e.target.value)} placeholder="RSSMRA80A01H501U" className="uppercase" maxLength={16} />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="telefono">Numero di Telefono</Label>
+            <Input id="telefono" type="tel" value={form.telefonoCliente} onChange={(e) => set("telefonoCliente", e.target.value)} placeholder="+39 333 1234567" />
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -254,6 +271,10 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
             <Input id="prezzo" type="number" step="0.01" min="0" value={form.prezzo} onChange={(e) => set("prezzo", e.target.value)} placeholder="150.00" />
           </div>
         </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="marcaModello">Marca e Modello</Label>
+          <Input id="marcaModello" value={form.marcaModello} onChange={(e) => set("marcaModello", capitalizeFirstLetter(e.target.value))} placeholder="Samsung Galaxy S24" />
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <Label htmlFor="serialeImei">Seriale / IMEI</Label>
@@ -273,15 +294,28 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
             id="venduto"
             checked={form.venduto}
             onCheckedChange={(checked) =>
-              setForm((f) => ({ ...f, venduto: !!checked, prezzoVendita: checked ? f.prezzoVendita : "" }))
+              setForm((f) => ({
+                ...f,
+                venduto: !!checked,
+                prezzoVendita: checked ? f.prezzoVendita : "",
+                dataVendita: checked ? new Date().toISOString().split("T")[0] : "",
+              }))
             }
           />
           <Label htmlFor="venduto" className="cursor-pointer">Articolo venduto</Label>
         </div>
         {form.venduto && (
-          <div className="space-y-1.5 rounded-md border border-primary/30 bg-primary/5 p-3">
-            <Label htmlFor="prezzoVendita">Prezzo di Vendita (€) *</Label>
-            <Input id="prezzoVendita" type="number" step="0.01" min="0" value={form.prezzoVendita} onChange={(e) => set("prezzoVendita", e.target.value)} placeholder="250.00" />
+          <div className="space-y-3 rounded-md border border-primary/30 bg-primary/5 p-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="prezzoVendita">Prezzo di Vendita (€) *</Label>
+                <Input id="prezzoVendita" type="number" step="0.01" min="0" value={form.prezzoVendita} onChange={(e) => set("prezzoVendita", e.target.value)} placeholder="250.00" />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="dataVendita">Data Vendita *</Label>
+                <Input id="dataVendita" type="date" value={form.dataVendita} onChange={(e) => set("dataVendita", e.target.value)} />
+              </div>
+            </div>
             {form.prezzo && form.prezzoVendita && (
               <p className="text-sm text-muted-foreground">
                 Margine: <span className={parseFloat(form.prezzoVendita) - parseFloat(form.prezzo) >= 0 ? "text-green-600 font-semibold" : "text-red-600 font-semibold"}>
