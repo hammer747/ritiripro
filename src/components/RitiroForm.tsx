@@ -13,7 +13,7 @@ import {
 import { Ritiro } from "@/lib/types";
 import { saveRitiro, updateRitiro } from "@/lib/storage";
 import { toast } from "sonner";
-import { UserPlus, Pencil, Upload, X, FileText } from "lucide-react";
+import { UserPlus, Pencil, Upload, X, FileText, Download } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 
 interface Props {
@@ -222,13 +222,35 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
         </div>
         <div className="space-y-1.5">
           <Label>Foto / Scan Documento</Label>
-          {form.documentoIdentitaNome ? (
-            <div className="flex items-center gap-2 rounded-md border bg-muted/50 p-2">
-              <FileText className="h-4 w-4 text-primary shrink-0" />
-              <span className="text-sm truncate flex-1">{form.documentoIdentitaNome}</span>
-              <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={removeFile}>
-                <X className="h-4 w-4" />
-              </Button>
+          {form.documentoIdentitaBase64 ? (
+            <div className="rounded-md border bg-muted/50 p-3 space-y-2">
+              {form.documentoIdentitaBase64.startsWith("data:image") && (
+                <img
+                  src={form.documentoIdentitaBase64}
+                  alt="Preview documento"
+                  className="max-h-40 rounded-md object-contain border"
+                />
+              )}
+              {form.documentoIdentitaBase64.startsWith("data:application/pdf") && (
+                <div className="flex items-center gap-2 p-2 bg-background rounded border">
+                  <FileText className="h-8 w-8 text-primary" />
+                  <span className="text-sm text-muted-foreground">Documento PDF caricato</span>
+                </div>
+              )}
+              <div className="flex items-center gap-2">
+                <span className="text-sm truncate flex-1">{form.documentoIdentitaNome}</span>
+                <a
+                  href={form.documentoIdentitaBase64}
+                  download={form.documentoIdentitaNome || "documento"}
+                  className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Download className="h-4 w-4" /> Scarica
+                </a>
+                <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={removeFile}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           ) : (
             <div>
