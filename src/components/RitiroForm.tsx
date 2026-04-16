@@ -93,6 +93,10 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
   const handleFileChange = (side: "fronte" | "retro") => (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Sono accettati solo file fotografici (JPG, PNG, WebP)");
+      return;
+    }
     if (file.size > 5 * 1024 * 1024) {
       toast.error("Il file è troppo grande (max 5MB)");
       return;
@@ -245,12 +249,6 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
                   {form.documentoFronteBase64.startsWith("data:image") && (
                     <img src={form.documentoFronteBase64} alt="Fronte documento" className="max-h-32 rounded-md object-contain border w-full" />
                   )}
-                  {form.documentoFronteBase64.startsWith("data:application/pdf") && (
-                    <div className="flex items-center gap-2 p-2 bg-background rounded border">
-                      <FileText className="h-6 w-6 text-primary" />
-                      <span className="text-xs text-muted-foreground">PDF</span>
-                    </div>
-                  )}
                   <div className="flex items-center gap-1">
                     <span className="text-xs truncate flex-1">{form.documentoFronteNome}</span>
                     <a href={form.documentoFronteBase64} download={form.documentoFronteNome || "fronte"} className="text-primary hover:underline"><Download className="h-3.5 w-3.5" /></a>
@@ -259,7 +257,7 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
                 </div>
               ) : (
                 <div>
-                  <input ref={fileFronteRef} type="file" accept="image/*,.pdf" onChange={handleFileChange("fronte")} className="hidden" />
+                  <input ref={fileFronteRef} type="file" accept="image/png,image/jpeg,image/jpg,image/webp,image/heic" onChange={handleFileChange("fronte")} className="hidden" />
                   <Button type="button" variant="outline" size="sm" onClick={() => fileFronteRef.current?.click()}>
                     <Upload className="h-4 w-4 mr-1" /> Carica fronte
                   </Button>
@@ -274,12 +272,6 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
                   {form.documentoRetroBase64.startsWith("data:image") && (
                     <img src={form.documentoRetroBase64} alt="Retro documento" className="max-h-32 rounded-md object-contain border w-full" />
                   )}
-                  {form.documentoRetroBase64.startsWith("data:application/pdf") && (
-                    <div className="flex items-center gap-2 p-2 bg-background rounded border">
-                      <FileText className="h-6 w-6 text-primary" />
-                      <span className="text-xs text-muted-foreground">PDF</span>
-                    </div>
-                  )}
                   <div className="flex items-center gap-1">
                     <span className="text-xs truncate flex-1">{form.documentoRetroNome}</span>
                     <a href={form.documentoRetroBase64} download={form.documentoRetroNome || "retro"} className="text-primary hover:underline"><Download className="h-3.5 w-3.5" /></a>
@@ -288,7 +280,7 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
                 </div>
               ) : (
                 <div>
-                  <input ref={fileRetroRef} type="file" accept="image/*,.pdf" onChange={handleFileChange("retro")} className="hidden" />
+                  <input ref={fileRetroRef} type="file" accept="image/png,image/jpeg,image/jpg,image/webp,image/heic" onChange={handleFileChange("retro")} className="hidden" />
                   <Button type="button" variant="outline" size="sm" onClick={() => fileRetroRef.current?.click()}>
                     <Upload className="h-4 w-4 mr-1" /> Carica retro
                   </Button>
