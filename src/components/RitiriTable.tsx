@@ -75,7 +75,7 @@ export default function RitiriTable({ ritiri, onChanged, onEdit }: Props) {
                   <span className="font-medium">
                     {DOC_LABELS[r.tipoDocumento] || r.tipoDocumento}
                   </span>
-                  {r.documentoIdentitaBase64 && (
+                  {(r.documentoFronteBase64 || r.documentoRetroBase64) && (
                     <FileText className="h-3.5 w-3.5 text-primary" />
                   )}
                 </div>
