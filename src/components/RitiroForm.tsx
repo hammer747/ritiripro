@@ -93,6 +93,10 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
   const handleFileChange = (side: "fronte" | "retro") => (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Sono accettati solo file fotografici (JPG, PNG, WebP)");
+      return;
+    }
     if (file.size > 5 * 1024 * 1024) {
       toast.error("Il file è troppo grande (max 5MB)");
       return;
