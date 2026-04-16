@@ -259,7 +259,7 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
                 </div>
               ) : (
                 <div>
-                  <input ref={fileFronteRef} type="file" accept="image/*,.pdf" onChange={handleFileChange("fronte")} className="hidden" />
+                  <input ref={fileFronteRef} type="file" accept="image/png,image/jpeg,image/jpg,image/webp,image/heic" onChange={handleFileChange("fronte")} className="hidden" />
                   <Button type="button" variant="outline" size="sm" onClick={() => fileFronteRef.current?.click()}>
                     <Upload className="h-4 w-4 mr-1" /> Carica fronte
                   </Button>
@@ -288,7 +288,7 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
                 </div>
               ) : (
                 <div>
-                  <input ref={fileRetroRef} type="file" accept="image/*,.pdf" onChange={handleFileChange("retro")} className="hidden" />
+                  <input ref={fileRetroRef} type="file" accept="image/png,image/jpeg,image/jpg,image/webp,image/heic" onChange={handleFileChange("retro")} className="hidden" />
                   <Button type="button" variant="outline" size="sm" onClick={() => fileRetroRef.current?.click()}>
                     <Upload className="h-4 w-4 mr-1" /> Carica retro
                   </Button>
