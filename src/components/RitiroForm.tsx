@@ -245,12 +245,6 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
                   {form.documentoFronteBase64.startsWith("data:image") && (
                     <img src={form.documentoFronteBase64} alt="Fronte documento" className="max-h-32 rounded-md object-contain border w-full" />
                   )}
-                  {form.documentoFronteBase64.startsWith("data:application/pdf") && (
-                    <div className="flex items-center gap-2 p-2 bg-background rounded border">
-                      <FileText className="h-6 w-6 text-primary" />
-                      <span className="text-xs text-muted-foreground">PDF</span>
-                    </div>
-                  )}
                   <div className="flex items-center gap-1">
                     <span className="text-xs truncate flex-1">{form.documentoFronteNome}</span>
                     <a href={form.documentoFronteBase64} download={form.documentoFronteNome || "fronte"} className="text-primary hover:underline"><Download className="h-3.5 w-3.5" /></a>
@@ -273,12 +267,6 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
                 <div className="rounded-md border bg-muted/50 p-2 space-y-2">
                   {form.documentoRetroBase64.startsWith("data:image") && (
                     <img src={form.documentoRetroBase64} alt="Retro documento" className="max-h-32 rounded-md object-contain border w-full" />
-                  )}
-                  {form.documentoRetroBase64.startsWith("data:application/pdf") && (
-                    <div className="flex items-center gap-2 p-2 bg-background rounded border">
-                      <FileText className="h-6 w-6 text-primary" />
-                      <span className="text-xs text-muted-foreground">PDF</span>
-                    </div>
                   )}
                   <div className="flex items-center gap-1">
                     <span className="text-xs truncate flex-1">{form.documentoRetroNome}</span>
