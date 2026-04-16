@@ -29,8 +29,10 @@ const emptyForm = {
   telefonoCliente: "",
   tipoDocumento: "",
   numeroDocumento: "",
-  documentoIdentitaBase64: "",
-  documentoIdentitaNome: "",
+  documentoFronteBase64: "",
+  documentoFronteNome: "",
+  documentoRetroBase64: "",
+  documentoRetroNome: "",
   tipoArticolo: "",
   marcaModello: "",
   serialeImei: "",
@@ -47,7 +49,8 @@ const emptyForm = {
 
 export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Props) {
   const [form, setForm] = useState(emptyForm);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileFronteRef = useRef<HTMLInputElement>(null);
+  const fileRetroRef = useRef<HTMLInputElement>(null);
 
   const isEditing = !!editingRitiro;
 
@@ -60,8 +63,10 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
         telefonoCliente: editingRitiro.telefonoCliente || "",
         tipoDocumento: editingRitiro.tipoDocumento,
         numeroDocumento: editingRitiro.numeroDocumento,
-        documentoIdentitaBase64: editingRitiro.documentoIdentitaBase64 || "",
-        documentoIdentitaNome: editingRitiro.documentoIdentitaNome || "",
+        documentoFronteBase64: editingRitiro.documentoFronteBase64 || "",
+        documentoFronteNome: editingRitiro.documentoFronteNome || "",
+        documentoRetroBase64: editingRitiro.documentoRetroBase64 || "",
+        documentoRetroNome: editingRitiro.documentoRetroNome || "",
         tipoArticolo: editingRitiro.tipoArticolo || "",
         marcaModello: editingRitiro.marcaModello || "",
         serialeImei: editingRitiro.serialeImei || "",
@@ -85,7 +90,7 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
   const set = (key: string, value: string) =>
     setForm((f) => ({ ...f, [key]: value }));
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (side: "fronte" | "retro") => (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) {
@@ -94,18 +99,23 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
     }
     const reader = new FileReader();
     reader.onload = () => {
+      const base64Key = side === "fronte" ? "documentoFronteBase64" : "documentoRetroBase64";
+      const nomeKey = side === "fronte" ? "documentoFronteNome" : "documentoRetroNome";
       setForm((f) => ({
         ...f,
-        documentoIdentitaBase64: reader.result as string,
-        documentoIdentitaNome: file.name,
+        [base64Key]: reader.result as string,
+        [nomeKey]: file.name,
       }));
     };
     reader.readAsDataURL(file);
   };
 
-  const removeFile = () => {
-    setForm((f) => ({ ...f, documentoIdentitaBase64: "", documentoIdentitaNome: "" }));
-    if (fileInputRef.current) fileInputRef.current.value = "";
+  const removeFile = (side: "fronte" | "retro") => {
+    const base64Key = side === "fronte" ? "documentoFronteBase64" : "documentoRetroBase64";
+    const nomeKey = side === "fronte" ? "documentoFronteNome" : "documentoRetroNome";
+    setForm((f) => ({ ...f, [base64Key]: "", [nomeKey]: "" }));
+    const ref = side === "fronte" ? fileFronteRef : fileRetroRef;
+    if (ref.current) ref.current.value = "";
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -130,8 +140,10 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
       telefonoCliente: form.telefonoCliente.trim() || undefined,
       tipoDocumento: form.tipoDocumento,
       numeroDocumento: form.numeroDocumento.trim(),
-      documentoIdentitaBase64: form.documentoIdentitaBase64 || undefined,
-      documentoIdentitaNome: form.documentoIdentitaNome || undefined,
+      documentoFronteBase64: form.documentoFronteBase64 || undefined,
+      documentoFronteNome: form.documentoFronteNome || undefined,
+      documentoRetroBase64: form.documentoRetroBase64 || undefined,
+      documentoRetroNome: form.documentoRetroNome || undefined,
       tipoArticolo: form.tipoArticolo as Ritiro["tipoArticolo"],
       marcaModello: form.marcaModello.trim() || undefined,
       serialeImei: form.serialeImei.trim() || undefined,
@@ -156,13 +168,15 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
     }
 
     setForm(emptyForm);
-    if (fileInputRef.current) fileInputRef.current.value = "";
+    if (fileFronteRef.current) fileFronteRef.current.value = "";
+    if (fileRetroRef.current) fileRetroRef.current.value = "";
     onSaved(ritiro);
   };
 
   const handleCancel = () => {
     setForm(emptyForm);
-    if (fileInputRef.current) fileInputRef.current.value = "";
+    if (fileFronteRef.current) fileFronteRef.current.value = "";
+    if (fileRetroRef.current) fileRetroRef.current.value = "";
     onCancelEdit?.();
   };
 
@@ -220,52 +234,68 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
             <Input id="numdoc" value={form.numeroDocumento} onChange={(e) => set("numeroDocumento", e.target.value)} placeholder="AX1234567" />
           </div>
         </div>
-        <div className="space-y-1.5">
-          <Label>Foto / Scan Documento</Label>
-          {form.documentoIdentitaBase64 ? (
-            <div className="rounded-md border bg-muted/50 p-3 space-y-2">
-              {form.documentoIdentitaBase64.startsWith("data:image") && (
-                <img
-                  src={form.documentoIdentitaBase64}
-                  alt="Preview documento"
-                  className="max-h-40 rounded-md object-contain border"
-                />
-              )}
-              {form.documentoIdentitaBase64.startsWith("data:application/pdf") && (
-                <div className="flex items-center gap-2 p-2 bg-background rounded border">
-                  <FileText className="h-8 w-8 text-primary" />
-                  <span className="text-sm text-muted-foreground">Documento PDF caricato</span>
+        <div className="space-y-3">
+          <Label>Foto / Scan Documento (max 5MB per file)</Label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Fronte */}
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-muted-foreground">Fronte</p>
+              {form.documentoFronteBase64 ? (
+                <div className="rounded-md border bg-muted/50 p-2 space-y-2">
+                  {form.documentoFronteBase64.startsWith("data:image") && (
+                    <img src={form.documentoFronteBase64} alt="Fronte documento" className="max-h-32 rounded-md object-contain border w-full" />
+                  )}
+                  {form.documentoFronteBase64.startsWith("data:application/pdf") && (
+                    <div className="flex items-center gap-2 p-2 bg-background rounded border">
+                      <FileText className="h-6 w-6 text-primary" />
+                      <span className="text-xs text-muted-foreground">PDF</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs truncate flex-1">{form.documentoFronteNome}</span>
+                    <a href={form.documentoFronteBase64} download={form.documentoFronteNome || "fronte"} className="text-primary hover:underline"><Download className="h-3.5 w-3.5" /></a>
+                    <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeFile("fronte")}><X className="h-3.5 w-3.5" /></Button>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <input ref={fileFronteRef} type="file" accept="image/*,.pdf" onChange={handleFileChange("fronte")} className="hidden" />
+                  <Button type="button" variant="outline" size="sm" onClick={() => fileFronteRef.current?.click()}>
+                    <Upload className="h-4 w-4 mr-1" /> Carica fronte
+                  </Button>
                 </div>
               )}
-              <div className="flex items-center gap-2">
-                <span className="text-sm truncate flex-1">{form.documentoIdentitaNome}</span>
-                <a
-                  href={form.documentoIdentitaBase64}
-                  download={form.documentoIdentitaNome || "documento"}
-                  className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Download className="h-4 w-4" /> Scarica
-                </a>
-                <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={removeFile}>
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
             </div>
-          ) : (
-            <div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*,.pdf"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-              <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
-                <Upload className="h-4 w-4 mr-1" /> Carica documento
-              </Button>
+            {/* Retro */}
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-muted-foreground">Retro</p>
+              {form.documentoRetroBase64 ? (
+                <div className="rounded-md border bg-muted/50 p-2 space-y-2">
+                  {form.documentoRetroBase64.startsWith("data:image") && (
+                    <img src={form.documentoRetroBase64} alt="Retro documento" className="max-h-32 rounded-md object-contain border w-full" />
+                  )}
+                  {form.documentoRetroBase64.startsWith("data:application/pdf") && (
+                    <div className="flex items-center gap-2 p-2 bg-background rounded border">
+                      <FileText className="h-6 w-6 text-primary" />
+                      <span className="text-xs text-muted-foreground">PDF</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs truncate flex-1">{form.documentoRetroNome}</span>
+                    <a href={form.documentoRetroBase64} download={form.documentoRetroNome || "retro"} className="text-primary hover:underline"><Download className="h-3.5 w-3.5" /></a>
+                    <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeFile("retro")}><X className="h-3.5 w-3.5" /></Button>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <input ref={fileRetroRef} type="file" accept="image/*,.pdf" onChange={handleFileChange("retro")} className="hidden" />
+                  <Button type="button" variant="outline" size="sm" onClick={() => fileRetroRef.current?.click()}>
+                    <Upload className="h-4 w-4 mr-1" /> Carica retro
+                  </Button>
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </fieldset>
 
