@@ -7,18 +7,31 @@ export function getRitiri(): Ritiro[] {
   return data ? JSON.parse(data) : [];
 }
 
+function persist(ritiri: Ritiro[]): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(ritiri));
+  } catch (err) {
+    if (err instanceof DOMException && (err.name === "QuotaExceededError" || err.code === 22)) {
+      throw new Error(
+        "Spazio di archiviazione esaurito. Rimuovi qualche allegato o elimina ritiri vecchi."
+      );
+    }
+    throw err;
+  }
+}
+
 export function saveRitiro(ritiro: Ritiro): void {
   const ritiri = getRitiri();
   ritiri.unshift(ritiro);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(ritiri));
+  persist(ritiri);
 }
 
 export function updateRitiro(updated: Ritiro): void {
   const ritiri = getRitiri().map((r) => (r.id === updated.id ? updated : r));
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(ritiri));
+  persist(ritiri);
 }
 
 export function deleteRitiro(id: string): void {
   const ritiri = getRitiri().filter((r) => r.id !== id);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(ritiri));
+  persist(ritiri);
 }
