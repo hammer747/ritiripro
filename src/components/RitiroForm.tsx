@@ -95,7 +95,30 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
   const set = (key: string, value: string) =>
     setForm((f) => ({ ...f, [key]: value }));
 
-  const handleFileChange = (side: "fronte" | "retro") => (e: React.ChangeEvent<HTMLInputElement>) => {
+  const compressImage = (file: File, maxWidth = 1280, quality = 0.7): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          const scale = Math.min(1, maxWidth / img.width);
+          const canvas = document.createElement("canvas");
+          canvas.width = img.width * scale;
+          canvas.height = img.height * scale;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) return reject(new Error("Canvas non disponibile"));
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL("image/jpeg", quality));
+        };
+        img.onerror = () => reject(new Error("Immagine non valida"));
+        img.src = reader.result as string;
+      };
+      reader.onerror = () => reject(new Error("Lettura file fallita"));
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleFileChange = (side: "fronte" | "retro") => async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith("image/")) {
@@ -106,17 +129,18 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
       toast.error("Il file è troppo grande (max 5MB)");
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
+    try {
+      const compressed = await compressImage(file);
       const base64Key = side === "fronte" ? "documentoFronteBase64" : "documentoRetroBase64";
       const nomeKey = side === "fronte" ? "documentoFronteNome" : "documentoRetroNome";
       setForm((f) => ({
         ...f,
-        [base64Key]: reader.result as string,
+        [base64Key]: compressed,
         [nomeKey]: file.name,
       }));
-    };
-    reader.readAsDataURL(file);
+    } catch {
+      toast.error("Errore durante l'elaborazione dell'immagine");
+    }
   };
 
   const removeFile = (side: "fronte" | "retro") => {
@@ -127,7 +151,7 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
     if (ref.current) ref.current.value = "";
   };
 
-  const handleRicevutaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleRicevutaChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const isImage = file.type.startsWith("image/");
@@ -138,6 +162,15 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
     }
     if (file.size > 5 * 1024 * 1024) {
       toast.error("Il file è troppo grande (max 5MB)");
+      return;
+    }
+    if (isImage) {
+      try {
+        const compressed = await compressImage(file);
+        setForm((f) => ({ ...f, ricevutaAcquistoBase64: compressed, ricevutaAcquistoNome: file.name }));
+      } catch {
+        toast.error("Errore durante l'elaborazione dell'immagine");
+      }
       return;
     }
     const reader = new FileReader();
@@ -198,13 +231,18 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
       note: form.note.trim(),
     };
 
-    if (isEditing) {
-      updateRitiro(ritiro);
-      toast.success("Ritiro aggiornato con successo!");
-      onCancelEdit?.();
-    } else {
-      saveRitiro(ritiro);
-      toast.success("Ritiro registrato con successo!");
+    try {
+      if (isEditing) {
+        updateRitiro(ritiro);
+        toast.success("Ritiro aggiornato con successo!");
+        onCancelEdit?.();
+      } else {
+        saveRitiro(ritiro);
+        toast.success("Ritiro registrato con successo!");
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Errore durante il salvataggio");
+      return;
     }
 
     setForm(emptyForm);
