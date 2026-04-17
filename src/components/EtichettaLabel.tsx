@@ -100,12 +100,6 @@ export default function EtichettaLabel({ ritiro, open, onClose }: Props) {
                 </span>
               </div>
             )}
-            <div className="row flex justify-between text-sm">
-              <span className="key text-xs text-gray-500">Articolo:</span>
-              <span className="val font-semibold text-right max-w-[140px] truncate">
-                {ritiro.articolo}
-              </span>
-            </div>
             {ritiro.marcaModello && (
               <div className="row flex justify-between text-sm">
                 <span className="key text-xs text-gray-500">Marca/Modello:</span>

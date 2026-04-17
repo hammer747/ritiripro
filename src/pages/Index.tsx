@@ -1,20 +1,58 @@
 import { useState, useMemo, useCallback, useRef } from "react";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { getRitiri } from "@/lib/storage";
 import { Ritiro } from "@/lib/types";
 import RitiroForm from "@/components/RitiroForm";
 import RitiriTable from "@/components/RitiriTable";
 import EtichettaLabel from "@/components/EtichettaLabel";
-import { Search, Smartphone, Package, Euro } from "lucide-react";
+import { Search, Smartphone, Package, Euro, Calendar } from "lucide-react";
+
+const MESI = [
+  "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
+  "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre",
+];
 
 export default function Index() {
   const [ritiri, setRitiri] = useState<Ritiro[]>(getRitiri);
   const [search, setSearch] = useState("");
   const [editingRitiro, setEditingRitiro] = useState<Ritiro | null>(null);
   const [labelRitiro, setLabelRitiro] = useState<Ritiro | null>(null);
+  const now = new Date();
+  const [meseSelezionato, setMeseSelezionato] = useState<string>(
+    `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`
+  );
   const formRef = useRef<HTMLDivElement>(null);
 
   const reload = useCallback(() => setRitiri(getRitiri()), []);
+
+  // Mesi disponibili in base ai ritiri esistenti (più mese corrente)
+  const mesiDisponibili = useMemo(() => {
+    const set = new Set<string>();
+    set.add(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`);
+    ritiri.forEach((r) => {
+      const d = new Date(r.dataAcquisto);
+      set.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`);
+    });
+    return Array.from(set).sort().reverse();
+  }, [ritiri, now]);
+
+  // Ritiri filtrati per mese (per le statistiche)
+  const ritiriDelMese = useMemo(() => {
+    const [anno, mese] = meseSelezionato.split("-").map(Number);
+    return ritiri.filter((r) => {
+      const d = new Date(r.dataAcquisto);
+      return d.getFullYear() === anno && d.getMonth() + 1 === mese;
+    });
+  }, [ritiri, meseSelezionato]);
+
+  const totaleMese = ritiriDelMese.reduce((s, r) => s + r.prezzo, 0);
 
   const filtered = useMemo(() => {
     const sorted = [...ritiri].sort(
@@ -33,8 +71,6 @@ export default function Index() {
     );
   }, [ritiri, search]);
 
-  const totale = ritiri.reduce((s, r) => s + r.prezzo, 0);
-
   const handleEdit = (ritiro: Ritiro) => {
     setEditingRitiro(ritiro);
     formRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -45,6 +81,11 @@ export default function Index() {
     if (!editingRitiro) {
       setLabelRitiro(ritiro);
     }
+  };
+
+  const formatMese = (key: string) => {
+    const [anno, mese] = key.split("-").map(Number);
+    return `${MESI[mese - 1]} ${anno}`;
   };
 
   return (
@@ -64,19 +105,37 @@ export default function Index() {
       </header>
 
       <main className="container max-w-5xl py-8 space-y-8">
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          <div className="rounded-lg bg-stat-bg p-4 flex items-center gap-3">
-            <Package className="h-5 w-5 text-stat-foreground" />
-            <div>
-              <p className="text-2xl font-bold text-stat-foreground">{ritiri.length}</p>
-              <p className="text-xs text-muted-foreground">Ritiri totali</p>
-            </div>
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 max-w-xs">
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <Select value={meseSelezionato} onValueChange={setMeseSelezionato}>
+              <SelectTrigger>
+                <SelectValue placeholder="Seleziona mese" />
+              </SelectTrigger>
+              <SelectContent>
+                {mesiDisponibili.map((m) => (
+                  <SelectItem key={m} value={m}>
+                    {formatMese(m)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-          <div className="rounded-lg bg-stat-bg p-4 flex items-center gap-3">
-            <Euro className="h-5 w-5 text-stat-foreground" />
-            <div>
-              <p className="text-2xl font-bold text-stat-foreground">€ {totale.toFixed(2)}</p>
-              <p className="text-xs text-muted-foreground">Totale speso</p>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            <div className="rounded-lg bg-stat-bg p-4 flex items-center gap-3">
+              <Package className="h-5 w-5 text-stat-foreground" />
+              <div>
+                <p className="text-2xl font-bold text-stat-foreground">{ritiriDelMese.length}</p>
+                <p className="text-xs text-muted-foreground">Ritiri del mese</p>
+              </div>
+            </div>
+            <div className="rounded-lg bg-stat-bg p-4 flex items-center gap-3">
+              <Euro className="h-5 w-5 text-stat-foreground" />
+              <div>
+                <p className="text-2xl font-bold text-stat-foreground">€ {totaleMese.toFixed(2)}</p>
+                <p className="text-xs text-muted-foreground">Totale del mese</p>
+              </div>
             </div>
           </div>
         </div>
