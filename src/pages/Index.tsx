@@ -105,11 +105,11 @@ export default function Index() {
       </header>
 
       <main className="container max-w-5xl py-8 space-y-8">
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 max-w-xs">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-stretch">
+          <div className="rounded-lg bg-stat-bg p-4 flex items-center gap-3">
+            <Calendar className="h-5 w-5 text-stat-foreground shrink-0" />
             <Select value={meseSelezionato} onValueChange={setMeseSelezionato}>
-              <SelectTrigger>
+              <SelectTrigger className="border-0 bg-transparent shadow-none focus:ring-0 h-auto p-0 text-stat-foreground font-semibold text-base">
                 <SelectValue placeholder="Seleziona mese" />
               </SelectTrigger>
               <SelectContent>
@@ -121,23 +121,21 @@ export default function Index() {
               </SelectContent>
             </Select>
           </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            <div className="rounded-lg bg-stat-bg p-4 flex items-center gap-3">
-              <Package className="h-5 w-5 text-stat-foreground" />
-              <div>
-                <p className="text-2xl font-bold text-stat-foreground">{ritiriDelMese.length}</p>
-                <p className="text-xs text-muted-foreground">Ritiri del mese</p>
-              </div>
-            </div>
-            <div className="rounded-lg bg-stat-bg p-4 flex items-center gap-3">
-              <Euro className="h-5 w-5 text-stat-foreground" />
-              <div>
-                <p className="text-2xl font-bold text-stat-foreground">€ {totaleMese.toFixed(2)}</p>
-                <p className="text-xs text-muted-foreground">Totale del mese</p>
-              </div>
+          <div className="rounded-lg bg-stat-bg p-4 flex items-center gap-3">
+            <Package className="h-5 w-5 text-stat-foreground" />
+            <div>
+              <p className="text-2xl font-bold text-stat-foreground">{ritiriDelMese.length}</p>
+              <p className="text-xs text-muted-foreground">Ritiri del mese</p>
             </div>
           </div>
+          <div className="rounded-lg bg-stat-bg p-4 flex items-center gap-3">
+            <Euro className="h-5 w-5 text-stat-foreground" />
+            <div>
+              <p className="text-2xl font-bold text-stat-foreground">€ {totaleMese.toFixed(2)}</p>
+              <p className="text-xs text-muted-foreground">Totale del mese</p>
+            </div>
+          </div>
+        </div>
         </div>
 
         <div ref={formRef} className="rounded-xl bg-card p-6 shadow-sm border">
