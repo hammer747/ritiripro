@@ -12,6 +12,8 @@ export interface Ritiro {
   documentoFronteNome?: string;
   documentoRetroBase64?: string;
   documentoRetroNome?: string;
+  ricevutaAcquistoBase64?: string;
+  ricevutaAcquistoNome?: string;
   tipoArticolo: TipoArticolo;
   marcaModello?: string;
   serialeImei?: string;

@@ -33,6 +33,8 @@ const emptyForm = {
   documentoFronteNome: "",
   documentoRetroBase64: "",
   documentoRetroNome: "",
+  ricevutaAcquistoBase64: "",
+  ricevutaAcquistoNome: "",
   tipoArticolo: "",
   marcaModello: "",
   serialeImei: "",
@@ -51,6 +53,7 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
   const [form, setForm] = useState(emptyForm);
   const fileFronteRef = useRef<HTMLInputElement>(null);
   const fileRetroRef = useRef<HTMLInputElement>(null);
+  const fileRicevutaRef = useRef<HTMLInputElement>(null);
 
   const isEditing = !!editingRitiro;
 
@@ -67,6 +70,8 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
         documentoFronteNome: editingRitiro.documentoFronteNome || "",
         documentoRetroBase64: editingRitiro.documentoRetroBase64 || "",
         documentoRetroNome: editingRitiro.documentoRetroNome || "",
+        ricevutaAcquistoBase64: editingRitiro.ricevutaAcquistoBase64 || "",
+        ricevutaAcquistoNome: editingRitiro.ricevutaAcquistoNome || "",
         tipoArticolo: editingRitiro.tipoArticolo || "",
         marcaModello: editingRitiro.marcaModello || "",
         serialeImei: editingRitiro.serialeImei || "",
@@ -122,6 +127,35 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
     if (ref.current) ref.current.value = "";
   };
 
+  const handleRicevutaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const isImage = file.type.startsWith("image/");
+    const isPdf = file.type === "application/pdf";
+    if (!isImage && !isPdf) {
+      toast.error("Sono accettati solo file fotografici o PDF");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Il file è troppo grande (max 5MB)");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setForm((f) => ({
+        ...f,
+        ricevutaAcquistoBase64: reader.result as string,
+        ricevutaAcquistoNome: file.name,
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeRicevuta = () => {
+    setForm((f) => ({ ...f, ricevutaAcquistoBase64: "", ricevutaAcquistoNome: "" }));
+    if (fileRicevutaRef.current) fileRicevutaRef.current.value = "";
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (
@@ -148,6 +182,8 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
       documentoFronteNome: form.documentoFronteNome || undefined,
       documentoRetroBase64: form.documentoRetroBase64 || undefined,
       documentoRetroNome: form.documentoRetroNome || undefined,
+      ricevutaAcquistoBase64: form.ricevutaAcquistoBase64 || undefined,
+      ricevutaAcquistoNome: form.ricevutaAcquistoNome || undefined,
       tipoArticolo: form.tipoArticolo as Ritiro["tipoArticolo"],
       marcaModello: form.marcaModello.trim() || undefined,
       serialeImei: form.serialeImei.trim() || undefined,
@@ -174,6 +210,7 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
     setForm(emptyForm);
     if (fileFronteRef.current) fileFronteRef.current.value = "";
     if (fileRetroRef.current) fileRetroRef.current.value = "";
+    if (fileRicevutaRef.current) fileRicevutaRef.current.value = "";
     onSaved(ritiro);
   };
 
@@ -181,6 +218,7 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
     setForm(emptyForm);
     if (fileFronteRef.current) fileFronteRef.current.value = "";
     if (fileRetroRef.current) fileRetroRef.current.value = "";
+    if (fileRicevutaRef.current) fileRicevutaRef.current.value = "";
     onCancelEdit?.();
   };
 
@@ -377,6 +415,34 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
         <div className="space-y-1.5">
           <Label htmlFor="note">Note</Label>
           <Input id="note" value={form.note} onChange={(e) => set("note", e.target.value)} placeholder="Eventuali note..." />
+        </div>
+
+        <div className="space-y-2">
+          <Label>Ricevuta di Acquisto (foto o PDF, max 5MB)</Label>
+          {form.ricevutaAcquistoBase64 ? (
+            <div className="rounded-md border bg-muted/50 p-2 space-y-2">
+              {form.ricevutaAcquistoBase64.startsWith("data:image") ? (
+                <img src={form.ricevutaAcquistoBase64} alt="Ricevuta acquisto" className="max-h-40 rounded-md object-contain border w-full" />
+              ) : (
+                <div className="flex items-center justify-center gap-2 py-4 text-muted-foreground">
+                  <FileText className="h-8 w-8" />
+                  <span className="text-sm">Documento PDF</span>
+                </div>
+              )}
+              <div className="flex items-center gap-1">
+                <span className="text-xs truncate flex-1">{form.ricevutaAcquistoNome}</span>
+                <a href={form.ricevutaAcquistoBase64} download={form.ricevutaAcquistoNome || "ricevuta"} className="text-primary hover:underline"><Download className="h-3.5 w-3.5" /></a>
+                <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={removeRicevuta}><X className="h-3.5 w-3.5" /></Button>
+              </div>
+            </div>
+          ) : (
+            <div>
+              <input ref={fileRicevutaRef} type="file" accept="image/png,image/jpeg,image/jpg,image/webp,image/heic,application/pdf" onChange={handleRicevutaChange} className="hidden" />
+              <Button type="button" variant="outline" size="sm" onClick={() => fileRicevutaRef.current?.click()}>
+                <Upload className="h-4 w-4 mr-1" /> Carica ricevuta
+              </Button>
+            </div>
+          )}
         </div>
       </fieldset>
 
