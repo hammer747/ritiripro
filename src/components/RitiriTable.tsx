@@ -90,9 +90,9 @@ export default function RitiriTable({ ritiri, onChanged, onEdit }: Props) {
                     <Lock className="h-3.5 w-3.5 text-muted-foreground" />
                   )}
                 </div>
-                {r.descrizione && (
-                  <div className="text-xs text-muted-foreground max-w-[200px] truncate">
-                    {r.descrizione}
+                {r.marcaModello && (
+                  <div className="text-xs text-muted-foreground">
+                    {r.marcaModello}
                   </div>
                 )}
               </TableCell>
