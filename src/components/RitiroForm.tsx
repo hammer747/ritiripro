@@ -127,6 +127,35 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
     if (ref.current) ref.current.value = "";
   };
 
+  const handleRicevutaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const isImage = file.type.startsWith("image/");
+    const isPdf = file.type === "application/pdf";
+    if (!isImage && !isPdf) {
+      toast.error("Sono accettati solo file fotografici o PDF");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Il file è troppo grande (max 5MB)");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setForm((f) => ({
+        ...f,
+        ricevutaAcquistoBase64: reader.result as string,
+        ricevutaAcquistoNome: file.name,
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeRicevuta = () => {
+    setForm((f) => ({ ...f, ricevutaAcquistoBase64: "", ricevutaAcquistoNome: "" }));
+    if (fileRicevutaRef.current) fileRicevutaRef.current.value = "";
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (
