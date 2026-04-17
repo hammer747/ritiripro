@@ -210,6 +210,7 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
     setForm(emptyForm);
     if (fileFronteRef.current) fileFronteRef.current.value = "";
     if (fileRetroRef.current) fileRetroRef.current.value = "";
+    if (fileRicevutaRef.current) fileRicevutaRef.current.value = "";
     onSaved(ritiro);
   };
 
