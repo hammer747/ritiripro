@@ -33,6 +33,8 @@ const emptyForm = {
   documentoFronteNome: "",
   documentoRetroBase64: "",
   documentoRetroNome: "",
+  ricevutaAcquistoBase64: "",
+  ricevutaAcquistoNome: "",
   tipoArticolo: "",
   marcaModello: "",
   serialeImei: "",
@@ -51,6 +53,7 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
   const [form, setForm] = useState(emptyForm);
   const fileFronteRef = useRef<HTMLInputElement>(null);
   const fileRetroRef = useRef<HTMLInputElement>(null);
+  const fileRicevutaRef = useRef<HTMLInputElement>(null);
 
   const isEditing = !!editingRitiro;
 
@@ -67,6 +70,8 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
         documentoFronteNome: editingRitiro.documentoFronteNome || "",
         documentoRetroBase64: editingRitiro.documentoRetroBase64 || "",
         documentoRetroNome: editingRitiro.documentoRetroNome || "",
+        ricevutaAcquistoBase64: editingRitiro.ricevutaAcquistoBase64 || "",
+        ricevutaAcquistoNome: editingRitiro.ricevutaAcquistoNome || "",
         tipoArticolo: editingRitiro.tipoArticolo || "",
         marcaModello: editingRitiro.marcaModello || "",
         serialeImei: editingRitiro.serialeImei || "",
@@ -148,6 +153,8 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
       documentoFronteNome: form.documentoFronteNome || undefined,
       documentoRetroBase64: form.documentoRetroBase64 || undefined,
       documentoRetroNome: form.documentoRetroNome || undefined,
+      ricevutaAcquistoBase64: form.ricevutaAcquistoBase64 || undefined,
+      ricevutaAcquistoNome: form.ricevutaAcquistoNome || undefined,
       tipoArticolo: form.tipoArticolo as Ritiro["tipoArticolo"],
       marcaModello: form.marcaModello.trim() || undefined,
       serialeImei: form.serialeImei.trim() || undefined,
