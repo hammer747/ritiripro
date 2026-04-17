@@ -151,7 +151,7 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
     if (ref.current) ref.current.value = "";
   };
 
-  const handleRicevutaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleRicevutaChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const isImage = file.type.startsWith("image/");
@@ -162,6 +162,15 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
     }
     if (file.size > 5 * 1024 * 1024) {
       toast.error("Il file è troppo grande (max 5MB)");
+      return;
+    }
+    if (isImage) {
+      try {
+        const compressed = await compressImage(file);
+        setForm((f) => ({ ...f, ricevutaAcquistoBase64: compressed, ricevutaAcquistoNome: file.name }));
+      } catch {
+        toast.error("Errore durante l'elaborazione dell'immagine");
+      }
       return;
     }
     const reader = new FileReader();
