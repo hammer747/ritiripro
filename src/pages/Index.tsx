@@ -17,9 +17,12 @@ export default function Index() {
   const reload = useCallback(() => setRitiri(getRitiri()), []);
 
   const filtered = useMemo(() => {
-    if (!search.trim()) return ritiri;
+    const sorted = [...ritiri].sort(
+      (a, b) => new Date(b.dataAcquisto).getTime() - new Date(a.dataAcquisto).getTime()
+    );
+    if (!search.trim()) return sorted.slice(0, 5);
     const q = search.toLowerCase();
-    return ritiri.filter(
+    return sorted.filter(
       (r) =>
         r.nomeCliente.toLowerCase().includes(q) ||
         r.cognomeCliente.toLowerCase().includes(q) ||
