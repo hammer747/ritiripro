@@ -106,6 +106,14 @@ export default function EtichettaLabel({ ritiro, open, onClose }: Props) {
                 {ritiro.articolo}
               </span>
             </div>
+            {ritiro.marcaModello && (
+              <div className="row flex justify-between text-sm">
+                <span className="key text-xs text-gray-500">Marca/Modello:</span>
+                <span className="val font-semibold text-right max-w-[140px] truncate">
+                  {ritiro.marcaModello}
+                </span>
+              </div>
+            )}
             <div className="barcode flex justify-center mt-1">
               <svg ref={barcodeRef} />
             </div>
