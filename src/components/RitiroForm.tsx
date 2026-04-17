@@ -416,6 +416,34 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
           <Label htmlFor="note">Note</Label>
           <Input id="note" value={form.note} onChange={(e) => set("note", e.target.value)} placeholder="Eventuali note..." />
         </div>
+
+        <div className="space-y-2">
+          <Label>Ricevuta di Acquisto (foto o PDF, max 5MB)</Label>
+          {form.ricevutaAcquistoBase64 ? (
+            <div className="rounded-md border bg-muted/50 p-2 space-y-2">
+              {form.ricevutaAcquistoBase64.startsWith("data:image") ? (
+                <img src={form.ricevutaAcquistoBase64} alt="Ricevuta acquisto" className="max-h-40 rounded-md object-contain border w-full" />
+              ) : (
+                <div className="flex items-center justify-center gap-2 py-4 text-muted-foreground">
+                  <FileText className="h-8 w-8" />
+                  <span className="text-sm">Documento PDF</span>
+                </div>
+              )}
+              <div className="flex items-center gap-1">
+                <span className="text-xs truncate flex-1">{form.ricevutaAcquistoNome}</span>
+                <a href={form.ricevutaAcquistoBase64} download={form.ricevutaAcquistoNome || "ricevuta"} className="text-primary hover:underline"><Download className="h-3.5 w-3.5" /></a>
+                <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={removeRicevuta}><X className="h-3.5 w-3.5" /></Button>
+              </div>
+            </div>
+          ) : (
+            <div>
+              <input ref={fileRicevutaRef} type="file" accept="image/png,image/jpeg,image/jpg,image/webp,image/heic,application/pdf" onChange={handleRicevutaChange} className="hidden" />
+              <Button type="button" variant="outline" size="sm" onClick={() => fileRicevutaRef.current?.click()}>
+                <Upload className="h-4 w-4 mr-1" /> Carica ricevuta
+              </Button>
+            </div>
+          )}
+        </div>
       </fieldset>
 
       <div className="flex gap-3">
