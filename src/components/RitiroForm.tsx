@@ -231,13 +231,18 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
       note: form.note.trim(),
     };
 
-    if (isEditing) {
-      updateRitiro(ritiro);
-      toast.success("Ritiro aggiornato con successo!");
-      onCancelEdit?.();
-    } else {
-      saveRitiro(ritiro);
-      toast.success("Ritiro registrato con successo!");
+    try {
+      if (isEditing) {
+        updateRitiro(ritiro);
+        toast.success("Ritiro aggiornato con successo!");
+        onCancelEdit?.();
+      } else {
+        saveRitiro(ritiro);
+        toast.success("Ritiro registrato con successo!");
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Errore durante il salvataggio");
+      return;
     }
 
     setForm(emptyForm);
