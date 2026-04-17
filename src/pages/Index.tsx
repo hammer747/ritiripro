@@ -136,7 +136,6 @@ export default function Index() {
             </div>
           </div>
         </div>
-        </div>
 
         <div ref={formRef} className="rounded-xl bg-card p-6 shadow-sm border">
           <RitiroForm
