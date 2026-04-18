@@ -12,7 +12,9 @@ import { Ritiro } from "@/lib/types";
 import RitiroForm from "@/components/RitiroForm";
 import RitiriTable from "@/components/RitiriTable";
 import EtichettaLabel from "@/components/EtichettaLabel";
-import { Search, Smartphone, Package, Euro, Calendar } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Search, Smartphone, Package, Euro, Calendar, List } from "lucide-react";
 
 const MESI = [
   "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
@@ -91,16 +93,23 @@ export default function Index() {
   return (
     <div className="min-h-screen">
       <header className="bg-header-bg text-header-foreground">
-        <div className="container max-w-5xl py-6 flex items-center gap-3">
-          <Smartphone className="h-8 w-8" />
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">
-              Registro Ritiri Usato
-            </h1>
-            <p className="text-sm opacity-80">
-              Gestione acquisti articoli elettronici usati
-            </p>
+        <div className="container max-w-5xl py-6 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <Smartphone className="h-8 w-8" />
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">
+                Registro Ritiri Usato
+              </h1>
+              <p className="text-sm opacity-80 hidden sm:block">
+                Gestione acquisti articoli elettronici usati
+              </p>
+            </div>
           </div>
+          <Link to="/storico">
+            <Button variant="secondary" size="sm">
+              <List className="h-4 w-4 mr-1" /> Storico
+            </Button>
+          </Link>
         </div>
       </header>
 
