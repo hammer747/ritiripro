@@ -406,7 +406,7 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="data">Data Acquisto *</Label>
-            <Input id="data" type="date" value={form.dataAcquisto} onChange={(e) => set("dataAcquisto", e.target.value)} />
+            <Input id="data" type="date" value={form.dataAcquisto} onChange={(e) => set("dataAcquisto", e.target.value)} className="w-full" />
           </div>
         </div>
         <div className="flex items-center gap-2 pt-2">
