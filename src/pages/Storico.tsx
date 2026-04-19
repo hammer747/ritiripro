@@ -1,5 +1,5 @@
-import { useState, useMemo, useCallback } from "react";
-import { Link } from "react-router-dom";
+import { useState, useMemo, useCallback, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { getRitiri } from "@/lib/storage";
 import { Ritiro } from "@/lib/types";
 import RitiriTable from "@/components/RitiriTable";
-import { Search, Smartphone, ArrowLeft, Package, Euro } from "lucide-react";
+import { Search, ArrowLeft, Package, Euro } from "lucide-react";
 
 const MESI = [
   "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
@@ -20,11 +20,16 @@ const MESI = [
 ];
 
 export default function Storico() {
-  const [ritiri, setRitiri] = useState<Ritiro[]>(getRitiri);
+  const navigate = useNavigate();
+  const [ritiri, setRitiri] = useState<Ritiro[]>([]);
   const [search, setSearch] = useState("");
   const [meseFiltro, setMeseFiltro] = useState<string>("tutti");
 
-  const reload = useCallback(() => setRitiri(getRitiri()), []);
+  const reload = useCallback(() => {
+    getRitiri().then(setRitiri).catch(() => setRitiri([]));
+  }, []);
+
+  useEffect(() => { reload(); }, [reload]);
 
   const mesiDisponibili = useMemo(() => {
     const set = new Set<string>();
@@ -76,10 +81,10 @@ export default function Storico() {
       <header className="bg-header-bg text-header-foreground">
         <div className="container max-w-6xl py-6 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <Smartphone className="h-8 w-8" />
+            <Link to="/"><img src="/logo.png" alt="RitiriPro" className="h-10 w-auto object-contain cursor-pointer" /></Link>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">Storico Ritiri</h1>
-              <p className="text-sm opacity-80">Tutti i ritiri registrati</p>
+              <h1 className="text-2xl font-bold tracking-tight">RitiriPro</h1>
+              <p className="text-sm opacity-80">Storico ritiri registrati</p>
             </div>
           </div>
           <Link to="/">
@@ -140,7 +145,7 @@ export default function Storico() {
           </Select>
         </div>
 
-        <RitiriTable ritiri={filtered} onChanged={reload} onEdit={() => { /* edit only on Home */ }} />
+        <RitiriTable ritiri={filtered} onChanged={reload} onEdit={(r) => navigate("/", { state: { editRitiro: r } })} />
       </main>
     </div>
   );

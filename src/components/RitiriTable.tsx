@@ -26,11 +26,15 @@ interface Props {
 }
 
 export default function RitiriTable({ ritiri, onChanged, onEdit }: Props) {
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (!confirm("Eliminare questo ritiro?")) return;
-    deleteRitiro(id);
-    toast.success("Ritiro eliminato");
-    onChanged();
+    try {
+      await deleteRitiro(id);
+      toast.success("Ritiro eliminato");
+      onChanged();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Errore durante eliminazione");
+    }
   };
 
   if (ritiri.length === 0) {

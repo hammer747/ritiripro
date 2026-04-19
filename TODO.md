@@ -1,0 +1,23 @@
+- [x] Integrar login dialog en `src/pages/Index.tsx`
+- [x] Corregir persistencia de usuarios de registro para soportar múltiples cuentas
+- [x] Hacer que "Esci" recargue la página automáticamente
+- [x] Mejorar UI de perfil para hacer explícito el cambio de password
+- [x] Implementar flujo profesional de cambio password (actual + nueva + confirmación)
+- [x] Implementar backend profesional para ritiri con MariaDB (CRUD + validaciones)
+- [x] Implementar upload de adjuntos en filesystem (`server/uploads`) y guardar metadatos/path en DB
+- [x] Reemplazar almacenamiento localStorage en frontend por API HTTP
+- [x] Conectar `Registra Ritiro` con endpoint backend usando FormData
+- [x] Corregir submit/delete async y recarga asíncrona en Index/Form/Table
+- [x] Corregir errores lint bloqueantes (tipado storage, regex upload, directives eslint)
+
+- [x] Añadir ownership por usuario (`owner_email`) en backend
+- [x] Filtrar ritiri por usuario autenticado (`x-user-email`)
+- [x] Restringir GET by id / PUT / DELETE al owner del ritiro
+- [x] En frontend, enviar `x-user-email` en todas las requests API
+- [x] No mostrar ni cargar ritiri si no hay login
+- [x] Verificar flujo login/logout con visibilidad por usuario
+- [x] Testing final: build backend + curl CRUD + verificación MariaDB/filesystem + UI E2E
+- [ ] Robustecer lectura usuario en `src/lib/storage.ts` para localStorage legacy/corrupto
+- [ ] Alinear validación de `currentUser` en `src/pages/Index.tsx`
+- [ ] Añadir limpieza defensiva de registros legacy en `src/components/ui/login-dialog.tsx`
+- [ ] Testing UI: login + registra ritiro con localStorage limpio y legacy

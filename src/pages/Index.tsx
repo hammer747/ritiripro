@@ -1,4 +1,5 @@
-import { useState, useMemo, useCallback, useRef } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -14,7 +15,9 @@ import RitiriTable from "@/components/RitiriTable";
 import EtichettaLabel from "@/components/EtichettaLabel";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Search, Smartphone, Package, Euro, Calendar, List } from "lucide-react";
+import { Search, Package, Euro, Calendar, List } from "lucide-react";
+import { LoginDialog, RegisteredUser } from "@/components/ui/login-dialog";
+import LoginPage from "@/components/LoginPage";
 
 const MESI = [
   "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
@@ -22,17 +25,66 @@ const MESI = [
 ];
 
 export default function Index() {
-  const [ritiri, setRitiri] = useState<Ritiro[]>(getRitiri);
+  const [ritiri, setRitiri] = useState<Ritiro[]>([]);
+  const [currentUser, setCurrentUser] = useState<RegisteredUser | null>(() => {
+    const raw = localStorage.getItem("ritiri_facili_user");
+    if (!raw) return null;
+
+    try {
+      const parsed = JSON.parse(raw) as Partial<RegisteredUser> | null;
+      const email = typeof parsed?.email === "string" ? parsed.email.trim().toLowerCase() : "";
+
+      if (!email) {
+        localStorage.removeItem("ritiri_facili_user");
+        return null;
+      }
+
+      return {
+        nome: typeof parsed?.nome === "string" ? parsed.nome : "",
+        cognome: typeof parsed?.cognome === "string" ? parsed.cognome : "",
+        cel: typeof parsed?.cel === "string" ? parsed.cel : undefined,
+        email,
+        password: typeof parsed?.password === "string" ? parsed.password : "",
+      };
+    } catch {
+      localStorage.removeItem("ritiri_facili_user");
+      return null;
+    }
+  });
   const [search, setSearch] = useState("");
   const [editingRitiro, setEditingRitiro] = useState<Ritiro | null>(null);
   const [labelRitiro, setLabelRitiro] = useState<Ritiro | null>(null);
-  const now = new Date();
+  const now = useMemo(() => new Date(), []);
   const [meseSelezionato, setMeseSelezionato] = useState<string>(
     `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`
   );
+  const location = useLocation();
   const formRef = useRef<HTMLDivElement>(null);
 
-  const reload = useCallback(() => setRitiri(getRitiri()), []);
+  const reload = useCallback(async () => {
+    const data = await getRitiri();
+    setRitiri(data);
+  }, []);
+
+  useEffect(() => {
+    if (!currentUser?.email) {
+      setRitiri([]);
+      return;
+    }
+
+    reload().catch(() => {
+      setRitiri([]);
+    });
+  }, [reload, currentUser?.email]);
+
+  useEffect(() => {
+    const state = location.state as { editRitiro?: Ritiro } | null;
+    if (state?.editRitiro) {
+      setEditingRitiro(state.editRitiro);
+      setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+      window.history.replaceState({}, "");
+    }
+  }, [location.state]);
 
   // Mesi disponibili in base ai ritiri esistenti (più mese corrente)
   const mesiDisponibili = useMemo(() => {
@@ -78,8 +130,8 @@ export default function Index() {
     formRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const handleSaved = (ritiro: Ritiro) => {
-    reload();
+  const handleSaved = async (ritiro: Ritiro) => {
+    await reload();
     if (!editingRitiro) {
       setLabelRitiro(ritiro);
     }
@@ -90,26 +142,43 @@ export default function Index() {
     return `${MESI[mese - 1]} ${anno}`;
   };
 
+  if (!currentUser) {
+    return <LoginPage onLogin={(user) => { setCurrentUser(user); }} />;
+  }
+
   return (
     <div className="min-h-screen">
-      <header className="bg-header-bg text-header-foreground">
+      <header className="bg-header-bg text-header-foreground border-b shadow-sm">
         <div className="container max-w-5xl py-6 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <Smartphone className="h-8 w-8" />
+            <Link to="/"><img src="/logo.png" alt="Torino Hi-Tech" className="h-12 w-auto object-contain cursor-pointer" /></Link>
             <div>
               <h1 className="text-2xl font-bold tracking-tight">
-                Registro Ritiri Usato
+                RitiriPro <span className="text-sm font-normal opacity-80">di Hammer Guerrero</span>
               </h1>
               <p className="text-sm opacity-80 hidden sm:block">
                 Gestione acquisti articoli elettronici usati
               </p>
             </div>
           </div>
-          <Link to="/storico">
-            <Button variant="secondary" size="sm">
-              <List className="h-4 w-4 mr-1" /> Storico
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            <LoginDialog
+              currentUser={currentUser}
+              onAuthSuccess={(user) => setCurrentUser(user)}
+              onLogout={() => {
+                localStorage.removeItem("ritiri_facili_user");
+                setCurrentUser(null);
+                setRitiri([]);
+                setEditingRitiro(null);
+                setLabelRitiro(null);
+              }}
+            />
+            <Link to="/storico">
+              <Button variant="secondary" size="sm">
+                <List className="h-4 w-4 mr-1" /> Storico
+              </Button>
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -164,7 +233,13 @@ export default function Index() {
               className="pl-9"
             />
           </div>
-          <RitiriTable ritiri={filtered} onChanged={reload} onEdit={handleEdit} />
+          <RitiriTable
+            ritiri={filtered}
+            onChanged={() => {
+              reload().catch(() => void 0);
+            }}
+            onEdit={handleEdit}
+          />
         </div>
       </main>
 

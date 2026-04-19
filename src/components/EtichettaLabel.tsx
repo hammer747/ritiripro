@@ -60,7 +60,7 @@ export default function EtichettaLabel({ ritiro, open, onClose }: Props) {
         </head>
         <body>
           ${printAreaRef.current.innerHTML}
-          <script>window.onload=function(){window.print();window.close();}<\/script>
+          <script>window.onload=function(){window.print();window.close();}</script>
         </body>
       </html>
     `);

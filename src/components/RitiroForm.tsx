@@ -49,6 +49,29 @@ const emptyForm = {
   note: "",
 };
 
+async function downloadFile(url: string, filename: string) {
+  try {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = blobUrl;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(blobUrl);
+  } catch {
+    window.open(url, "_blank");
+  }
+}
+
+function generateUUID(): string {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
 export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Props) {
   const [form, setForm] = useState(emptyForm);
   const fileFronteRef = useRef<HTMLInputElement>(null);
@@ -189,8 +212,10 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
     if (fileRicevutaRef.current) fileRicevutaRef.current.value = "";
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("[RitiroForm] handleSubmit triggered", { form });
+
     if (
       !form.nomeCliente.trim() ||
       !form.cognomeCliente.trim() ||
@@ -199,12 +224,20 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
       !form.tipoDocumento ||
       !form.numeroDocumento.trim()
     ) {
+      console.warn("[RitiroForm] validation failed", {
+        nomeCliente: form.nomeCliente,
+        cognomeCliente: form.cognomeCliente,
+        tipoArticolo: form.tipoArticolo,
+        prezzo: form.prezzo,
+        tipoDocumento: form.tipoDocumento,
+        numeroDocumento: form.numeroDocumento,
+      });
       toast.error("Compila tutti i campi obbligatori");
       return;
     }
 
     const ritiro: Ritiro = {
-      id: isEditing ? editingRitiro!.id : crypto.randomUUID(),
+      id: isEditing ? editingRitiro!.id : generateUUID(),
       nomeCliente: form.nomeCliente.trim(),
       cognomeCliente: form.cognomeCliente.trim(),
       codiceFiscale: form.codiceFiscale.trim().toUpperCase(),
@@ -232,24 +265,28 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
     };
 
     try {
+      console.log("[RitiroForm] calling API...", { isEditing });
+      let saved: Ritiro;
       if (isEditing) {
-        updateRitiro(ritiro);
+        saved = await updateRitiro(ritiro);
+        console.log("[RitiroForm] updateRitiro succeeded", saved);
         toast.success("Ritiro aggiornato con successo!");
         onCancelEdit?.();
       } else {
-        saveRitiro(ritiro);
+        saved = await saveRitiro(ritiro);
+        console.log("[RitiroForm] saveRitiro succeeded", saved);
         toast.success("Ritiro registrato con successo!");
       }
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Errore durante il salvataggio");
-      return;
-    }
 
-    setForm(emptyForm);
-    if (fileFronteRef.current) fileFronteRef.current.value = "";
-    if (fileRetroRef.current) fileRetroRef.current.value = "";
-    if (fileRicevutaRef.current) fileRicevutaRef.current.value = "";
-    onSaved(ritiro);
+      setForm(emptyForm);
+      if (fileFronteRef.current) fileFronteRef.current.value = "";
+      if (fileRetroRef.current) fileRetroRef.current.value = "";
+      if (fileRicevutaRef.current) fileRicevutaRef.current.value = "";
+      await onSaved(saved);
+    } catch (err) {
+      console.error("[RitiroForm] error during save:", err);
+      toast.error(err instanceof Error ? err.message : "Errore durante il salvataggio");
+    }
   };
 
   const handleCancel = () => {
@@ -322,12 +359,12 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
               <p className="text-xs font-medium text-muted-foreground">Fronte</p>
               {form.documentoFronteBase64 ? (
                 <div className="rounded-md border bg-muted/50 p-2 space-y-2">
-                  {form.documentoFronteBase64.startsWith("data:image") && (
+                  {(form.documentoFronteBase64.startsWith("data:image") || form.documentoFronteBase64.startsWith("http")) && (
                     <img src={form.documentoFronteBase64} alt="Fronte documento" className="max-h-32 rounded-md object-contain border w-full" />
                   )}
                   <div className="flex items-center gap-1">
                     <span className="text-xs truncate flex-1">{form.documentoFronteNome}</span>
-                    <a href={form.documentoFronteBase64} download={form.documentoFronteNome || "fronte"} className="text-primary hover:underline"><Download className="h-3.5 w-3.5" /></a>
+                    <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => downloadFile(form.documentoFronteBase64, form.documentoFronteNome || "fronte")}><Download className="h-3.5 w-3.5" /></Button>
                     <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeFile("fronte")}><X className="h-3.5 w-3.5" /></Button>
                   </div>
                 </div>
@@ -345,12 +382,12 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
               <p className="text-xs font-medium text-muted-foreground">Retro</p>
               {form.documentoRetroBase64 ? (
                 <div className="rounded-md border bg-muted/50 p-2 space-y-2">
-                  {form.documentoRetroBase64.startsWith("data:image") && (
+                  {(form.documentoRetroBase64.startsWith("data:image") || form.documentoRetroBase64.startsWith("http")) && (
                     <img src={form.documentoRetroBase64} alt="Retro documento" className="max-h-32 rounded-md object-contain border w-full" />
                   )}
                   <div className="flex items-center gap-1">
                     <span className="text-xs truncate flex-1">{form.documentoRetroNome}</span>
-                    <a href={form.documentoRetroBase64} download={form.documentoRetroNome || "retro"} className="text-primary hover:underline"><Download className="h-3.5 w-3.5" /></a>
+                    <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => downloadFile(form.documentoRetroBase64, form.documentoRetroNome || "retro")}><Download className="h-3.5 w-3.5" /></Button>
                     <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeFile("retro")}><X className="h-3.5 w-3.5" /></Button>
                   </div>
                 </div>
@@ -459,7 +496,7 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
           <Label>Ricevuta di Acquisto (foto o PDF, max 5MB)</Label>
           {form.ricevutaAcquistoBase64 ? (
             <div className="rounded-md border bg-muted/50 p-2 space-y-2">
-              {form.ricevutaAcquistoBase64.startsWith("data:image") ? (
+              {(form.ricevutaAcquistoBase64.startsWith("data:image") || form.ricevutaAcquistoBase64.startsWith("http")) ? (
                 <img src={form.ricevutaAcquistoBase64} alt="Ricevuta acquisto" className="max-h-40 rounded-md object-contain border w-full" />
               ) : (
                 <div className="flex items-center justify-center gap-2 py-4 text-muted-foreground">
@@ -469,7 +506,7 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
               )}
               <div className="flex items-center gap-1">
                 <span className="text-xs truncate flex-1">{form.ricevutaAcquistoNome}</span>
-                <a href={form.ricevutaAcquistoBase64} download={form.ricevutaAcquistoNome || "ricevuta"} className="text-primary hover:underline"><Download className="h-3.5 w-3.5" /></a>
+                <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => downloadFile(form.ricevutaAcquistoBase64, form.ricevutaAcquistoNome || "ricevuta")}><Download className="h-3.5 w-3.5" /></Button>
                 <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={removeRicevuta}><X className="h-3.5 w-3.5" /></Button>
               </div>
             </div>
