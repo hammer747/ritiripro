@@ -1,3 +1,4 @@
+import fs from "fs";
 import express, { NextFunction, Request, Response } from "express";
 import cors from "cors";
 import path from "path";
@@ -19,6 +20,14 @@ app.get("/health", (_req, res) => {
 });
 
 app.use("/api/ritiri", ritiriRoutes);
+
+const distPath = path.resolve(__dirname, "../../dist");
+if (fs.existsSync(distPath)) {
+  app.use(express.static(distPath));
+  app.get("*", (_req, res) => {
+    res.sendFile(path.join(distPath, "index.html"));
+  });
+}
 
 app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
   const message = err instanceof Error ? err.message : "Errore interno del server";

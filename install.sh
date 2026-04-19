@@ -10,9 +10,10 @@ log()  { echo -e "${GREEN}[✓]${NC} $1"; }
 warn() { echo -e "${YELLOW}[!]${NC} $1"; }
 error(){ echo -e "${RED}[✗]${NC} $1"; exit 1; }
 
-[ "$EUID" -ne 0 ] && error "Esegui come root: sudo bash install.sh"
+[ "$EUID" -ne 0 ] && error "Esegui come root: sudo bash install.sh [porta]"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+APP_PORT="${1:-8080}"
 
 DB_NAME="ritiri_facili"
 DB_USER="ritiri_user"
@@ -21,10 +22,11 @@ DB_PASSWORD="Jordan4663"
 echo ""
 echo "========================================"
 echo "   RitiriPro — Installazione automatica"
+echo "   Porta: ${APP_PORT}"
 echo "========================================"
 echo ""
 
-# ── Node.js ──────────────────────────────────
+# ── Node.js ───────────────────────────────────
 if ! command -v node &>/dev/null; then
   warn "Node.js non trovato — installazione..."
   curl -fsSL https://deb.nodesource.com/setup_20.x | bash - &>/dev/null
@@ -59,7 +61,7 @@ log "Database '${DB_NAME}' e utente '${DB_USER}' configurati"
 ENV_FILE="${SCRIPT_DIR}/server/.env"
 if [ ! -f "$ENV_FILE" ]; then
   cat > "$ENV_FILE" <<EOF
-PORT=4000
+PORT=${APP_PORT}
 DB_HOST=localhost
 DB_PORT=3306
 DB_USER=${DB_USER}
@@ -67,9 +69,11 @@ DB_PASSWORD=${DB_PASSWORD}
 DB_NAME=${DB_NAME}
 UPLOAD_DIR=uploads
 EOF
-  log "File server/.env creato"
+  log "File server/.env creato (porta ${APP_PORT})"
 else
-  warn "File server/.env già esistente — non modificato"
+  warn "File server/.env già esistente — aggiorno solo la porta..."
+  sed -i "s/^PORT=.*/PORT=${APP_PORT}/" "$ENV_FILE"
+  log "Porta aggiornata a ${APP_PORT} in server/.env"
 fi
 
 # ── Cartella uploads ──────────────────────────
@@ -100,49 +104,11 @@ if ! command -v pm2 &>/dev/null; then
   log "PM2 installato"
 fi
 
-pm2 delete ritiripro-api 2>/dev/null || true
-pm2 start "${SCRIPT_DIR}/server/dist/index.js" --name "ritiripro-api"
+pm2 delete ritiripro 2>/dev/null || true
+pm2 start "${SCRIPT_DIR}/server/dist/index.js" --name "ritiripro"
 pm2 save
 pm2 startup systemd -u root --hp /root 2>/dev/null | tail -1 | bash 2>/dev/null || true
-log "Server avviato con PM2 (ritiripro-api)"
-
-# ── Nginx ─────────────────────────────────────
-if ! command -v nginx &>/dev/null; then
-  warn "Nginx non trovato — installazione..."
-  apt-get install -y nginx &>/dev/null
-  log "Nginx installato"
-fi
-
-NGINX_CONF="/etc/nginx/sites-available/ritiripro"
-cat > "$NGINX_CONF" <<NGINX
-server {
-    listen 80;
-    server_name _;
-
-    root ${SCRIPT_DIR}/dist;
-    index index.html;
-
-    location / {
-        try_files \$uri \$uri/ /index.html;
-    }
-
-    location /api/ {
-        proxy_pass http://localhost:4000;
-        proxy_http_version 1.1;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-    }
-
-    location /uploads/ {
-        proxy_pass http://localhost:4000;
-    }
-}
-NGINX
-
-ln -sf "$NGINX_CONF" /etc/nginx/sites-enabled/ritiripro
-rm -f /etc/nginx/sites-enabled/default
-nginx -t && systemctl enable --now nginx && systemctl reload nginx
-log "Nginx configurato e riavviato"
+log "App avviata con PM2 sulla porta ${APP_PORT}"
 
 # ── Fine ──────────────────────────────────────
 IP=$(hostname -I | awk '{print $1}')
@@ -151,9 +117,11 @@ echo "========================================"
 echo -e "${GREEN}   Installazione completata!${NC}"
 echo "========================================"
 echo ""
-echo "  App:        http://${IP}"
-echo "  API:        http://${IP}:4000"
+echo "  App:      http://${IP}:${APP_PORT}"
 echo ""
-echo "  Log server: pm2 logs ritiripro-api"
-echo "  Riavvio:    pm2 restart ritiripro-api"
+echo "  Nel tuo nginx punta a:"
+echo "  proxy_pass http://127.0.0.1:${APP_PORT};"
+echo ""
+echo "  Log:      pm2 logs ritiripro"
+echo "  Riavvio:  pm2 restart ritiripro"
 echo ""
