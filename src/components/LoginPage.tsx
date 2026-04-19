@@ -121,6 +121,10 @@ export default function LoginPage({ onLogin }: Props) {
             {mode === "login" ? "Crea nuovo account" : "Hai già un account? Accedi"}
           </Button>
         </div>
+
+        <p className="text-center text-sm text-muted-foreground">
+          RitiriPro <span className="opacity-60">di Hammer Guerrero</span>
+        </p>
       </div>
     </div>
   );
