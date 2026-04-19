@@ -22,6 +22,12 @@ export default function EtichettaLabel({ ritiro, open, onClose }: Props) {
   const codiceRitiro = ritiro ? formatCodiceRitiro(ritiro.numeroRitiro, ritiro.dataAcquisto) : "";
   const shortId = codiceRitiro || ritiro?.id.split("-")[0].toUpperCase() || "";
 
+  const MESI_SHORT = ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"];
+  const dataFormattata = ritiro ? (() => {
+    const d = new Date(ritiro.dataAcquisto);
+    return `${String(d.getDate()).padStart(2, "0")} ${MESI_SHORT[d.getMonth()]} ${d.getFullYear()}`;
+  })() : "";
+
   const handlePrint = () => {
     if (!printAreaRef.current) return;
     const printWindow = window.open("", "_blank", "width=400,height=350");
@@ -98,7 +104,7 @@ export default function EtichettaLabel({ ritiro, open, onClose }: Props) {
             )}
 
             <div className="code text-center text-[10px] text-gray-400 tracking-wider">
-              {codiceRitiro || new Date().toLocaleDateString("it-IT", { day: "2-digit", month: "2-digit", year: "numeric" })}
+              {dataFormattata}
             </div>
           </div>
         </div>
