@@ -59,3 +59,83 @@
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
 }
+
+/* ShinyButton */
+@property --shimmer-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes shimmer-slide {
+  to { --shimmer-angle: 360deg; }
+}
+
+@keyframes spin-around {
+  0%  { transform: translateZ(0) rotate(0); }
+  15%, 35% { transform: translateZ(0) rotate(270deg); }
+  51%, 83% { transform: translateZ(0) rotate(540deg); }
+  98%, 100% { transform: translateZ(0) rotate(720deg); }
+}
+
+.shiny-cta {
+  --shiny-cta-bg: hsl(133, 60%, 47%);
+  --shiny-cta-bg-subtle: hsl(133, 60%, 35%);
+  --shiny-cta-fg: #fff;
+  --shiny-cta-highlight: hsl(133, 80%, 80%);
+  --shiny-cta-highlight-subtle: hsl(133, 60%, 65%);
+
+  position: relative;
+  overflow: hidden;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius, 0.75rem);
+  border: none;
+  background: var(--shiny-cta-bg);
+  color: var(--shiny-cta-fg);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  isolation: isolate;
+}
+
+.shiny-cta::before,
+.shiny-cta::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.shiny-cta::before {
+  background: conic-gradient(
+    from calc(var(--shimmer-angle) - 20deg),
+    transparent 0%,
+    var(--shiny-cta-highlight) 10%,
+    transparent 20%
+  );
+  animation: shimmer-slide 3s linear infinite;
+  mask: linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  padding: 2px;
+}
+
+.shiny-cta::after {
+  background: radial-gradient(
+    ellipse at 50% 0%,
+    var(--shiny-cta-highlight-subtle) 0%,
+    transparent 60%
+  );
+  opacity: 0.6;
+}
+
+.shiny-cta:hover {
+  background: var(--shiny-cta-bg-subtle);
+}
+
+.shiny-cta > span {
+  position: relative;
+  z-index: 1;
+}

@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RegisteredUser } from "@/components/ui/login-dialog";
 import { API_BASE_URL } from "@/lib/api";
+import { ShinyButton } from "@/components/ui/shiny-button";
 
 interface Props {
   onLogin: (user: RegisteredUser) => void;
@@ -122,9 +123,7 @@ export default function LoginPage({ onLogin }: Props) {
           </Button>
         </div>
 
-        <p className="text-center text-sm text-muted-foreground">
-          RitiriPro <span className="opacity-60">di Hammer Guerrero</span>
-        </p>
+        <ShinyButton className="w-full">RitiriPro di Hammer Guerrero</ShinyButton>
       </div>
     </div>
   );
