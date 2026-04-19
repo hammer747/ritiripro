@@ -2,6 +2,7 @@ export type TipoArticolo = "smartphone" | "computer" | "console" | "camera" | "a
 
 export interface Ritiro {
   id: string;
+  numeroRitiro?: number;
   nomeCliente: string;
   cognomeCliente: string;
   codiceFiscale: string;

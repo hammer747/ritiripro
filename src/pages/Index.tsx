@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { getRitiri } from "@/lib/storage";
+import { getRitiri, formatCodiceRitiro } from "@/lib/storage";
 import { Ritiro } from "@/lib/types";
 import RitiroForm from "@/components/RitiroForm";
 import RitiriTable from "@/components/RitiriTable";
@@ -121,7 +121,8 @@ export default function Index() {
         r.articolo.toLowerCase().includes(q) ||
         r.codiceFiscale.toLowerCase().includes(q) ||
         r.numeroDocumento.toLowerCase().includes(q) ||
-        r.id.toLowerCase().includes(q)
+        r.id.toLowerCase().includes(q) ||
+        formatCodiceRitiro(r.numeroRitiro, r.dataAcquisto).toLowerCase().includes(q)
     );
   }, [ritiri, search]);
 
@@ -220,6 +221,7 @@ export default function Index() {
             onSaved={handleSaved}
             editingRitiro={editingRitiro}
             onCancelEdit={() => setEditingRitiro(null)}
+            nextNumeroRitiro={Math.max(0, ...ritiri.map((r) => r.numeroRitiro ?? 0)) + 1}
           />
         </div>
 

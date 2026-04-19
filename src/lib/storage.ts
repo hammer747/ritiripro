@@ -2,8 +2,19 @@ import { API_BASE_URL } from "./api";
 import { RegisteredUser } from "@/components/ui/login-dialog";
 import { Ritiro, TipoArticolo } from "./types";
 
+export function formatCodiceRitiro(numeroRitiro: number | undefined, dataAcquisto: string): string {
+  if (!numeroRitiro) return "";
+  const d = new Date(dataAcquisto);
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yy = String(d.getFullYear()).slice(-2);
+  const nn = String(numeroRitiro).padStart(2, "0");
+  return `${dd}${mm}${yy}-${nn}`;
+}
+
 type ApiRitiro = {
   id: string;
+  numeroRitiro?: number;
   nomeCliente: string;
   cognomeCliente: string;
   codiceFiscale: string;
@@ -33,6 +44,7 @@ type ApiRitiro = {
 function mapApiToRitiro(item: ApiRitiro): Ritiro {
   return {
     id: item.id,
+    numeroRitiro: item.numeroRitiro,
     nomeCliente: item.nomeCliente,
     cognomeCliente: item.cognomeCliente,
     codiceFiscale: item.codiceFiscale,

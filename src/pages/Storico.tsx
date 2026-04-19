@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { getRitiri } from "@/lib/storage";
+import { getRitiri, formatCodiceRitiro } from "@/lib/storage";
 import { Ritiro } from "@/lib/types";
 import RitiriTable from "@/components/RitiriTable";
 import { Search, ArrowLeft, Package, Euro } from "lucide-react";
@@ -63,7 +63,8 @@ export default function Storico() {
           (r.marcaModello || "").toLowerCase().includes(q) ||
           r.codiceFiscale.toLowerCase().includes(q) ||
           r.numeroDocumento.toLowerCase().includes(q) ||
-          r.id.toLowerCase().includes(q)
+          r.id.toLowerCase().includes(q) ||
+          formatCodiceRitiro(r.numeroRitiro, r.dataAcquisto).toLowerCase().includes(q)
       );
     }
     return list;

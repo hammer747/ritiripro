@@ -1,9 +1,13 @@
+import fs from "fs";
+import path from "path";
 import { RowDataPacket } from "mysql2";
 import { pool } from "../config/db";
+import { env } from "../config/env";
 import { RitiroRecord, SaveRitiroPayload } from "../types/ritiro";
 
 interface RitiroRow extends RowDataPacket {
   id: string;
+  numero_ritiro: number;
   nome_cliente: string;
   cognome_cliente: string;
   codice_fiscale: string;
@@ -36,6 +40,7 @@ interface RitiroRow extends RowDataPacket {
 function mapRow(row: RitiroRow): RitiroRecord {
   return {
     id: row.id,
+    numeroRitiro: row.numero_ritiro,
     nomeCliente: row.nome_cliente,
     cognomeCliente: row.cognome_cliente,
     codiceFiscale: row.codice_fiscale,
@@ -106,6 +111,11 @@ export async function initRitiriTable(): Promise<void> {
     ADD COLUMN IF NOT EXISTS owner_email VARCHAR(255) NOT NULL DEFAULT 'legacy@local',
     ADD INDEX IF NOT EXISTS idx_ritiri_owner_email (owner_email)
   `);
+
+  await pool.execute(`
+    ALTER TABLE ritiri
+    ADD COLUMN IF NOT EXISTS numero_ritiro INT UNSIGNED NOT NULL DEFAULT 0
+  `);
 }
 
 export async function listRitiri(ownerEmail: string): Promise<RitiroRecord[]> {
@@ -128,15 +138,23 @@ export async function getRitiroById(id: string, ownerEmail: string): Promise<Rit
 }
 
 export async function createRitiro(payload: SaveRitiroPayload, id: string): Promise<void> {
+  interface NextNumRow extends RowDataPacket { next_num: number; }
+  const [numRows] = await pool.query<NextNumRow[]>(
+    "SELECT COALESCE(MAX(numero_ritiro), 0) + 1 AS next_num FROM ritiri WHERE owner_email = ?",
+    [payload.ownerEmail]
+  );
+  const numeroRitiro = numRows[0]?.next_num ?? 1;
+
   await pool.execute(
     `INSERT INTO ritiri (
-      id, nome_cliente, cognome_cliente, codice_fiscale, telefono_cliente, tipo_documento, numero_documento,
+      id, numero_ritiro, nome_cliente, cognome_cliente, codice_fiscale, telefono_cliente, tipo_documento, numero_documento,
       documento_fronte_path, documento_fronte_nome, documento_retro_path, documento_retro_nome,
       ricevuta_acquisto_path, ricevuta_acquisto_nome, tipo_articolo, marca_modello, seriale_imei,
       articolo, descrizione, prezzo, prezzo_vendita, venduto, data_vendita, pin_dispositivo, data_acquisto, note, owner_email
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       id,
+      numeroRitiro,
       payload.nomeCliente,
       payload.cognomeCliente,
       payload.codiceFiscale,
@@ -229,7 +247,20 @@ export async function updateRitiroById(id: string, payload: SaveRitiroPayload): 
 }
 
 export async function deleteRitiroById(id: string, ownerEmail: string): Promise<boolean> {
+  const record = await getRitiroById(id, ownerEmail);
+  if (!record) return false;
+
   const [result] = await pool.execute("DELETE FROM ritiri WHERE id = ? AND owner_email = ?", [id, ownerEmail]);
   const affectedRows = (result as { affectedRows?: number }).affectedRows ?? 0;
-  return affectedRows > 0;
+  if (!affectedRows) return false;
+
+  const uploadRoot = path.resolve(process.cwd(), env.UPLOAD_DIR);
+  const filePaths = [record.documentoFrontePath, record.documentoRetroPath, record.ricevutaAcquistoPath];
+  for (const filePath of filePaths) {
+    if (!filePath) continue;
+    const abs = path.join(uploadRoot, path.basename(filePath));
+    fs.unlink(abs, () => void 0);
+  }
+
+  return true;
 }

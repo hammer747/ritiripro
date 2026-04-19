@@ -1,3 +1,3 @@
-# Welcome to your Lovable project
+# Ritiri Facili
 
 TODO: Document your project here

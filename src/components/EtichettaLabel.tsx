@@ -1,5 +1,6 @@
-import { useRef, useEffect } from "react";
+import { useRef } from "react";
 import { Ritiro } from "@/lib/types";
+import { formatCodiceRitiro } from "@/lib/storage";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -8,7 +9,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Printer } from "lucide-react";
-import JsBarcode from "jsbarcode";
 
 interface Props {
   ritiro: Ritiro | null;
@@ -17,22 +17,10 @@ interface Props {
 }
 
 export default function EtichettaLabel({ ritiro, open, onClose }: Props) {
-  const barcodeRef = useRef<SVGSVGElement>(null);
   const printAreaRef = useRef<HTMLDivElement>(null);
 
-  const shortId = ritiro?.id.split("-")[0].toUpperCase() || "";
-
-  useEffect(() => {
-    if (open && ritiro && barcodeRef.current) {
-      JsBarcode(barcodeRef.current, ritiro.id, {
-        format: "CODE128",
-        width: 1.5,
-        height: 40,
-        displayValue: false,
-        margin: 0,
-      });
-    }
-  }, [open, ritiro]);
+  const codiceRitiro = ritiro ? formatCodiceRitiro(ritiro.numeroRitiro, ritiro.dataAcquisto) : "";
+  const shortId = codiceRitiro || ritiro?.id.split("-")[0].toUpperCase() || "";
 
   const handlePrint = () => {
     if (!printAreaRef.current) return;
@@ -102,17 +90,15 @@ export default function EtichettaLabel({ ritiro, open, onClose }: Props) {
             )}
             {ritiro.marcaModello && (
               <div className="row flex justify-between text-sm">
-                <span className="key text-xs text-gray-500">Marca/Modello:</span>
+                <span className="key text-xs text-gray-500">Dispositivo:</span>
                 <span className="val font-semibold text-right max-w-[140px] truncate">
                   {ritiro.marcaModello}
                 </span>
               </div>
             )}
-            <div className="barcode flex justify-center mt-1">
-              <svg ref={barcodeRef} />
-            </div>
+
             <div className="code text-center text-[10px] text-gray-400 tracking-wider">
-              {ritiro.id}
+              {codiceRitiro || new Date().toLocaleDateString("it-IT", { day: "2-digit", month: "2-digit", year: "numeric" })}
             </div>
           </div>
         </div>

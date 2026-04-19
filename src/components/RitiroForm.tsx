@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Ritiro } from "@/lib/types";
-import { saveRitiro, updateRitiro } from "@/lib/storage";
+import { saveRitiro, updateRitiro, formatCodiceRitiro } from "@/lib/storage";
 import { toast } from "sonner";
 import { UserPlus, Pencil, Upload, X, FileText, Download } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -20,6 +20,7 @@ interface Props {
   onSaved: (ritiro: Ritiro) => void;
   editingRitiro?: Ritiro | null;
   onCancelEdit?: () => void;
+  nextNumeroRitiro?: number;
 }
 
 const emptyForm = {
@@ -72,7 +73,7 @@ function generateUUID(): string {
   });
 }
 
-export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Props) {
+export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextNumeroRitiro }: Props) {
   const [form, setForm] = useState(emptyForm);
   const fileFronteRef = useRef<HTMLInputElement>(null);
   const fileRetroRef = useRef<HTMLInputElement>(null);
@@ -409,6 +410,21 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit }: Pro
         <legend className="px-2 text-sm font-medium text-muted-foreground">
           Articolo Ritirato
         </legend>
+        <div className="space-y-1.5">
+          <Label htmlFor="numeroRitiro">Numero Ritiro</Label>
+          <Input
+            id="numeroRitiro"
+            value={
+              isEditing && editingRitiro?.numeroRitiro
+                ? formatCodiceRitiro(editingRitiro.numeroRitiro, editingRitiro.dataAcquisto)
+                : nextNumeroRitiro
+                ? formatCodiceRitiro(nextNumeroRitiro, form.dataAcquisto)
+                : "Auto-generato"
+            }
+            readOnly
+            className="bg-muted text-muted-foreground cursor-not-allowed"
+          />
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <Label>Tipo Articolo *</Label>

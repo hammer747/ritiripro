@@ -1,5 +1,5 @@
 import { Ritiro } from "@/lib/types";
-import { deleteRitiro } from "@/lib/storage";
+import { deleteRitiro, formatCodiceRitiro } from "@/lib/storage";
 import {
   Table,
   TableBody,
@@ -9,7 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Trash2, Pencil, FileText, Lock } from "lucide-react";
+import { Trash2, Pencil, FileText } from "lucide-react";
 import { toast } from "sonner";
 
 const DOC_LABELS: Record<string, string> = {
@@ -50,6 +50,7 @@ export default function RitiriTable({ ritiri, onChanged, onEdit }: Props) {
       <Table>
         <TableHeader>
           <TableRow className="bg-muted/50">
+            <TableHead>N°</TableHead>
             <TableHead>Data</TableHead>
             <TableHead>Cliente</TableHead>
             <TableHead>Documento</TableHead>
@@ -61,18 +62,16 @@ export default function RitiriTable({ ritiri, onChanged, onEdit }: Props) {
         <TableBody>
           {ritiri.map((r) => (
             <TableRow key={r.id}>
+              <TableCell className="whitespace-nowrap text-sm font-semibold">
+                {formatCodiceRitiro(r.numeroRitiro, r.dataAcquisto)}
+              </TableCell>
               <TableCell className="whitespace-nowrap text-sm">
                 {new Date(r.dataAcquisto).toLocaleDateString("it-IT")}
               </TableCell>
               <TableCell>
-                <div className="font-medium text-sm">
+                <div className="font-bold text-sm">
                   {r.cognomeCliente} {r.nomeCliente}
                 </div>
-                {r.codiceFiscale && (
-                  <div className="text-xs text-muted-foreground">
-                    {r.codiceFiscale}
-                  </div>
-                )}
               </TableCell>
               <TableCell className="text-sm">
                 <div className="flex items-center gap-1">
@@ -88,17 +87,9 @@ export default function RitiriTable({ ritiri, onChanged, onEdit }: Props) {
                 </span>
               </TableCell>
               <TableCell>
-                <div className="font-medium text-sm flex items-center gap-1">
-                  {r.articolo}
-                  {r.pinDispositivo && (
-                    <Lock className="h-3.5 w-3.5 text-muted-foreground" />
-                  )}
+                <div className="font-bold text-sm">
+                  {r.marcaModello || r.articolo}
                 </div>
-                {r.marcaModello && (
-                  <div className="text-xs text-muted-foreground">
-                    {r.marcaModello}
-                  </div>
-                )}
               </TableCell>
               <TableCell className="text-right font-semibold text-sm">
                 € {r.prezzo.toFixed(2)}
