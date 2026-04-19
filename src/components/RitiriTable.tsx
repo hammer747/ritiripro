@@ -55,6 +55,7 @@ export default function RitiriTable({ ritiri, onChanged, onEdit }: Props) {
             <TableHead>Cliente</TableHead>
             <TableHead>Documento</TableHead>
             <TableHead>Articolo</TableHead>
+            <TableHead>Stato</TableHead>
             <TableHead className="text-right">Prezzo</TableHead>
             <TableHead className="w-24"></TableHead>
           </TableRow>
@@ -90,6 +91,11 @@ export default function RitiriTable({ ritiri, onChanged, onEdit }: Props) {
                 <div className="font-bold text-sm">
                   {r.marcaModello || r.articolo}
                 </div>
+              </TableCell>
+              <TableCell>
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold text-white ${r.venduto ? "bg-green-500" : "bg-blue-500"}`}>
+                  {r.venduto ? "Venduto" : "In stock"}
+                </span>
               </TableCell>
               <TableCell className="text-right font-semibold text-sm">
                 € {r.prezzo.toFixed(2)}
