@@ -15,7 +15,7 @@ import RitiriTable from "@/components/RitiriTable";
 import EtichettaLabel from "@/components/EtichettaLabel";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Search, Package, Euro, Calendar, List } from "lucide-react";
+import { Search, Package, Euro, Calendar, List, TrendingUp } from "lucide-react";
 import { LoginDialog, RegisteredUser } from "@/components/ui/login-dialog";
 import LoginPage from "@/components/LoginPage";
 
@@ -107,6 +107,17 @@ export default function Index() {
 
   const totaleMese = ritiriDelMese.reduce((s, r) => s + r.prezzo, 0);
 
+  const guadagniDelMese = useMemo(() => {
+    const [anno, mese] = meseSelezionato.split("-").map(Number);
+    return ritiri
+      .filter((r) => {
+        if (!r.venduto || r.prezzoVendita === undefined) return false;
+        const dataRif = r.dataVendita ? new Date(r.dataVendita) : new Date(r.dataAcquisto);
+        return dataRif.getFullYear() === anno && dataRif.getMonth() + 1 === mese;
+      })
+      .reduce((s, r) => s + ((r.prezzoVendita ?? 0) - r.prezzo), 0);
+  }, [ritiri, meseSelezionato]);
+
   const filtered = useMemo(() => {
     const sorted = [...ritiri].sort(
       (a, b) => new Date(b.dataAcquisto).getTime() - new Date(a.dataAcquisto).getTime()
@@ -183,7 +194,7 @@ export default function Index() {
       </header>
 
       <main className="container max-w-5xl py-8 space-y-8">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-stretch">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
           <div className="rounded-lg bg-stat-bg p-4 flex items-center gap-3">
             <Calendar className="h-5 w-5 text-stat-foreground shrink-0" />
             <Select value={meseSelezionato} onValueChange={setMeseSelezionato}>
@@ -210,7 +221,16 @@ export default function Index() {
             <Euro className="h-5 w-5 text-stat-foreground" />
             <div>
               <p className="text-2xl font-bold text-stat-foreground">€ {totaleMese.toFixed(2)}</p>
-              <p className="text-xs text-muted-foreground">Totale del mese</p>
+              <p className="text-xs text-muted-foreground">Totale acquisti</p>
+            </div>
+          </div>
+          <div className="rounded-lg bg-stat-bg p-4 flex items-center gap-3">
+            <TrendingUp className="h-5 w-5 text-stat-foreground" />
+            <div>
+              <p className={`text-2xl font-bold ${guadagniDelMese >= 0 ? "text-stat-foreground" : "text-destructive"}`}>
+                € {guadagniDelMese.toFixed(2)}
+              </p>
+              <p className="text-xs text-muted-foreground">Guadagni del mese</p>
             </div>
           </div>
         </div>
