@@ -1,4 +1,5 @@
 import { useEffect, useId, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -236,9 +237,8 @@ export function LoginDialog({
       setCurrentPasswordInput("");
       setNewPasswordInput("");
       setConfirmNewPasswordInput("");
-      setProfileMessage(
-        showPasswordChange ? "Password cambiata correttamente." : "Profilo aggiornato con successo."
-      );
+      setIsProfileOpen(false);
+      toast.success(showPasswordChange ? "Password cambiata correttamente." : "Profilo aggiornato con successo.");
     };
 
     return (
@@ -365,7 +365,7 @@ export function LoginDialog({
                 ) : null}
               </div>
 
-              {profileMessage ? <p className="text-sm text-muted-foreground">{profileMessage}</p> : null}
+              <p className="text-sm text-destructive min-h-[1.25rem]">{profileMessage}</p>
 
               <Button type="submit" className="w-full">
                 Salva modifiche
