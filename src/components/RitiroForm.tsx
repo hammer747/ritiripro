@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import heic2any from "heic2any";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -148,11 +149,22 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
     });
   };
 
+  const toJpegFile = async (file: File): Promise<File> => {
+    const isHeic = file.type === "image/heic" || file.type === "image/heif" ||
+      file.name.toLowerCase().endsWith(".heic") || file.name.toLowerCase().endsWith(".heif");
+    if (!isHeic) return file;
+    const blob = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.9 });
+    const result = Array.isArray(blob) ? blob[0]! : blob;
+    return new File([result], file.name.replace(/\.hei[cf]$/i, ".jpg"), { type: "image/jpeg" });
+  };
+
   const handleFileChange = (side: "fronte" | "retro") => async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      toast.error("Sono accettati solo file fotografici (JPG, PNG, WebP)");
+    const isHeic = file.type === "image/heic" || file.type === "image/heif" ||
+      file.name.toLowerCase().endsWith(".heic") || file.name.toLowerCase().endsWith(".heif");
+    if (!file.type.startsWith("image/") && !isHeic) {
+      toast.error("Sono accettati solo file fotografici (JPG, PNG, WebP, HEIC)");
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
@@ -160,13 +172,14 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
       return;
     }
     try {
-      const compressed = await compressImage(file);
+      const jpegFile = await toJpegFile(file);
+      const compressed = await compressImage(jpegFile);
       const base64Key = side === "fronte" ? "documentoFronteBase64" : "documentoRetroBase64";
       const nomeKey = side === "fronte" ? "documentoFronteNome" : "documentoRetroNome";
       setForm((f) => ({
         ...f,
         [base64Key]: compressed,
-        [nomeKey]: file.name,
+        [nomeKey]: jpegFile.name,
       }));
     } catch {
       toast.error("Errore durante l'elaborazione dell'immagine");
@@ -225,9 +238,12 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
     const errors = new Set<string>();
     if (!form.nomeCliente.trim()) errors.add("nomeCliente");
     if (!form.cognomeCliente.trim()) errors.add("cognomeCliente");
+    if (!form.codiceFiscale.trim()) errors.add("codiceFiscale");
+    if (!form.telefonoCliente.trim()) errors.add("telefonoCliente");
     if (!form.tipoDocumento) errors.add("tipoDocumento");
     if (!form.numeroDocumento.trim()) errors.add("numeroDocumento");
     if (!form.tipoArticolo) errors.add("tipoArticolo");
+    if (!form.serialeImei.trim()) errors.add("serialeImei");
     if (!form.prezzo) errors.add("prezzo");
     if (!form.dataAcquisto) errors.add("dataAcquisto");
     if (errors.size > 0) {
@@ -324,11 +340,11 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="cf">Codice Fiscale:</Label>
-            <Input id="cf" value={form.codiceFiscale} onChange={(e) => set("codiceFiscale", e.target.value)} placeholder="RSSMRA80A01H501U" className="uppercase" maxLength={16} />
+            <Input id="cf" value={form.codiceFiscale} onChange={(e) => set("codiceFiscale", e.target.value)} placeholder="RSSMRA80A01H501U" className={`uppercase ${errClass("codiceFiscale")}`} maxLength={16} />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="telefono">Numero di Telefono:</Label>
-            <Input id="telefono" type="tel" value={form.telefonoCliente} onChange={(e) => set("telefonoCliente", e.target.value)} placeholder="+39 333 1234567" />
+            <Input id="telefono" type="tel" value={form.telefonoCliente} onChange={(e) => set("telefonoCliente", e.target.value)} placeholder="+39 333 1234567" className={errClass("telefonoCliente")} />
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -448,7 +464,7 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <Label htmlFor="serialeImei">Seriale / IMEI:</Label>
-            <Input id="serialeImei" value={form.serialeImei} onChange={(e) => set("serialeImei", e.target.value)} placeholder="356938035643809" />
+            <Input id="serialeImei" value={form.serialeImei} onChange={(e) => set("serialeImei", e.target.value)} placeholder="356938035643809" className={errClass("serialeImei")} />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="pin">PIN Dispositivo:</Label>
