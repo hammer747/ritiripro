@@ -195,13 +195,23 @@ export async function updateRitiroController(req: Request, res: Response): Promi
     return;
   }
 
-  if (!req.files || Object.keys(req.files).length === 0) {
-    payload.documentoFrontePath = payload.documentoFrontePath ?? existing.documentoFrontePath ?? null;
-    payload.documentoFronteNome = payload.documentoFronteNome ?? existing.documentoFronteNome ?? null;
-    payload.documentoRetroPath = payload.documentoRetroPath ?? existing.documentoRetroPath ?? null;
-    payload.documentoRetroNome = payload.documentoRetroNome ?? existing.documentoRetroNome ?? null;
-    payload.ricevutaAcquistoPath = payload.ricevutaAcquistoPath ?? existing.ricevutaAcquistoPath ?? null;
-    payload.ricevutaAcquistoNome = payload.ricevutaAcquistoNome ?? existing.ricevutaAcquistoNome ?? null;
+  const files = req.files as {
+    documentoFronte?: Express.Multer.File[];
+    documentoRetro?: Express.Multer.File[];
+    ricevutaAcquisto?: Express.Multer.File[];
+  } | undefined;
+
+  if (!files?.documentoFronte?.[0]) {
+    payload.documentoFrontePath = existing.documentoFrontePath ?? null;
+    payload.documentoFronteNome = existing.documentoFronteNome ?? null;
+  }
+  if (!files?.documentoRetro?.[0]) {
+    payload.documentoRetroPath = existing.documentoRetroPath ?? null;
+    payload.documentoRetroNome = existing.documentoRetroNome ?? null;
+  }
+  if (!files?.ricevutaAcquisto?.[0]) {
+    payload.ricevutaAcquistoPath = existing.ricevutaAcquistoPath ?? null;
+    payload.ricevutaAcquistoNome = existing.ricevutaAcquistoNome ?? null;
   }
 
   const updated = await updateRitiroById(id, payload);
