@@ -75,9 +75,13 @@ function generateUUID(): string {
 
 export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextNumeroRitiro }: Props) {
   const [form, setForm] = useState(emptyForm);
+  const [fieldErrors, setFieldErrors] = useState<Set<string>>(new Set());
   const fileFronteRef = useRef<HTMLInputElement>(null);
   const fileRetroRef = useRef<HTMLInputElement>(null);
   const fileRicevutaRef = useRef<HTMLInputElement>(null);
+
+  const err = (field: string) => fieldErrors.has(field);
+  const errClass = (field: string) => err(field) ? "border-red-500 focus-visible:ring-red-500" : "";
 
   const isEditing = !!editingRitiro;
 
@@ -116,8 +120,10 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
     return value.replace(/(?:^|\s)\S/g, (char) => char.toUpperCase());
   };
 
-  const set = (key: string, value: string) =>
+  const set = (key: string, value: string) => {
+    setFieldErrors((prev) => { const n = new Set(prev); n.delete(key); return n; });
     setForm((f) => ({ ...f, [key]: value }));
+  };
 
   const compressImage = (file: File, maxWidth = 1280, quality = 0.7): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -215,27 +221,21 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("[RitiroForm] handleSubmit triggered", { form });
 
-    if (
-      !form.nomeCliente.trim() ||
-      !form.cognomeCliente.trim() ||
-      !form.tipoArticolo ||
-      !form.prezzo ||
-      !form.tipoDocumento ||
-      !form.numeroDocumento.trim()
-    ) {
-      console.warn("[RitiroForm] validation failed", {
-        nomeCliente: form.nomeCliente,
-        cognomeCliente: form.cognomeCliente,
-        tipoArticolo: form.tipoArticolo,
-        prezzo: form.prezzo,
-        tipoDocumento: form.tipoDocumento,
-        numeroDocumento: form.numeroDocumento,
-      });
+    const errors = new Set<string>();
+    if (!form.nomeCliente.trim()) errors.add("nomeCliente");
+    if (!form.cognomeCliente.trim()) errors.add("cognomeCliente");
+    if (!form.tipoDocumento) errors.add("tipoDocumento");
+    if (!form.numeroDocumento.trim()) errors.add("numeroDocumento");
+    if (!form.tipoArticolo) errors.add("tipoArticolo");
+    if (!form.prezzo) errors.add("prezzo");
+    if (!form.dataAcquisto) errors.add("dataAcquisto");
+    if (errors.size > 0) {
+      setFieldErrors(errors);
       toast.error("Compila tutti i campi obbligatori");
       return;
     }
+    setFieldErrors(new Set());
 
     const ritiro: Ritiro = {
       id: isEditing ? editingRitiro!.id : generateUUID(),
@@ -266,16 +266,13 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
     };
 
     try {
-      console.log("[RitiroForm] calling API...", { isEditing });
       let saved: Ritiro;
       if (isEditing) {
         saved = await updateRitiro(ritiro);
-        console.log("[RitiroForm] updateRitiro succeeded", saved);
         toast.success("Ritiro aggiornato con successo!");
         onCancelEdit?.();
       } else {
         saved = await saveRitiro(ritiro);
-        console.log("[RitiroForm] saveRitiro succeeded", saved);
         toast.success("Ritiro registrato con successo!");
       }
 
@@ -285,13 +282,13 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
       if (fileRicevutaRef.current) fileRicevutaRef.current.value = "";
       await onSaved(saved);
     } catch (err) {
-      console.error("[RitiroForm] error during save:", err);
       toast.error(err instanceof Error ? err.message : "Errore durante il salvataggio");
     }
   };
 
   const handleCancel = () => {
     setForm(emptyForm);
+    setFieldErrors(new Set());
     if (fileFronteRef.current) fileFronteRef.current.value = "";
     if (fileRetroRef.current) fileRetroRef.current.value = "";
     if (fileRicevutaRef.current) fileRicevutaRef.current.value = "";
@@ -318,27 +315,27 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
         </legend>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <Label htmlFor="nome">Nome *</Label>
-            <Input id="nome" value={form.nomeCliente} onChange={(e) => set("nomeCliente", e.target.value)} placeholder="Mario" />
+            <Label htmlFor="nome">Nome:</Label>
+            <Input id="nome" value={form.nomeCliente} onChange={(e) => set("nomeCliente", e.target.value)} placeholder="Mario" className={errClass("nomeCliente")} />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="cognome">Cognome *</Label>
-            <Input id="cognome" value={form.cognomeCliente} onChange={(e) => set("cognomeCliente", e.target.value)} placeholder="Rossi" />
+            <Label htmlFor="cognome">Cognome:</Label>
+            <Input id="cognome" value={form.cognomeCliente} onChange={(e) => set("cognomeCliente", e.target.value)} placeholder="Rossi" className={errClass("cognomeCliente")} />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="cf">Codice Fiscale</Label>
+            <Label htmlFor="cf">Codice Fiscale:</Label>
             <Input id="cf" value={form.codiceFiscale} onChange={(e) => set("codiceFiscale", e.target.value)} placeholder="RSSMRA80A01H501U" className="uppercase" maxLength={16} />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="telefono">Numero di Telefono</Label>
+            <Label htmlFor="telefono">Numero di Telefono:</Label>
             <Input id="telefono" type="tel" value={form.telefonoCliente} onChange={(e) => set("telefonoCliente", e.target.value)} placeholder="+39 333 1234567" />
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <Label>Tipo Documento *</Label>
+            <Label>Tipo Documento:</Label>
             <Select value={form.tipoDocumento} onValueChange={(v) => set("tipoDocumento", v)}>
-              <SelectTrigger><SelectValue placeholder="Seleziona..." /></SelectTrigger>
+              <SelectTrigger className={errClass("tipoDocumento")}><SelectValue placeholder="Seleziona..." /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="carta_identita">Carta d'Identità</SelectItem>
                 <SelectItem value="patente">Patente</SelectItem>
@@ -348,12 +345,12 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
             </Select>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="numdoc">Numero Documento *</Label>
-            <Input id="numdoc" value={form.numeroDocumento} onChange={(e) => set("numeroDocumento", e.target.value)} placeholder="AX1234567" />
+            <Label htmlFor="numdoc">Numero Documento:</Label>
+            <Input id="numdoc" value={form.numeroDocumento} onChange={(e) => set("numeroDocumento", e.target.value)} placeholder="AX1234567" className={errClass("numeroDocumento")} />
           </div>
         </div>
         <div className="space-y-3">
-          <Label>Foto / Scan Documento (max 5MB per file)</Label>
+          <Label>Foto / Scan Documento (max 5MB per file):</Label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Fronte */}
             <div className="space-y-2">
@@ -411,7 +408,7 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
           Articolo Ritirato
         </legend>
         <div className="space-y-1.5">
-          <Label htmlFor="numeroRitiro">Numero Ritiro</Label>
+          <Label htmlFor="numeroRitiro">Numero Ritiro:</Label>
           <Input
             id="numeroRitiro"
             value={
@@ -427,9 +424,9 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <Label>Tipo Articolo *</Label>
+            <Label>Tipo Articolo:</Label>
             <Select value={form.tipoArticolo} onValueChange={(v) => set("tipoArticolo", v)}>
-              <SelectTrigger><SelectValue placeholder="Seleziona..." /></SelectTrigger>
+              <SelectTrigger className={errClass("tipoArticolo")}><SelectValue placeholder="Seleziona..." /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="smartphone">Smartphone</SelectItem>
                 <SelectItem value="computer">Computer</SelectItem>
@@ -440,26 +437,26 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
             </Select>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="prezzo">Prezzo Acquisto (€) *</Label>
-            <Input id="prezzo" type="number" step="0.01" min="0" value={form.prezzo} onChange={(e) => set("prezzo", e.target.value)} placeholder="150.00" />
+            <Label htmlFor="prezzo">Prezzo Acquisto (€):</Label>
+            <Input id="prezzo" type="number" step="0.01" min="0" value={form.prezzo} onChange={(e) => set("prezzo", e.target.value)} placeholder="150.00" className={errClass("prezzo")} />
           </div>
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="marcaModello">Marca e Modello</Label>
+          <Label htmlFor="marcaModello">Marca e Modello:</Label>
           <Input id="marcaModello" value={form.marcaModello} onChange={(e) => set("marcaModello", capitalizeFirstLetter(e.target.value))} placeholder="Samsung Galaxy S24" />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <Label htmlFor="serialeImei">Seriale / IMEI</Label>
+            <Label htmlFor="serialeImei">Seriale / IMEI:</Label>
             <Input id="serialeImei" value={form.serialeImei} onChange={(e) => set("serialeImei", e.target.value)} placeholder="356938035643809" />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="pin">PIN Dispositivo</Label>
+            <Label htmlFor="pin">PIN Dispositivo:</Label>
             <Input id="pin" value={form.pinDispositivo} onChange={(e) => set("pinDispositivo", e.target.value)} placeholder="1234" />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="data">Data Acquisto *</Label>
-            <Input id="data" type="date" value={form.dataAcquisto} onChange={(e) => set("dataAcquisto", e.target.value)} className="w-full" />
+            <Label htmlFor="data">Data Acquisto:</Label>
+            <Input id="data" type="date" value={form.dataAcquisto} onChange={(e) => set("dataAcquisto", e.target.value)} className={`w-full ${errClass("dataAcquisto")}`} />
           </div>
         </div>
         <div className="flex items-center gap-2 pt-2">
@@ -481,11 +478,11 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
           <div className="space-y-3 rounded-md border border-primary/30 bg-primary/5 p-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label htmlFor="prezzoVendita">Prezzo di Vendita (€) *</Label>
+                <Label htmlFor="prezzoVendita">Prezzo di Vendita (€):</Label>
                 <Input id="prezzoVendita" type="number" step="0.01" min="0" value={form.prezzoVendita} onChange={(e) => set("prezzoVendita", e.target.value)} placeholder="250.00" />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="dataVendita">Data Vendita *</Label>
+                <Label htmlFor="dataVendita">Data Vendita:</Label>
                 <Input id="dataVendita" type="date" value={form.dataVendita} onChange={(e) => set("dataVendita", e.target.value)} />
               </div>
             </div>
@@ -500,16 +497,16 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
         )}
         
         <div className="space-y-1.5">
-          <Label htmlFor="desc">Descrizione / Condizioni</Label>
+          <Label htmlFor="desc">Descrizione / Condizioni:</Label>
           <Textarea id="desc" value={form.descrizione} onChange={(e) => set("descrizione", e.target.value)} placeholder="Graffi sul retro, batteria all'85%..." rows={2} />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="note">Note</Label>
+          <Label htmlFor="note">Note:</Label>
           <Input id="note" value={form.note} onChange={(e) => set("note", e.target.value)} placeholder="Eventuali note..." />
         </div>
 
         <div className="space-y-2">
-          <Label>Ricevuta di Acquisto (foto o PDF, max 5MB)</Label>
+          <Label>Ricevuta di Acquisto (foto o PDF, max 5MB):</Label>
           {form.ricevutaAcquistoBase64 ? (
             <div className="rounded-md border bg-muted/50 p-2 space-y-2">
               {(form.ricevutaAcquistoBase64.startsWith("data:image") || form.ricevutaAcquistoBase64.startsWith("http")) ? (
