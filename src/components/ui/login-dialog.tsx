@@ -11,13 +11,13 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { API_BASE_URL } from "@/lib/api";
 
 export type RegisteredUser = {
   nome: string;
   cognome: string;
   cel?: string;
   email: string;
-  password: string;
 };
 
 type LoginDialogProps = {
@@ -26,48 +26,28 @@ type LoginDialogProps = {
   onLogout?: () => void;
 };
 
-const CURRENT_USER_STORAGE_KEY = "ritiri_facili_user";
-const USERS_STORAGE_KEY = "ritiri_facili_users";
+const CURRENT_USER_KEY = "ritiri_facili_user";
 
-function normalizeUser(value: unknown): RegisteredUser | null {
-  if (!value || typeof value !== "object") return null;
-  const candidate = value as Partial<RegisteredUser>;
-  const email = typeof candidate.email === "string" ? candidate.email.trim().toLowerCase() : "";
-  if (!email) return null;
-
-  return {
-    nome: typeof candidate.nome === "string" ? candidate.nome : "",
-    cognome: typeof candidate.cognome === "string" ? candidate.cognome : "",
-    cel: typeof candidate.cel === "string" ? candidate.cel : "",
-    email,
-    password: typeof candidate.password === "string" ? candidate.password : "",
-  };
+async function apiPost<T>(path: string, body: Record<string, string>, headers?: Record<string, string>): Promise<T> {
+  const res = await fetch(`${API_BASE_URL}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...headers },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json() as { message?: string } & T;
+  if (!res.ok) throw new Error((data as { message?: string }).message || "Errore");
+  return data as T;
 }
 
-function readUsersFromStorage(): RegisteredUser[] {
-  const usersRaw = localStorage.getItem(USERS_STORAGE_KEY);
-  if (!usersRaw) return [];
-
-  try {
-    const parsed = JSON.parse(usersRaw) as unknown;
-    if (!Array.isArray(parsed)) {
-      localStorage.removeItem(USERS_STORAGE_KEY);
-      return [];
-    }
-
-    const normalized = parsed
-      .map((entry) => normalizeUser(entry))
-      .filter((entry): entry is RegisteredUser => !!entry);
-
-    if (normalized.length !== parsed.length) {
-      localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(normalized));
-    }
-
-    return normalized;
-  } catch {
-    localStorage.removeItem(USERS_STORAGE_KEY);
-    return [];
-  }
+async function apiPut<T>(path: string, body: Record<string, string>, headers?: Record<string, string>): Promise<T> {
+  const res = await fetch(`${API_BASE_URL}${path}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...headers },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json() as { message?: string } & T;
+  if (!res.ok) throw new Error((data as { message?: string }).message || "Errore");
+  return data as T;
 }
 
 export function LoginDialog({
@@ -80,7 +60,8 @@ export function LoginDialog({
   const [isRegisterMode, setIsRegisterMode] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [error, setError] = useState("");
-  const [profileMessage, setProfileMessage] = useState("");
+  const [profileError, setProfileError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const [nome, setNome] = useState("");
   const [cognome, setCognome] = useState("");
@@ -97,15 +78,12 @@ export function LoginDialog({
   const [confirmNewPasswordInput, setConfirmNewPasswordInput] = useState("");
 
   useEffect(() => {
-    if (!open) {
-      setError("");
-      setPassword("");
-    }
+    if (!open) { setError(""); setPassword(""); }
   }, [open]);
 
   useEffect(() => {
     if (!isProfileOpen || !currentUser) return;
-    setProfileMessage("");
+    setProfileError("");
     setProfileNome(currentUser.nome);
     setProfileCognome(currentUser.cognome);
     setProfileCel(currentUser.cel ?? "");
@@ -115,268 +93,116 @@ export function LoginDialog({
     setConfirmNewPasswordInput("");
   }, [isProfileOpen, currentUser]);
 
-  const resetRegisterFields = () => {
-    setNome("");
-    setCognome("");
-    setCel("");
-  };
-
-  const handleToggleMode = () => {
+  const handleSubmit = async () => {
     setError("");
-    setIsRegisterMode((prev) => !prev);
-    setPassword("");
-    if (isRegisterMode) {
-      resetRegisterFields();
-    }
-  };
+    if (!email.trim() || !password.trim()) { setError("Email e password sono obbligatorie."); return; }
 
-  const handleSubmit = () => {
-    setError("");
-
-    if (!email.trim() || !password.trim()) {
-      setError("Email e password sono obbligatorie.");
-      return;
-    }
-
-    if (isRegisterMode) {
-      if (!nome.trim() || !cognome.trim()) {
-        setError("Nome e cognome sono obbligatori.");
-        return;
+    setLoading(true);
+    try {
+      if (isRegisterMode) {
+        if (!nome.trim() || !cognome.trim()) { setError("Nome e cognome sono obbligatori."); return; }
+        const user = await apiPost<RegisteredUser>("/api/auth/register", { nome: nome.trim(), cognome: cognome.trim(), cel: cel.trim(), email: email.trim().toLowerCase(), password });
+        localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
+        onAuthSuccess(user);
+        setOpen(false);
+      } else {
+        const user = await apiPost<RegisteredUser>("/api/auth/login", { email: email.trim().toLowerCase(), password });
+        localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
+        onAuthSuccess(user);
+        setOpen(false);
       }
-
-      const userToSave: RegisteredUser = {
-        nome: nome.trim(),
-        cognome: cognome.trim(),
-        cel: cel.trim(),
-        email: email.trim().toLowerCase(),
-        password,
-      };
-
-      const users = readUsersFromStorage();
-
-      const exists = users.some((u) => u.email === userToSave.email);
-      if (exists) {
-        setError("Esiste già un account con questa email.");
-        return;
-      }
-
-      const updatedUsers = [...users, userToSave];
-      localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(updatedUsers));
-      localStorage.setItem(CURRENT_USER_STORAGE_KEY, JSON.stringify(userToSave));
-      onAuthSuccess(userToSave);
-      setOpen(false);
-      return;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Errore");
+    } finally {
+      setLoading(false);
     }
-
-    const users = readUsersFromStorage();
-
-    if (!users.length) {
-      setError("Nessun account registrato. Clicca su Registrati.");
-      return;
-    }
-
-    const found = users.find((u) => u.email === email.trim().toLowerCase());
-
-    if (!found || found.password !== password) {
-      setError("Credenziali non valide.");
-      return;
-    }
-
-    localStorage.setItem(CURRENT_USER_STORAGE_KEY, JSON.stringify(found));
-    onAuthSuccess(found);
-    setOpen(false);
   };
 
   if (currentUser) {
-    const handleSaveProfile = () => {
-      if (!profileNome.trim() || !profileCognome.trim()) {
-        setProfileMessage("Nome e cognome sono obbligatori.");
-        return;
-      }
-
+    const handleSaveProfile = async () => {
+      setProfileError("");
+      if (!profileNome.trim() || !profileCognome.trim()) { setProfileError("Nome e cognome sono obbligatori."); return; }
       if (showPasswordChange) {
-        if (!currentPasswordInput.trim() || !newPasswordInput.trim() || !confirmNewPasswordInput.trim()) {
-          setProfileMessage("Compila tutti i campi password.");
-          return;
-        }
-
-        if (currentPasswordInput !== currentUser.password) {
-          setProfileMessage("La password attuale non è corretta.");
-          return;
-        }
-
-        if (newPasswordInput === currentUser.password) {
-          setProfileMessage("La nuova password deve essere diversa da quella attuale.");
-          return;
-        }
-
-        if (newPasswordInput !== confirmNewPasswordInput) {
-          setProfileMessage("La conferma della nuova password non coincide.");
-          return;
-        }
+        if (!currentPasswordInput.trim() || !newPasswordInput.trim() || !confirmNewPasswordInput.trim()) { setProfileError("Compila tutti i campi password."); return; }
+        if (newPasswordInput !== confirmNewPasswordInput) { setProfileError("La conferma della nuova password non coincide."); return; }
       }
 
-      const updatedUser: RegisteredUser = {
-        ...currentUser,
-        nome: profileNome.trim(),
-        cognome: profileCognome.trim(),
-        cel: profileCel.trim(),
-        password: showPasswordChange ? newPasswordInput : currentUser.password,
-      };
-
-      const users = readUsersFromStorage();
-
-      const updatedUsers = users.map((u) =>
-        u.email === currentUser.email ? updatedUser : u
-      );
-
-      localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(updatedUsers));
-      localStorage.setItem(CURRENT_USER_STORAGE_KEY, JSON.stringify(updatedUser));
-      onAuthSuccess(updatedUser);
-      setShowPasswordChange(false);
-      setCurrentPasswordInput("");
-      setNewPasswordInput("");
-      setConfirmNewPasswordInput("");
-      setIsProfileOpen(false);
-      toast.success(showPasswordChange ? "Password cambiata correttamente." : "Profilo aggiornato con successo.");
+      setLoading(true);
+      try {
+        const body: Record<string, string> = { nome: profileNome.trim(), cognome: profileCognome.trim(), cel: profileCel.trim() };
+        if (showPasswordChange) { body.currentPassword = currentPasswordInput; body.newPassword = newPasswordInput; }
+        const updated = await apiPut<RegisteredUser>("/api/auth/profile", body, { "x-user-email": currentUser.email });
+        localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(updated));
+        onAuthSuccess(updated);
+        setIsProfileOpen(false);
+        toast.success(showPasswordChange ? "Password cambiata correttamente." : "Profilo aggiornato con successo.");
+      } catch (err) {
+        setProfileError(err instanceof Error ? err.message : "Errore");
+      } finally {
+        setLoading(false);
+      }
     };
 
     return (
       <div className="flex items-center gap-2">
-        <span className="text-sm font-medium">
-          {currentUser.nome} {currentUser.cognome}
-        </span>
+        <span className="text-sm font-medium">{currentUser.nome} {currentUser.cognome}</span>
 
         <Dialog open={isProfileOpen} onOpenChange={setIsProfileOpen}>
           <DialogTrigger asChild>
-            <Button type="button" size="sm" variant="secondary">
-              Profilo
-            </Button>
+            <Button type="button" size="sm" variant="secondary">Profilo</Button>
           </DialogTrigger>
           <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Profilo utente</DialogTitle>
-            </DialogHeader>
-
-            <form
-              className="space-y-4"
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleSaveProfile();
-              }}
-            >
+            <DialogHeader><DialogTitle>Profilo utente</DialogTitle></DialogHeader>
+            <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); void handleSaveProfile(); }}>
               <div className="space-y-2">
                 <Label htmlFor={`${id}-profile-nome`}>Nome</Label>
-                <Input
-                  id={`${id}-profile-nome`}
-                  type="text"
-                  value={profileNome}
-                  onChange={(e) => setProfileNome(e.target.value)}
-                  required
-                />
+                <Input id={`${id}-profile-nome`} value={profileNome} onChange={(e) => setProfileNome(e.target.value)} required />
               </div>
-
               <div className="space-y-2">
                 <Label htmlFor={`${id}-profile-cognome`}>Cognome</Label>
-                <Input
-                  id={`${id}-profile-cognome`}
-                  type="text"
-                  value={profileCognome}
-                  onChange={(e) => setProfileCognome(e.target.value)}
-                  required
-                />
+                <Input id={`${id}-profile-cognome`} value={profileCognome} onChange={(e) => setProfileCognome(e.target.value)} required />
               </div>
-
               <div className="space-y-2">
                 <Label htmlFor={`${id}-profile-cel`}>Cellulare (facoltativo)</Label>
-                <Input
-                  id={`${id}-profile-cel`}
-                  type="tel"
-                  value={profileCel}
-                  onChange={(e) => setProfileCel(e.target.value)}
-                />
+                <Input id={`${id}-profile-cel`} type="tel" value={profileCel} onChange={(e) => setProfileCel(e.target.value)} />
               </div>
-
               <div className="space-y-2">
-                <Label htmlFor={`${id}-profile-email`}>Email</Label>
-                <Input id={`${id}-profile-email`} type="email" value={currentUser.email} disabled />
+                <Label>Email</Label>
+                <Input value={currentUser.email} disabled />
               </div>
 
               <div className="rounded-md border p-3 space-y-3">
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-sm font-medium">Sicurezza account</p>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => {
-                      const next = !showPasswordChange;
-                      setShowPasswordChange(next);
-                      if (!next) {
-                        setCurrentPasswordInput("");
-                        setNewPasswordInput("");
-                        setConfirmNewPasswordInput("");
-                      }
-                      setProfileMessage("");
-                    }}
-                  >
+                  <Button type="button" variant="secondary" size="sm" onClick={() => { setShowPasswordChange((p) => !p); setCurrentPasswordInput(""); setNewPasswordInput(""); setConfirmNewPasswordInput(""); setProfileError(""); }}>
                     {showPasswordChange ? "Nascondi cambio password" : "Cambia password"}
                   </Button>
                 </div>
-
-                {showPasswordChange ? (
+                {showPasswordChange && (
                   <div className="space-y-3">
                     <div className="space-y-2">
-                      <Label htmlFor={`${id}-profile-current-password`}>Password attuale</Label>
-                      <Input
-                        id={`${id}-profile-current-password`}
-                        type="password"
-                        value={currentPasswordInput}
-                        onChange={(e) => setCurrentPasswordInput(e.target.value)}
-                        placeholder="Inserisci la password attuale"
-                        required={showPasswordChange}
-                      />
+                      <Label htmlFor={`${id}-cur-pw`}>Password attuale</Label>
+                      <Input id={`${id}-cur-pw`} type="password" value={currentPasswordInput} onChange={(e) => setCurrentPasswordInput(e.target.value)} placeholder="Password attuale" />
                     </div>
-
                     <div className="space-y-2">
-                      <Label htmlFor={`${id}-profile-new-password`}>Nuova password</Label>
-                      <Input
-                        id={`${id}-profile-new-password`}
-                        type="password"
-                        value={newPasswordInput}
-                        onChange={(e) => setNewPasswordInput(e.target.value)}
-                        placeholder="Inserisci la nuova password"
-                        required={showPasswordChange}
-                      />
+                      <Label htmlFor={`${id}-new-pw`}>Nuova password</Label>
+                      <Input id={`${id}-new-pw`} type="password" value={newPasswordInput} onChange={(e) => setNewPasswordInput(e.target.value)} placeholder="Nuova password" />
                     </div>
-
                     <div className="space-y-2">
-                      <Label htmlFor={`${id}-profile-confirm-new-password`}>Conferma nuova password</Label>
-                      <Input
-                        id={`${id}-profile-confirm-new-password`}
-                        type="password"
-                        value={confirmNewPasswordInput}
-                        onChange={(e) => setConfirmNewPasswordInput(e.target.value)}
-                        placeholder="Conferma la nuova password"
-                        required={showPasswordChange}
-                      />
+                      <Label htmlFor={`${id}-conf-pw`}>Conferma nuova password</Label>
+                      <Input id={`${id}-conf-pw`} type="password" value={confirmNewPasswordInput} onChange={(e) => setConfirmNewPasswordInput(e.target.value)} placeholder="Conferma nuova password" />
                     </div>
                   </div>
-                ) : null}
+                )}
               </div>
 
-              <p className="text-sm text-destructive min-h-[1.25rem]">{profileMessage}</p>
-
-              <Button type="submit" className="w-full">
-                Salva modifiche
-              </Button>
+              <p className="text-sm text-destructive min-h-[1.25rem]">{profileError}</p>
+              <Button type="submit" className="w-full" disabled={loading}>Salva modifiche</Button>
             </form>
           </DialogContent>
         </Dialog>
 
-        <Button type="button" size="sm" variant="outline" onClick={onLogout}>
-          Esci
-        </Button>
+        <Button type="button" size="sm" variant="outline" onClick={onLogout}>Esci</Button>
       </div>
     );
   }
@@ -388,129 +214,61 @@ export function LoginDialog({
       </DialogTrigger>
       <DialogContent>
         <div className="flex flex-col items-center gap-2">
-          <div
-            className="flex size-11 shrink-0 items-center justify-center rounded-full border border-border"
-            aria-hidden="true"
-          >
-            <svg
-              className="stroke-zinc-800 dark:stroke-zinc-100"
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 32 32"
-              aria-hidden="true"
-            >
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-full border border-border" aria-hidden="true">
+            <svg className="stroke-zinc-800 dark:stroke-zinc-100" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true">
               <circle cx="16" cy="16" r="12" fill="none" strokeWidth="8" />
             </svg>
           </div>
           <DialogHeader>
-            <DialogTitle className="sm:text-center">
-              {isRegisterMode ? "Crea il tuo account" : "Bentornato"}
-            </DialogTitle>
+            <DialogTitle className="sm:text-center">{isRegisterMode ? "Crea il tuo account" : "Bentornato"}</DialogTitle>
             <p className="text-sm text-muted-foreground sm:text-center">
-              {isRegisterMode
-                ? "Compila i dati per registrarti."
-                : "Inserisci le tue credenziali per accedere al tuo account."}
+              {isRegisterMode ? "Compila i dati per registrarti." : "Inserisci le tue credenziali per accedere."}
             </p>
           </DialogHeader>
         </div>
 
-        <form
-          className="space-y-5"
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSubmit();
-          }}
-        >
+        <form className="space-y-5" onSubmit={(e) => { e.preventDefault(); void handleSubmit(); }}>
           <div className="space-y-4">
             {isRegisterMode && (
               <>
                 <div className="space-y-2">
                   <Label htmlFor={`${id}-nome`}>Nome</Label>
-                  <Input
-                    id={`${id}-nome`}
-                    placeholder="Inserisci il tuo nome"
-                    type="text"
-                    value={nome}
-                    onChange={(e) => setNome(e.target.value)}
-                    required
-                  />
+                  <Input id={`${id}-nome`} placeholder="Mario" value={nome} onChange={(e) => setNome(e.target.value)} required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor={`${id}-cognome`}>Cognome</Label>
-                  <Input
-                    id={`${id}-cognome`}
-                    placeholder="Inserisci il tuo cognome"
-                    type="text"
-                    value={cognome}
-                    onChange={(e) => setCognome(e.target.value)}
-                    required
-                  />
+                  <Input id={`${id}-cognome`} placeholder="Rossi" value={cognome} onChange={(e) => setCognome(e.target.value)} required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor={`${id}-cel`}>Cellulare (facoltativo)</Label>
-                  <Input
-                    id={`${id}-cel`}
-                    placeholder="Inserisci il tuo numero di cellulare"
-                    type="tel"
-                    value={cel}
-                    onChange={(e) => setCel(e.target.value)}
-                  />
+                  <Input id={`${id}-cel`} type="tel" placeholder="+39 333 1234567" value={cel} onChange={(e) => setCel(e.target.value)} />
                 </div>
               </>
             )}
-
             <div className="space-y-2">
               <Label htmlFor={`${id}-email`}>Email</Label>
-              <Input
-                id={`${id}-email`}
-                placeholder="hi@yourcompany.com"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+              <Input id={`${id}-email`} type="email" placeholder="mario@esempio.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor={`${id}-password`}>Password</Label>
-              <Input
-                id={`${id}-password`}
-                placeholder="Inserisci la tua password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+              <Input id={`${id}-password`} type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
             </div>
           </div>
 
-          {!isRegisterMode ? (
+          {!isRegisterMode && (
             <div className="flex justify-between gap-2">
               <div className="flex items-center gap-2">
                 <Checkbox id={`${id}-remember`} />
-                <Label htmlFor={`${id}-remember`} className="font-normal text-muted-foreground">
-                  Ricordami
-                </Label>
+                <Label htmlFor={`${id}-remember`} className="font-normal text-muted-foreground">Ricordami</Label>
               </div>
-              <a className="text-sm underline hover:no-underline" href="#">
-                Password dimenticata?
-              </a>
             </div>
-          ) : null}
+          )}
 
-          {error ? <p className="text-sm text-destructive">{error}</p> : null}
+          {error && <p className="text-sm text-destructive">{error}</p>}
 
           <div className="grid grid-cols-2 gap-2">
-            <Button type="submit" className="w-full">
-              {isRegisterMode ? "Crea account" : "Accedi"}
-            </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              className="w-full"
-              onClick={handleToggleMode}
-            >
+            <Button type="submit" className="w-full" disabled={loading}>{isRegisterMode ? "Crea account" : "Accedi"}</Button>
+            <Button type="button" variant="secondary" className="w-full" onClick={() => { setIsRegisterMode((p) => !p); setError(""); setPassword(""); }}>
               {isRegisterMode ? "Torna ad accesso" : "Registrati"}
             </Button>
           </div>

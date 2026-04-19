@@ -44,7 +44,6 @@ export default function Index() {
         cognome: typeof parsed?.cognome === "string" ? parsed.cognome : "",
         cel: typeof parsed?.cel === "string" ? parsed.cel : undefined,
         email,
-        password: typeof parsed?.password === "string" ? parsed.password : "",
       };
     } catch {
       localStorage.removeItem("ritiri_facili_user");
