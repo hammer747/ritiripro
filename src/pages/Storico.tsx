@@ -91,7 +91,7 @@ export default function Storico() {
       <header className="bg-header-bg text-header-foreground border-b shadow-sm">
         <div className="container max-w-6xl py-3 sm:py-6 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <Link to="/"><img src="/logo.png" alt="RitiriPro" className="h-8 sm:h-10 w-auto object-contain cursor-pointer" /></Link>
+            <Link to="/" reloadDocument><img src="/logo.png" alt="RitiriPro" className="h-8 sm:h-10 w-auto object-contain cursor-pointer" /></Link>
             <div className="hidden sm:block">
               <h1 className="text-2xl font-bold tracking-tight">RitiriPro</h1>
               <p className="text-sm opacity-80">Storico ritiri registrati</p>
