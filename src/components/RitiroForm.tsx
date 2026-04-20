@@ -621,7 +621,7 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
 
             {voce.mode === "automatico" && (
               <div className="space-y-2">
-                <Label className="text-xs">Ritiro collegato (sarà marcato venduto):</Label>
+                <Label className="text-xs">Seleziona il ritiro desiderato:</Label>
                 <Select
                   value={voce.ritiroId}
                   onValueChange={(id) => {
