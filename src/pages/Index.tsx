@@ -1,13 +1,6 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { getRitiri, formatCodiceRitiro } from "@/lib/storage";
 import { Ritiro } from "@/lib/types";
 import RitiroForm from "@/components/RitiroForm";
@@ -15,7 +8,8 @@ import RitiriTable from "@/components/RitiriTable";
 import EtichettaLabel from "@/components/EtichettaLabel";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Search, Package, Euro, Calendar, List, TrendingUp } from "lucide-react";
+import { Search, Package, Euro, List, TrendingUp } from "lucide-react";
+import { MonthWheelPicker } from "@/components/MonthWheelPicker";
 import { LoginDialog, RegisteredUser } from "@/components/ui/login-dialog";
 import LoginPage from "@/components/LoginPage";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -203,20 +197,12 @@ export default function Index() {
 
       <main className="container max-w-5xl py-8 space-y-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
-          <div className="rounded-lg bg-stat-bg p-4 flex items-center gap-3">
-            <Calendar className="h-5 w-5 text-stat-foreground shrink-0" />
-            <Select value={meseSelezionato} onValueChange={setMeseSelezionato}>
-              <SelectTrigger className="border-0 bg-transparent shadow-none focus:ring-0 h-auto p-0 text-stat-foreground font-semibold text-base">
-                <SelectValue placeholder="Seleziona mese" />
-              </SelectTrigger>
-              <SelectContent>
-                {mesiDisponibili.map((m) => (
-                  <SelectItem key={m} value={m}>
-                    {formatMese(m)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="rounded-lg bg-stat-bg p-4 flex items-center justify-center">
+            <MonthWheelPicker
+              value={meseSelezionato}
+              options={mesiDisponibili}
+              onChange={setMeseSelezionato}
+            />
           </div>
           <div className="rounded-lg bg-stat-bg p-4 flex items-center gap-3">
             <Package className="h-5 w-5 text-stat-foreground" />
