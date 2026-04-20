@@ -394,7 +394,7 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="numdoc">Numero Documento:</Label>
-            <Input id="numdoc" value={form.numeroDocumento} onChange={(e) => set("numeroDocumento", e.target.value)} placeholder="AX1234567" className={errClass("numeroDocumento")} />
+            <Input id="numdoc" value={form.numeroDocumento} onChange={(e) => set("numeroDocumento", e.target.value.toUpperCase())} placeholder="AX1234567" className={errClass("numeroDocumento")} />
           </div>
         </div>
         <div className="space-y-3">
