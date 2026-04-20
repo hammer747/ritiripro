@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Ritiro } from "@/lib/types";
-import { saveRitiro, updateRitiro, markRitiroAsSold, formatCodiceRitiro } from "@/lib/storage";
+import { saveRitiro, updateRitiro, markRitiroAsSold, unmarkRitiroAsSold, formatCodiceRitiro } from "@/lib/storage";
 import { toast } from "sonner";
 import { UserPlus, Pencil, Upload, X, FileText, Download, Plus, Trash2 } from "lucide-react";
 import { SpeseAggiuntiva } from "@/lib/types";
@@ -82,6 +82,7 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
   const [form, setForm] = useState(emptyForm);
   const [fieldErrors, setFieldErrors] = useState<Set<string>>(new Set());
   const [speseVoci, setSpeseVoci] = useState<SpeseVoce[]>([]);
+  const [removedRitiroIds, setRemovedRitiroIds] = useState<string[]>([]);
   const fileFronteRef = useRef<HTMLInputElement>(null);
   const fileRetroRef = useRef<HTMLInputElement>(null);
   const fileRicevutaRef = useRef<HTMLInputElement>(null);
@@ -127,6 +128,7 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
           ritiroId: v.ritiroId || "",
         }))
       );
+      setRemovedRitiroIds([]);
     }
   }, [editingRitiro]);
 
@@ -315,6 +317,11 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
         toast.success("Ritiro registrato con successo!");
       }
 
+      for (const id of removedRitiroIds) {
+        const linked = ritiri.find((r) => r.id === id);
+        if (linked) await unmarkRitiroAsSold(linked);
+      }
+
       for (const voce of speseVoci) {
         if (voce.mode === "automatico" && voce.ritiroId) {
           const linked = ritiri.find((r) => r.id === voce.ritiroId);
@@ -324,6 +331,7 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
 
       setForm(emptyForm);
       setSpeseVoci([]);
+      setRemovedRitiroIds([]);
       if (fileFronteRef.current) fileFronteRef.current.value = "";
       if (fileRetroRef.current) fileRetroRef.current.value = "";
       if (fileRicevutaRef.current) fileRicevutaRef.current.value = "";
@@ -619,37 +627,67 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
               </div>
             )}
 
-            {voce.mode === "automatico" && (
-              <div className="space-y-2">
-                <Label className="text-xs">Seleziona il ritiro desiderato:</Label>
-                <Select
-                  value={voce.ritiroId}
-                  onValueChange={(id) => {
-                    const linked = ritiri.find((r) => r.id === id);
-                    setSpeseVoci((prev) => prev.map((v, j) => j === i ? {
-                      ...v,
-                      ritiroId: id,
-                      prezzo: linked ? String(linked.prezzo) : "",
-                      descrizione: linked ? `Ritiro ${formatCodiceRitiro(linked.numeroRitiro, linked.dataAcquisto) || id.slice(0, 8)}` : "",
-                    } : v));
-                  }}
-                >
-                  <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="Seleziona ritiro..." /></SelectTrigger>
-                  <SelectContent>
-                    {ritiri.filter((r) => !r.venduto && r.id !== editingRitiro?.id).map((r) => (
-                      <SelectItem key={r.id} value={r.id}>
-                        {formatCodiceRitiro(r.numeroRitiro, r.dataAcquisto)} — {r.marcaModello || r.articolo} ({r.cognomeCliente}) — € {r.prezzo.toFixed(2)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {voce.ritiroId && (
-                  <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1">
-                    Verrà marcato come <strong>venduto</strong> al salvataggio.
-                  </p>
-                )}
-              </div>
-            )}
+            {voce.mode === "automatico" && (() => {
+              const linkedRitiro = voce.ritiroId ? ritiri.find((r) => r.id === voce.ritiroId) : null;
+              const isExistingLink = !!(voce.ritiroId && linkedRitiro?.venduto);
+              return (
+                <div className="space-y-2">
+                  <Label className="text-xs">Seleziona il ritiro desiderato:</Label>
+                  {isExistingLink ? (
+                    <div className="flex items-center justify-between gap-2 rounded-md border border-green-300 bg-green-50 dark:bg-green-950/30 dark:border-green-800 px-3 py-2">
+                      <div className="text-xs">
+                        <p className="font-medium text-green-800 dark:text-green-400">
+                          {formatCodiceRitiro(linkedRitiro!.numeroRitiro, linkedRitiro!.dataAcquisto)} — {linkedRitiro!.marcaModello || linkedRitiro!.articolo}
+                        </p>
+                        <p className="text-muted-foreground">{linkedRitiro!.cognomeCliente} {linkedRitiro!.nomeCliente} — € {Math.round(linkedRitiro!.prezzo)}</p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-destructive shrink-0"
+                        title="Rimuovi collegamento"
+                        onClick={() => {
+                          setRemovedRitiroIds((prev) => [...prev, voce.ritiroId]);
+                          setSpeseVoci((prev) => prev.map((v, j) => j === i ? { ...v, ritiroId: "", prezzo: "", descrizione: "" } : v));
+                        }}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      <Select
+                        value={voce.ritiroId}
+                        onValueChange={(id) => {
+                          const linked = ritiri.find((r) => r.id === id);
+                          setSpeseVoci((prev) => prev.map((v, j) => j === i ? {
+                            ...v,
+                            ritiroId: id,
+                            prezzo: linked ? String(linked.prezzo) : "",
+                            descrizione: linked ? `Ritiro ${formatCodiceRitiro(linked.numeroRitiro, linked.dataAcquisto) || id.slice(0, 8)}` : "",
+                          } : v));
+                        }}
+                      >
+                        <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="Seleziona ritiro..." /></SelectTrigger>
+                        <SelectContent>
+                          {ritiri.filter((r) => !r.venduto && r.id !== editingRitiro?.id).map((r) => (
+                            <SelectItem key={r.id} value={r.id}>
+                              {formatCodiceRitiro(r.numeroRitiro, r.dataAcquisto)} — {r.marcaModello || r.articolo} ({r.cognomeCliente}) — € {Math.round(r.prezzo)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {voce.ritiroId && (
+                        <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1">
+                          Verrà marcato come <strong>venduto</strong> al salvataggio.
+                        </p>
+                      )}
+                    </>
+                  )}
+                </div>
+              );
+            })()}
           </div>
         ))}
 

@@ -205,6 +205,15 @@ export async function markRitiroAsSold(ritiro: Ritiro): Promise<Ritiro> {
   });
 }
 
+export async function unmarkRitiroAsSold(ritiro: Ritiro): Promise<Ritiro> {
+  return updateRitiro({
+    ...ritiro,
+    venduto: false,
+    dataVendita: undefined,
+    prezzoVendita: undefined,
+  });
+}
+
 export async function getRitiri(): Promise<Ritiro[]> {
   const user = getCurrentUser();
   if (!user?.email) return [];
