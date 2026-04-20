@@ -7,11 +7,18 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { API_BASE_URL } from "@/lib/api";
+import { ChevronDown, LogOut, UserCog } from "lucide-react";
 
 export type RegisteredUser = {
   nome: string;
@@ -145,12 +152,24 @@ export function LoginDialog({
 
     return (
       <div className="flex items-center gap-2">
-        <span className="text-sm font-medium">{currentUser.nome} {currentUser.cognome}</span>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button type="button" size="sm" variant="secondary" className="flex items-center gap-1">
+              Profilo <ChevronDown className="h-3 w-3" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onSelect={() => setIsProfileOpen(true)}>
+              <UserCog className="h-4 w-4 mr-2" /> Modifica profilo
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onSelect={onLogout} className="text-destructive focus:text-destructive">
+              <LogOut className="h-4 w-4 mr-2" /> Esci
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         <Dialog open={isProfileOpen} onOpenChange={setIsProfileOpen}>
-          <DialogTrigger asChild>
-            <Button type="button" size="sm" variant="secondary">Profilo</Button>
-          </DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>Profilo utente</DialogTitle></DialogHeader>
             <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); void handleSaveProfile(); }}>
@@ -201,8 +220,6 @@ export function LoginDialog({
             </form>
           </DialogContent>
         </Dialog>
-
-        <Button type="button" size="sm" variant="outline" onClick={onLogout}>Esci</Button>
       </div>
     );
   }
