@@ -93,7 +93,7 @@ export default function Storico() {
   return (
     <div className="min-h-screen">
       <header className="bg-header-bg text-header-foreground border-b shadow-sm">
-        <div className="container max-w-6xl py-3 sm:py-6 flex items-center justify-between gap-3">
+        <div className="container max-w-5xl py-3 sm:py-6 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <Link to="/" reloadDocument><img src="/logo.png" alt="RitiriPro" className="h-8 sm:h-10 w-auto object-contain cursor-pointer" /></Link>
             <div className="hidden sm:block">
@@ -121,7 +121,7 @@ export default function Storico() {
         </div>
       </header>
 
-      <main className="container max-w-6xl py-8 space-y-6">
+      <main className="container max-w-5xl py-8 space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="rounded-lg bg-stat-bg p-4 flex items-center gap-3">
             <Package className="h-5 w-5 text-stat-foreground" />
