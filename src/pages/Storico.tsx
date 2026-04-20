@@ -95,10 +95,12 @@ export default function Storico() {
       <header className="bg-header-bg text-header-foreground border-b shadow-sm">
         <div className="container max-w-5xl py-3 sm:py-6 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <Link to="/" reloadDocument><img src="/logo.png" alt="RitiriPro" className="h-8 sm:h-10 w-auto object-contain cursor-pointer" /></Link>
+            <Link to="/" reloadDocument><img src="/logo.png" alt="Torino Hi-Tech" className="h-8 sm:h-12 w-auto object-contain cursor-pointer" /></Link>
             <div className="hidden sm:block">
-              <h1 className="text-2xl font-bold tracking-tight">RitiriPro</h1>
-              <p className="text-sm opacity-80">Storico ritiri registrati</p>
+              <h1 className="text-2xl font-bold tracking-tight">
+                RitiriPro <span className="text-sm font-normal opacity-80">di Hammer Guerrero</span>
+              </h1>
+              <p className="text-sm opacity-80">Gestione acquisti articoli elettronici usati</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
