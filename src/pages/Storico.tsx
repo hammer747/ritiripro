@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import {
@@ -16,6 +16,7 @@ import EtichettaLabel from "@/components/EtichettaLabel";
 import { generateMonthlyReport } from "@/lib/report";
 import { Search, ArrowLeft, Package, Euro, FileDown } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { LoginDialog, RegisteredUser } from "@/components/ui/login-dialog";
 
 const MESI = [
   "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
@@ -28,6 +29,9 @@ export default function Storico() {
   const [search, setSearch] = useState("");
   const [meseFiltro, setMeseFiltro] = useState<string>("tutti");
   const [labelRitiro, setLabelRitiro] = useState<Ritiro | null>(null);
+  const [currentUser, setCurrentUser] = useState<RegisteredUser | null>(() => {
+    try { return JSON.parse(localStorage.getItem("ritiri_facili_user") || "null"); } catch { return null; }
+  });
 
   const reload = useCallback(() => {
     getRitiri().then(setRitiri).catch(() => setRitiri([]));
@@ -99,6 +103,15 @@ export default function Storico() {
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
+            <LoginDialog
+              currentUser={currentUser}
+              onAuthSuccess={(user) => setCurrentUser(user)}
+              onLogout={() => {
+                localStorage.removeItem("ritiri_facili_user");
+                setCurrentUser(null);
+                navigate("/");
+              }}
+            />
             <Link to="/">
               <Button variant="secondary" size="sm">
                 <ArrowLeft className="h-4 w-4 mr-1" /> <span className="hidden sm:inline">Home</span>
