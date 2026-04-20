@@ -120,7 +120,7 @@ export default function Storico() {
           <div className="rounded-lg bg-stat-bg p-4 flex items-center gap-3">
             <Euro className="h-5 w-5 text-stat-foreground" />
             <div>
-              <p className="text-2xl font-bold text-stat-foreground">€ {totale.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-stat-foreground">€ {Math.round(totale)}</p>
               <p className="text-xs text-muted-foreground">Totale visualizzato</p>
             </div>
           </div>

@@ -222,7 +222,7 @@ export default function Index() {
           <div className="rounded-lg bg-stat-bg p-4 flex items-center gap-3">
             <Euro className="h-5 w-5 text-stat-foreground" />
             <div>
-              <p className="text-2xl font-bold text-stat-foreground">€ {totaleMese.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-stat-foreground">€ {Math.round(totaleMese)}</p>
               <p className="text-xs text-muted-foreground">Totale acquisti</p>
             </div>
           </div>
@@ -230,7 +230,7 @@ export default function Index() {
             <TrendingUp className="h-5 w-5 text-stat-foreground" />
             <div>
               <p className={`text-2xl font-bold ${guadagniDelMese >= 0 ? "text-stat-foreground" : "text-destructive"}`}>
-                € {guadagniDelMese.toFixed(2)}
+                € {Math.round(guadagniDelMese)}
               </p>
               <p className="text-xs text-muted-foreground">Guadagni del mese</p>
             </div>
