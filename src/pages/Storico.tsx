@@ -162,12 +162,12 @@ export default function Storico() {
           onPrint={(r) => setLabelRitiro(r)}
         />
       </main>
-    </div>
 
-    <EtichettaLabel
-      ritiro={labelRitiro}
-      open={!!labelRitiro}
-      onClose={() => setLabelRitiro(null)}
-    />
+      <EtichettaLabel
+        ritiro={labelRitiro}
+        open={!!labelRitiro}
+        onClose={() => setLabelRitiro(null)}
+      />
+    </div>
   );
 }
