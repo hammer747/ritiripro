@@ -364,15 +364,15 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <Label htmlFor="nome">Nome:</Label>
-            <Input id="nome" value={form.nomeCliente} onChange={(e) => set("nomeCliente", e.target.value)} placeholder="Mario" className={errClass("nomeCliente")} />
+            <Input id="nome" value={form.nomeCliente} onChange={(e) => set("nomeCliente", capitalizeFirstLetter(e.target.value))} placeholder="Mario" className={errClass("nomeCliente")} />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="cognome">Cognome:</Label>
-            <Input id="cognome" value={form.cognomeCliente} onChange={(e) => set("cognomeCliente", e.target.value)} placeholder="Rossi" className={errClass("cognomeCliente")} />
+            <Input id="cognome" value={form.cognomeCliente} onChange={(e) => set("cognomeCliente", capitalizeFirstLetter(e.target.value))} placeholder="Rossi" className={errClass("cognomeCliente")} />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="cf">Codice Fiscale:</Label>
-            <Input id="cf" value={form.codiceFiscale} onChange={(e) => set("codiceFiscale", e.target.value)} placeholder="RSSMRA80A01H501U" className={`uppercase ${errClass("codiceFiscale")}`} maxLength={16} />
+            <Input id="cf" value={form.codiceFiscale} onChange={(e) => set("codiceFiscale", e.target.value.toUpperCase())} placeholder="RSSMRA80A01H501U" className={errClass("codiceFiscale")} maxLength={16} />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="telefono">Numero di Telefono:</Label>
