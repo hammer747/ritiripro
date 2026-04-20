@@ -39,6 +39,10 @@ type ApiRitiro = {
   pinDispositivo: string | null;
   dataAcquisto: string;
   note: string | null;
+  speseAggiuntiveMode: "manuale" | "automatico" | null;
+  speseAggiuntiveDescrizione: string | null;
+  speseAggiuntivePrezzo: number | string | null;
+  speseAggiuntiveRitiroId: string | null;
 };
 
 function mapApiToRitiro(item: ApiRitiro): Ritiro {
@@ -69,6 +73,10 @@ function mapApiToRitiro(item: ApiRitiro): Ritiro {
     pinDispositivo: item.pinDispositivo || undefined,
     dataAcquisto: item.dataAcquisto,
     note: item.note || "",
+    speseAggiuntiveMode: item.speseAggiuntiveMode || undefined,
+    speseAggiuntiveDescrizione: item.speseAggiuntiveDescrizione || undefined,
+    speseAggiuntivePrezzo: item.speseAggiuntivePrezzo !== null && item.speseAggiuntivePrezzo !== undefined ? Number(item.speseAggiuntivePrezzo) : undefined,
+    speseAggiuntiveRitiroId: item.speseAggiuntiveRitiroId || undefined,
   };
 }
 
@@ -181,7 +189,23 @@ function toFormData(ritiro: Ritiro): FormData {
     form.append("ricevutaAcquistoNome", ritiro.ricevutaAcquistoNome || "");
   }
 
+  if (ritiro.speseAggiuntiveMode) {
+    form.append("speseAggiuntiveMode", ritiro.speseAggiuntiveMode);
+    form.append("speseAggiuntiveDescrizione", ritiro.speseAggiuntiveDescrizione || "");
+    form.append("speseAggiuntivePrezzo", ritiro.speseAggiuntivePrezzo !== undefined ? String(ritiro.speseAggiuntivePrezzo) : "");
+    form.append("speseAggiuntiveRitiroId", ritiro.speseAggiuntiveRitiroId || "");
+  }
+
   return form;
+}
+
+export async function markRitiroAsSold(ritiro: Ritiro): Promise<Ritiro> {
+  return updateRitiro({
+    ...ritiro,
+    venduto: true,
+    dataVendita: ritiro.dataVendita || new Date().toISOString().split("T")[0],
+    prezzoVendita: ritiro.prezzoVendita ?? ritiro.prezzo,
+  });
 }
 
 export async function getRitiri(): Promise<Ritiro[]> {

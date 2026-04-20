@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Ritiro } from "@/lib/types";
-import { saveRitiro, updateRitiro, formatCodiceRitiro } from "@/lib/storage";
+import { saveRitiro, updateRitiro, markRitiroAsSold, formatCodiceRitiro } from "@/lib/storage";
 import { toast } from "sonner";
 import { UserPlus, Pencil, Upload, X, FileText, Download } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -22,6 +22,7 @@ interface Props {
   editingRitiro?: Ritiro | null;
   onCancelEdit?: () => void;
   nextNumeroRitiro?: number;
+  ritiri?: Ritiro[];
 }
 
 const emptyForm = {
@@ -49,6 +50,10 @@ const emptyForm = {
   pinDispositivo: "",
   dataAcquisto: new Date().toISOString().split("T")[0],
   note: "",
+  speseAggiuntiveMode: "" as "" | "manuale" | "automatico",
+  speseAggiuntiveDescrizione: "",
+  speseAggiuntivePrezzo: "",
+  speseAggiuntiveRitiroId: "",
 };
 
 async function downloadFile(url: string, filename: string) {
@@ -74,7 +79,7 @@ function generateUUID(): string {
   });
 }
 
-export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextNumeroRitiro }: Props) {
+export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextNumeroRitiro, ritiri = [] }: Props) {
   const [form, setForm] = useState(emptyForm);
   const [fieldErrors, setFieldErrors] = useState<Set<string>>(new Set());
   const fileFronteRef = useRef<HTMLInputElement>(null);
@@ -113,6 +118,10 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
         pinDispositivo: editingRitiro.pinDispositivo || "",
         dataAcquisto: editingRitiro.dataAcquisto,
         note: editingRitiro.note,
+        speseAggiuntiveMode: editingRitiro.speseAggiuntiveMode || "",
+        speseAggiuntiveDescrizione: editingRitiro.speseAggiuntiveDescrizione || "",
+        speseAggiuntivePrezzo: editingRitiro.speseAggiuntivePrezzo?.toString() || "",
+        speseAggiuntiveRitiroId: editingRitiro.speseAggiuntiveRitiroId || "",
       });
     }
   }, [editingRitiro]);
@@ -279,6 +288,10 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
       pinDispositivo: form.pinDispositivo.trim() || undefined,
       dataAcquisto: form.dataAcquisto,
       note: form.note.trim(),
+      speseAggiuntiveMode: form.speseAggiuntiveMode || undefined,
+      speseAggiuntiveDescrizione: form.speseAggiuntiveMode ? form.speseAggiuntiveDescrizione.trim() || undefined : undefined,
+      speseAggiuntivePrezzo: form.speseAggiuntiveMode && form.speseAggiuntivePrezzo ? parseFloat(form.speseAggiuntivePrezzo) : undefined,
+      speseAggiuntiveRitiroId: form.speseAggiuntiveMode === "automatico" ? form.speseAggiuntiveRitiroId || undefined : undefined,
     };
 
     try {
@@ -290,6 +303,13 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
       } else {
         saved = await saveRitiro(ritiro);
         toast.success("Ritiro registrato con successo!");
+      }
+
+      if (form.speseAggiuntiveMode === "automatico" && form.speseAggiuntiveRitiroId) {
+        const linked = ritiri.find((r) => r.id === form.speseAggiuntiveRitiroId);
+        if (linked && !linked.venduto) {
+          await markRitiroAsSold(linked);
+        }
       }
 
       setForm(emptyForm);
@@ -548,6 +568,86 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
             </div>
           )}
         </div>
+      </fieldset>
+
+      {/* Spese Aggiuntive */}
+      <fieldset className="space-y-4 rounded-lg border p-4">
+        <legend className="px-2 text-sm font-medium text-muted-foreground">Spese Aggiuntive</legend>
+        <div className="flex gap-2">
+          {(["", "manuale", "automatico"] as const).map((m) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => setForm((f) => ({ ...f, speseAggiuntiveMode: m, speseAggiuntiveDescrizione: "", speseAggiuntivePrezzo: "", speseAggiuntiveRitiroId: "" }))}
+              className={`px-3 py-1.5 rounded-md text-sm font-medium border transition-colors ${
+                form.speseAggiuntiveMode === m
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-background text-muted-foreground border-border hover:border-primary"
+              }`}
+            >
+              {m === "" ? "Nessuna" : m === "manuale" ? "Manuale" : "Automatico"}
+            </button>
+          ))}
+        </div>
+
+        {form.speseAggiuntiveMode === "manuale" && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="speseDesc">Descrizione spesa:</Label>
+              <Input id="speseDesc" value={form.speseAggiuntiveDescrizione} onChange={(e) => set("speseAggiuntiveDescrizione", e.target.value)} placeholder="es. Riparazione schermo" />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="spesePrezzo">Importo aggiuntivo (€):</Label>
+              <Input id="spesePrezzo" type="number" step="0.01" min="0" value={form.speseAggiuntivePrezzo} onChange={(e) => set("speseAggiuntivePrezzo", e.target.value)} placeholder="20.00" />
+            </div>
+          </div>
+        )}
+
+        {form.speseAggiuntiveMode === "automatico" && (
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label>Ritiro collegato (sarà marcato come venduto):</Label>
+              <Select
+                value={form.speseAggiuntiveRitiroId}
+                onValueChange={(id) => {
+                  const linked = ritiri.find((r) => r.id === id);
+                  setForm((f) => ({
+                    ...f,
+                    speseAggiuntiveRitiroId: id,
+                    speseAggiuntivePrezzo: linked ? String(linked.prezzo) : "",
+                    speseAggiuntiveDescrizione: linked ? `Ritiro ${formatCodiceRitiro(linked.numeroRitiro, linked.dataAcquisto) || id.slice(0, 8)}` : "",
+                  }));
+                }}
+              >
+                <SelectTrigger><SelectValue placeholder="Seleziona un ritiro..." /></SelectTrigger>
+                <SelectContent>
+                  {ritiri.filter((r) => !r.venduto && r.id !== editingRitiro?.id).map((r) => (
+                    <SelectItem key={r.id} value={r.id}>
+                      {formatCodiceRitiro(r.numeroRitiro, r.dataAcquisto)} — {r.marcaModello || r.articolo} ({r.cognomeCliente}) — € {r.prezzo.toFixed(2)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {form.speseAggiuntiveRitiroId && (
+              <div className="rounded-md bg-amber-50 border border-amber-200 px-3 py-2 text-sm text-amber-800">
+                Il ritiro selezionato verrà marcato automaticamente come <strong>venduto</strong> al salvataggio.
+              </div>
+            )}
+          </div>
+        )}
+
+        {form.speseAggiuntiveMode && form.prezzo && form.speseAggiuntivePrezzo && (
+          <p className="text-sm font-medium">
+            Costo totale:{" "}
+            <span className="text-primary font-bold">
+              € {(parseFloat(form.prezzo) + parseFloat(form.speseAggiuntivePrezzo)).toFixed(2)}
+            </span>
+            <span className="text-muted-foreground font-normal ml-1">
+              (€ {parseFloat(form.prezzo).toFixed(2)} + € {parseFloat(form.speseAggiuntivePrezzo).toFixed(2)})
+            </span>
+          </p>
+        )}
       </fieldset>
 
       <div className="flex gap-3">

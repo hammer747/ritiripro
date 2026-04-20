@@ -9,7 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Trash2, Pencil, FileText } from "lucide-react";
+import { Trash2, Pencil, FileText, Tag } from "lucide-react";
 import { toast } from "sonner";
 
 const DOC_LABELS: Record<string, string> = {
@@ -23,9 +23,10 @@ interface Props {
   ritiri: Ritiro[];
   onChanged: () => void;
   onEdit: (ritiro: Ritiro) => void;
+  onPrint?: (ritiro: Ritiro) => void;
 }
 
-export default function RitiriTable({ ritiri, onChanged, onEdit }: Props) {
+export default function RitiriTable({ ritiri, onChanged, onEdit, onPrint }: Props) {
   const handleDelete = async (id: string) => {
     if (!confirm("Eliminare questo ritiro?")) return;
     try {
@@ -102,6 +103,17 @@ export default function RitiriTable({ ritiri, onChanged, onEdit }: Props) {
               </TableCell>
               <TableCell>
                 <div className="flex gap-1">
+                  {onPrint && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-primary hover:text-primary"
+                      title="Stampa etichetta"
+                      onClick={() => onPrint(r)}
+                    >
+                      <Tag className="h-4 w-4" />
+                    </Button>
+                  )}
                   <Button
                     variant="ghost"
                     size="icon"

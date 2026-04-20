@@ -27,6 +27,10 @@ export interface RitiroRecord {
   pinDispositivo: string | null;
   dataAcquisto: string;
   note: string;
+  speseAggiuntiveMode: "manuale" | "automatico" | null;
+  speseAggiuntiveDescrizione: string | null;
+  speseAggiuntivePrezzo: number | null;
+  speseAggiuntiveRitiroId: string | null;
   ownerEmail: string;
   createdAt: string;
   updatedAt: string;
@@ -58,4 +62,8 @@ export interface SaveRitiroPayload {
   pinDispositivo: string | null;
   dataAcquisto: string;
   note: string;
+  speseAggiuntiveMode: "manuale" | "automatico" | null;
+  speseAggiuntiveDescrizione: string | null;
+  speseAggiuntivePrezzo: number | null;
+  speseAggiuntiveRitiroId: string | null;
 }

@@ -15,9 +15,10 @@ import RitiriTable from "@/components/RitiriTable";
 import EtichettaLabel from "@/components/EtichettaLabel";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Search, Package, Euro, Calendar, List, TrendingUp } from "lucide-react";
+import { Search, Package, Euro, Calendar, List, TrendingUp, FileDown } from "lucide-react";
 import { LoginDialog, RegisteredUser } from "@/components/ui/login-dialog";
 import LoginPage from "@/components/LoginPage";
+import { generateMonthlyReport } from "@/lib/report";
 
 const MESI = [
   "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
@@ -234,6 +235,11 @@ export default function Index() {
             </div>
           </div>
         </div>
+        <div className="flex justify-end">
+          <Button variant="outline" size="sm" onClick={() => generateMonthlyReport(ritiriDelMese, meseSelezionato)}>
+            <FileDown className="h-4 w-4 mr-1" /> Genera report PDF
+          </Button>
+        </div>
 
         <div ref={formRef} className="rounded-xl bg-card p-6 shadow-sm border">
           <RitiroForm
@@ -241,6 +247,7 @@ export default function Index() {
             editingRitiro={editingRitiro}
             onCancelEdit={() => setEditingRitiro(null)}
             nextNumeroRitiro={Math.max(0, ...ritiri.map((r) => r.numeroRitiro ?? 0)) + 1}
+            ritiri={ritiri}
           />
         </div>
 
@@ -256,10 +263,9 @@ export default function Index() {
           </div>
           <RitiriTable
             ritiri={filtered}
-            onChanged={() => {
-              reload().catch(() => void 0);
-            }}
+            onChanged={() => { reload().catch(() => void 0); }}
             onEdit={handleEdit}
+            onPrint={(r) => setLabelRitiro(r)}
           />
         </div>
       </main>

@@ -12,7 +12,9 @@ import { Button } from "@/components/ui/button";
 import { getRitiri, formatCodiceRitiro } from "@/lib/storage";
 import { Ritiro } from "@/lib/types";
 import RitiriTable from "@/components/RitiriTable";
-import { Search, ArrowLeft, Package, Euro } from "lucide-react";
+import EtichettaLabel from "@/components/EtichettaLabel";
+import { generateMonthlyReport } from "@/lib/report";
+import { Search, ArrowLeft, Package, Euro, FileDown } from "lucide-react";
 
 const MESI = [
   "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
@@ -24,6 +26,7 @@ export default function Storico() {
   const [ritiri, setRitiri] = useState<Ritiro[]>([]);
   const [search, setSearch] = useState("");
   const [meseFiltro, setMeseFiltro] = useState<string>("tutti");
+  const [labelRitiro, setLabelRitiro] = useState<Ritiro | null>(null);
 
   const reload = useCallback(() => {
     getRitiri().then(setRitiri).catch(() => setRitiri([]));
@@ -146,8 +149,25 @@ export default function Storico() {
           </Select>
         </div>
 
-        <RitiriTable ritiri={filtered} onChanged={reload} onEdit={(r) => navigate("/", { state: { editRitiro: r } })} />
+        <div className="flex justify-end">
+          <Button variant="outline" size="sm" disabled={meseFiltro === "tutti"} onClick={() => meseFiltro !== "tutti" && generateMonthlyReport(filtered, meseFiltro)}>
+            <FileDown className="h-4 w-4 mr-1" /> Genera report PDF
+          </Button>
+        </div>
+
+        <RitiriTable
+          ritiri={filtered}
+          onChanged={reload}
+          onEdit={(r) => navigate("/", { state: { editRitiro: r } })}
+          onPrint={(r) => setLabelRitiro(r)}
+        />
       </main>
     </div>
+
+    <EtichettaLabel
+      ritiro={labelRitiro}
+      open={!!labelRitiro}
+      onClose={() => setLabelRitiro(null)}
+    />
   );
 }

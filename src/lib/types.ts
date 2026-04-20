@@ -27,4 +27,8 @@ export interface Ritiro {
   pinDispositivo?: string;
   dataAcquisto: string;
   note: string;
+  speseAggiuntiveMode?: "manuale" | "automatico";
+  speseAggiuntiveDescrizione?: string;
+  speseAggiuntivePrezzo?: number;
+  speseAggiuntiveRitiroId?: string;
 }
