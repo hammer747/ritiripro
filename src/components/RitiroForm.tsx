@@ -504,7 +504,7 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="data">Data Acquisto:</Label>
-            <Input id="data" type="date" value={form.dataAcquisto} onChange={(e) => set("dataAcquisto", e.target.value)} className={`w-full ${errClass("dataAcquisto")}`} />
+            <Input id="data" type="date" value={form.dataAcquisto} onChange={(e) => set("dataAcquisto", e.target.value)} className={`w-full appearance-none ${errClass("dataAcquisto")}`} />
           </div>
         </div>
         <div className="flex items-center gap-2 pt-2">
@@ -531,7 +531,7 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="dataVendita">Data Vendita:</Label>
-                <Input id="dataVendita" type="date" value={form.dataVendita} onChange={(e) => set("dataVendita", e.target.value)} />
+                <Input id="dataVendita" type="date" value={form.dataVendita} onChange={(e) => set("dataVendita", e.target.value)} className="appearance-none" />
               </div>
             </div>
             {form.prezzo && form.prezzoVendita && (
