@@ -15,6 +15,7 @@ import RitiriTable from "@/components/RitiriTable";
 import EtichettaLabel from "@/components/EtichettaLabel";
 import { generateMonthlyReport } from "@/lib/report";
 import { Search, ArrowLeft, Package, Euro, FileDown } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const MESI = [
   "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
@@ -87,20 +88,23 @@ export default function Storico() {
 
   return (
     <div className="min-h-screen">
-      <header className="bg-header-bg text-header-foreground">
-        <div className="container max-w-6xl py-6 flex items-center justify-between gap-3">
+      <header className="bg-header-bg text-header-foreground border-b shadow-sm">
+        <div className="container max-w-6xl py-3 sm:py-6 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <Link to="/"><img src="/logo.png" alt="RitiriPro" className="h-10 w-auto object-contain cursor-pointer" /></Link>
-            <div>
+            <Link to="/"><img src="/logo.png" alt="RitiriPro" className="h-8 sm:h-10 w-auto object-contain cursor-pointer" /></Link>
+            <div className="hidden sm:block">
               <h1 className="text-2xl font-bold tracking-tight">RitiriPro</h1>
               <p className="text-sm opacity-80">Storico ritiri registrati</p>
             </div>
           </div>
-          <Link to="/">
-            <Button variant="secondary" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-1" /> Home
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Link to="/">
+              <Button variant="secondary" size="sm">
+                <ArrowLeft className="h-4 w-4 mr-1" /> <span className="hidden sm:inline">Home</span>
+              </Button>
+            </Link>
+          </div>
         </div>
       </header>
 
