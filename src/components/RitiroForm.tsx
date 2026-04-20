@@ -14,7 +14,8 @@ import {
 import { Ritiro } from "@/lib/types";
 import { saveRitiro, updateRitiro, markRitiroAsSold, formatCodiceRitiro } from "@/lib/storage";
 import { toast } from "sonner";
-import { UserPlus, Pencil, Upload, X, FileText, Download } from "lucide-react";
+import { UserPlus, Pencil, Upload, X, FileText, Download, Plus, Trash2 } from "lucide-react";
+import { SpeseAggiuntiva } from "@/lib/types";
 import { Checkbox } from "@/components/ui/checkbox";
 
 interface Props {
@@ -50,10 +51,6 @@ const emptyForm = {
   pinDispositivo: "",
   dataAcquisto: new Date().toISOString().split("T")[0],
   note: "",
-  speseAggiuntiveMode: "" as "" | "manuale" | "automatico",
-  speseAggiuntiveDescrizione: "",
-  speseAggiuntivePrezzo: "",
-  speseAggiuntiveRitiroId: "",
 };
 
 async function downloadFile(url: string, filename: string) {
@@ -79,9 +76,12 @@ function generateUUID(): string {
   });
 }
 
+type SpeseVoce = { mode: "manuale" | "automatico"; descrizione: string; prezzo: string; ritiroId: string };
+
 export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextNumeroRitiro, ritiri = [] }: Props) {
   const [form, setForm] = useState(emptyForm);
   const [fieldErrors, setFieldErrors] = useState<Set<string>>(new Set());
+  const [speseVoci, setSpeseVoci] = useState<SpeseVoce[]>([]);
   const fileFronteRef = useRef<HTMLInputElement>(null);
   const fileRetroRef = useRef<HTMLInputElement>(null);
   const fileRicevutaRef = useRef<HTMLInputElement>(null);
@@ -118,11 +118,15 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
         pinDispositivo: editingRitiro.pinDispositivo || "",
         dataAcquisto: editingRitiro.dataAcquisto,
         note: editingRitiro.note,
-        speseAggiuntiveMode: editingRitiro.speseAggiuntiveMode || "",
-        speseAggiuntiveDescrizione: editingRitiro.speseAggiuntiveDescrizione || "",
-        speseAggiuntivePrezzo: editingRitiro.speseAggiuntivePrezzo?.toString() || "",
-        speseAggiuntiveRitiroId: editingRitiro.speseAggiuntiveRitiroId || "",
       });
+      setSpeseVoci(
+        (editingRitiro.speseAggiuntive ?? []).map((v) => ({
+          mode: v.mode,
+          descrizione: v.descrizione,
+          prezzo: String(v.prezzo),
+          ritiroId: v.ritiroId || "",
+        }))
+      );
     }
   }, [editingRitiro]);
 
@@ -288,10 +292,16 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
       pinDispositivo: form.pinDispositivo.trim() || undefined,
       dataAcquisto: form.dataAcquisto,
       note: form.note.trim(),
-      speseAggiuntiveMode: form.speseAggiuntiveMode || undefined,
-      speseAggiuntiveDescrizione: form.speseAggiuntiveMode ? form.speseAggiuntiveDescrizione.trim() || undefined : undefined,
-      speseAggiuntivePrezzo: form.speseAggiuntiveMode && form.speseAggiuntivePrezzo ? parseFloat(form.speseAggiuntivePrezzo) : undefined,
-      speseAggiuntiveRitiroId: form.speseAggiuntiveMode === "automatico" ? form.speseAggiuntiveRitiroId || undefined : undefined,
+      speseAggiuntive: speseVoci.length > 0
+        ? speseVoci
+            .filter((v) => v.prezzo)
+            .map((v) => ({
+              mode: v.mode,
+              descrizione: v.descrizione.trim(),
+              prezzo: parseFloat(v.prezzo),
+              ritiroId: v.mode === "automatico" ? v.ritiroId || undefined : undefined,
+            } as SpeseAggiuntiva))
+        : undefined,
     };
 
     try {
@@ -305,14 +315,15 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
         toast.success("Ritiro registrato con successo!");
       }
 
-      if (form.speseAggiuntiveMode === "automatico" && form.speseAggiuntiveRitiroId) {
-        const linked = ritiri.find((r) => r.id === form.speseAggiuntiveRitiroId);
-        if (linked && !linked.venduto) {
-          await markRitiroAsSold(linked);
+      for (const voce of speseVoci) {
+        if (voce.mode === "automatico" && voce.ritiroId) {
+          const linked = ritiri.find((r) => r.id === voce.ritiroId);
+          if (linked && !linked.venduto) await markRitiroAsSold(linked);
         }
       }
 
       setForm(emptyForm);
+      setSpeseVoci([]);
       if (fileFronteRef.current) fileFronteRef.current.value = "";
       if (fileRetroRef.current) fileRetroRef.current.value = "";
       if (fileRicevutaRef.current) fileRicevutaRef.current.value = "";
@@ -325,6 +336,7 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
   const handleCancel = () => {
     setForm(emptyForm);
     setFieldErrors(new Set());
+    setSpeseVoci([]);
     if (fileFronteRef.current) fileFronteRef.current.value = "";
     if (fileRetroRef.current) fileRetroRef.current.value = "";
     if (fileRicevutaRef.current) fileRicevutaRef.current.value = "";
@@ -571,80 +583,93 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
       </fieldset>
 
       {/* Spese Aggiuntive */}
-      <fieldset className="space-y-4 rounded-lg border p-4">
+      <fieldset className="space-y-3 rounded-lg border p-4">
         <legend className="px-2 text-sm font-medium text-muted-foreground">Spese Aggiuntive</legend>
-        <div className="flex gap-2">
-          {(["", "manuale", "automatico"] as const).map((m) => (
-            <button
-              key={m}
-              type="button"
-              onClick={() => setForm((f) => ({ ...f, speseAggiuntiveMode: m, speseAggiuntiveDescrizione: "", speseAggiuntivePrezzo: "", speseAggiuntiveRitiroId: "" }))}
-              className={`px-3 py-1.5 rounded-md text-sm font-medium border transition-colors ${
-                form.speseAggiuntiveMode === m
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-background text-muted-foreground border-border hover:border-primary"
-              }`}
-            >
-              {m === "" ? "Nessuna" : m === "manuale" ? "Manuale" : "Automatico"}
-            </button>
-          ))}
-        </div>
 
-        {form.speseAggiuntiveMode === "manuale" && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="speseDesc">Descrizione spesa:</Label>
-              <Input id="speseDesc" value={form.speseAggiuntiveDescrizione} onChange={(e) => set("speseAggiuntiveDescrizione", e.target.value)} placeholder="es. Riparazione schermo" />
+        {speseVoci.map((voce, i) => (
+          <div key={i} className="rounded-md border bg-muted/30 p-3 space-y-3">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex gap-2">
+                {(["manuale", "automatico"] as const).map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => setSpeseVoci((prev) => prev.map((v, j) => j === i ? { ...v, mode: m, ritiroId: "", prezzo: "", descrizione: "" } : v))}
+                    className={`px-2.5 py-1 rounded text-xs font-medium border transition-colors ${voce.mode === m ? "bg-primary text-primary-foreground border-primary" : "bg-background text-muted-foreground border-border hover:border-primary"}`}
+                  >
+                    {m === "manuale" ? "Manuale" : "Automatico"}
+                  </button>
+                ))}
+              </div>
+              <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => setSpeseVoci((prev) => prev.filter((_, j) => j !== i))}>
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="spesePrezzo">Importo aggiuntivo (€):</Label>
-              <Input id="spesePrezzo" type="number" step="0.01" min="0" value={form.speseAggiuntivePrezzo} onChange={(e) => set("speseAggiuntivePrezzo", e.target.value)} placeholder="20.00" />
-            </div>
-          </div>
-        )}
 
-        {form.speseAggiuntiveMode === "automatico" && (
-          <div className="space-y-3">
-            <div className="space-y-1.5">
-              <Label>Ritiro collegato (sarà marcato come venduto):</Label>
-              <Select
-                value={form.speseAggiuntiveRitiroId}
-                onValueChange={(id) => {
-                  const linked = ritiri.find((r) => r.id === id);
-                  setForm((f) => ({
-                    ...f,
-                    speseAggiuntiveRitiroId: id,
-                    speseAggiuntivePrezzo: linked ? String(linked.prezzo) : "",
-                    speseAggiuntiveDescrizione: linked ? `Ritiro ${formatCodiceRitiro(linked.numeroRitiro, linked.dataAcquisto) || id.slice(0, 8)}` : "",
-                  }));
-                }}
-              >
-                <SelectTrigger><SelectValue placeholder="Seleziona un ritiro..." /></SelectTrigger>
-                <SelectContent>
-                  {ritiri.filter((r) => !r.venduto && r.id !== editingRitiro?.id).map((r) => (
-                    <SelectItem key={r.id} value={r.id}>
-                      {formatCodiceRitiro(r.numeroRitiro, r.dataAcquisto)} — {r.marcaModello || r.articolo} ({r.cognomeCliente}) — € {r.prezzo.toFixed(2)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            {form.speseAggiuntiveRitiroId && (
-              <div className="rounded-md bg-amber-50 border border-amber-200 px-3 py-2 text-sm text-amber-800">
-                Il ritiro selezionato verrà marcato automaticamente come <strong>venduto</strong> al salvataggio.
+            {voce.mode === "manuale" && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs">Descrizione:</Label>
+                  <Input value={voce.descrizione} onChange={(e) => setSpeseVoci((prev) => prev.map((v, j) => j === i ? { ...v, descrizione: e.target.value } : v))} placeholder="es. Riparazione schermo" className="h-8 text-sm" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Importo (€):</Label>
+                  <Input type="number" step="0.01" min="0" value={voce.prezzo} onChange={(e) => setSpeseVoci((prev) => prev.map((v, j) => j === i ? { ...v, prezzo: e.target.value } : v))} placeholder="20.00" className="h-8 text-sm" />
+                </div>
+              </div>
+            )}
+
+            {voce.mode === "automatico" && (
+              <div className="space-y-2">
+                <Label className="text-xs">Ritiro collegato (sarà marcato venduto):</Label>
+                <Select
+                  value={voce.ritiroId}
+                  onValueChange={(id) => {
+                    const linked = ritiri.find((r) => r.id === id);
+                    setSpeseVoci((prev) => prev.map((v, j) => j === i ? {
+                      ...v,
+                      ritiroId: id,
+                      prezzo: linked ? String(linked.prezzo) : "",
+                      descrizione: linked ? `Ritiro ${formatCodiceRitiro(linked.numeroRitiro, linked.dataAcquisto) || id.slice(0, 8)}` : "",
+                    } : v));
+                  }}
+                >
+                  <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="Seleziona ritiro..." /></SelectTrigger>
+                  <SelectContent>
+                    {ritiri.filter((r) => !r.venduto && r.id !== editingRitiro?.id).map((r) => (
+                      <SelectItem key={r.id} value={r.id}>
+                        {formatCodiceRitiro(r.numeroRitiro, r.dataAcquisto)} — {r.marcaModello || r.articolo} ({r.cognomeCliente}) — € {r.prezzo.toFixed(2)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {voce.ritiroId && (
+                  <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1">
+                    Verrà marcato come <strong>venduto</strong> al salvataggio.
+                  </p>
+                )}
               </div>
             )}
           </div>
-        )}
+        ))}
 
-        {form.speseAggiuntiveMode && form.prezzo && form.speseAggiuntivePrezzo && (
-          <p className="text-sm font-medium">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => setSpeseVoci((prev) => [...prev, { mode: "manuale", descrizione: "", prezzo: "", ritiroId: "" }])}
+        >
+          <Plus className="h-4 w-4 mr-1" /> Aggiungi spesa
+        </Button>
+
+        {speseVoci.length > 0 && form.prezzo && (
+          <p className="text-sm font-medium pt-1">
             Costo totale:{" "}
             <span className="text-primary font-bold">
-              € {(parseFloat(form.prezzo) + parseFloat(form.speseAggiuntivePrezzo)).toFixed(2)}
+              € {(parseFloat(form.prezzo || "0") + speseVoci.reduce((s, v) => s + (parseFloat(v.prezzo) || 0), 0)).toFixed(2)}
             </span>
-            <span className="text-muted-foreground font-normal ml-1">
-              (€ {parseFloat(form.prezzo).toFixed(2)} + € {parseFloat(form.speseAggiuntivePrezzo).toFixed(2)})
+            <span className="text-muted-foreground font-normal ml-1 text-xs">
+              (acquisto + {speseVoci.length} {speseVoci.length === 1 ? "spesa" : "spese"})
             </span>
           </p>
         )}

@@ -35,8 +35,9 @@ export function generateMonthlyReport(ritiri: Ritiro[], meseKey: string): void {
 
   const venduti = ritiri.filter((r) => r.venduto);
   const inStock = ritiri.filter((r) => !r.venduto);
-  const totAcquisti = ritiri.reduce((s, r) => s + r.prezzo + (r.speseAggiuntivePrezzo ?? 0), 0);
-  const totGuadagni = venduti.reduce((s, r) => s + ((r.prezzoVendita ?? 0) - (r.prezzo + (r.speseAggiuntivePrezzo ?? 0))), 0);
+  const speseSum = (r: Ritiro) => (r.speseAggiuntive ?? []).reduce((s, v) => s + v.prezzo, 0);
+  const totAcquisti = ritiri.reduce((s, r) => s + r.prezzo + speseSum(r), 0);
+  const totGuadagni = venduti.reduce((s, r) => s + ((r.prezzoVendita ?? 0) - (r.prezzo + speseSum(r))), 0);
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
@@ -47,7 +48,7 @@ export function generateMonthlyReport(ritiri: Ritiro[], meseKey: string): void {
   );
 
   const rows = ritiri.map((r) => {
-    const costoTotale = r.prezzo + (r.speseAggiuntivePrezzo ?? 0);
+    const costoTotale = r.prezzo + speseSum(r);
     const margine = r.venduto && r.prezzoVendita !== undefined
       ? r.prezzoVendita - costoTotale
       : null;
@@ -58,7 +59,7 @@ export function generateMonthlyReport(ritiri: Ritiro[], meseKey: string): void {
       r.marcaModello || r.articolo,
       r.serialeImei || "-",
       `€ ${r.prezzo.toFixed(2)}`,
-      r.speseAggiuntivePrezzo ? `€ ${r.speseAggiuntivePrezzo.toFixed(2)}` : "-",
+      speseSum(r) > 0 ? `€ ${speseSum(r).toFixed(2)}` : "-",
       `€ ${costoTotale.toFixed(2)}`,
       r.venduto ? "Venduto" : "In stock",
       r.venduto && r.prezzoVendita !== undefined ? `€ ${r.prezzoVendita.toFixed(2)}` : "-",

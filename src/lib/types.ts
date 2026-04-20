@@ -1,5 +1,12 @@
 export type TipoArticolo = "smartphone" | "computer" | "console" | "camera" | "altro";
 
+export type SpeseAggiuntiva = {
+  mode: "manuale" | "automatico";
+  descrizione: string;
+  prezzo: number;
+  ritiroId?: string;
+};
+
 export interface Ritiro {
   id: string;
   numeroRitiro?: number;
@@ -27,8 +34,5 @@ export interface Ritiro {
   pinDispositivo?: string;
   dataAcquisto: string;
   note: string;
-  speseAggiuntiveMode?: "manuale" | "automatico";
-  speseAggiuntiveDescrizione?: string;
-  speseAggiuntivePrezzo?: number;
-  speseAggiuntiveRitiroId?: string;
+  speseAggiuntive?: SpeseAggiuntiva[];
 }

@@ -1,5 +1,12 @@
 export type TipoArticolo = "smartphone" | "computer" | "console" | "camera" | "altro";
 
+export type SpeseAggiuntiva = {
+  mode: "manuale" | "automatico";
+  descrizione: string;
+  prezzo: number;
+  ritiroId?: string;
+};
+
 export interface RitiroRecord {
   id: string;
   numeroRitiro: number;
@@ -27,10 +34,7 @@ export interface RitiroRecord {
   pinDispositivo: string | null;
   dataAcquisto: string;
   note: string;
-  speseAggiuntiveMode: "manuale" | "automatico" | null;
-  speseAggiuntiveDescrizione: string | null;
-  speseAggiuntivePrezzo: number | null;
-  speseAggiuntiveRitiroId: string | null;
+  speseAggiuntive: SpeseAggiuntiva[] | null;
   ownerEmail: string;
   createdAt: string;
   updatedAt: string;
@@ -62,8 +66,5 @@ export interface SaveRitiroPayload {
   pinDispositivo: string | null;
   dataAcquisto: string;
   note: string;
-  speseAggiuntiveMode: "manuale" | "automatico" | null;
-  speseAggiuntiveDescrizione: string | null;
-  speseAggiuntivePrezzo: number | null;
-  speseAggiuntiveRitiroId: string | null;
+  speseAggiuntive: SpeseAggiuntiva[] | null;
 }

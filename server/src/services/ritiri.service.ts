@@ -32,10 +32,7 @@ interface RitiroRow extends RowDataPacket {
   pin_dispositivo: string | null;
   data_acquisto: string;
   note: string;
-  spese_aggiuntive_mode: string | null;
-  spese_aggiuntive_desc: string | null;
-  spese_aggiuntive_prezzo: number | null;
-  spese_aggiuntive_ritiro_id: string | null;
+  spese_aggiuntive: string | null;
   owner_email: string;
   created_at: string;
   updated_at: string;
@@ -69,10 +66,7 @@ function mapRow(row: RitiroRow): RitiroRecord {
     pinDispositivo: row.pin_dispositivo,
     dataAcquisto: row.data_acquisto,
     note: row.note,
-    speseAggiuntiveMode: (row.spese_aggiuntive_mode as "manuale" | "automatico" | null) ?? null,
-    speseAggiuntiveDescrizione: row.spese_aggiuntive_desc ?? null,
-    speseAggiuntivePrezzo: row.spese_aggiuntive_prezzo !== null ? Number(row.spese_aggiuntive_prezzo) : null,
-    speseAggiuntiveRitiroId: row.spese_aggiuntive_ritiro_id ?? null,
+    speseAggiuntive: row.spese_aggiuntive ? (() => { try { return JSON.parse(row.spese_aggiuntive as string); } catch { return null; } })() : null,
     ownerEmail: row.owner_email,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -127,10 +121,7 @@ export async function initRitiriTable(): Promise<void> {
 
   await pool.execute(`
     ALTER TABLE ritiri
-    ADD COLUMN IF NOT EXISTS spese_aggiuntive_mode VARCHAR(12) NULL,
-    ADD COLUMN IF NOT EXISTS spese_aggiuntive_desc TEXT NULL,
-    ADD COLUMN IF NOT EXISTS spese_aggiuntive_prezzo DECIMAL(10,2) NULL,
-    ADD COLUMN IF NOT EXISTS spese_aggiuntive_ritiro_id VARCHAR(64) NULL
+    ADD COLUMN IF NOT EXISTS spese_aggiuntive TEXT NULL
   `);
 }
 
@@ -167,8 +158,8 @@ export async function createRitiro(payload: SaveRitiroPayload, id: string): Prom
       documento_fronte_path, documento_fronte_nome, documento_retro_path, documento_retro_nome,
       ricevuta_acquisto_path, ricevuta_acquisto_nome, tipo_articolo, marca_modello, seriale_imei,
       articolo, descrizione, prezzo, prezzo_vendita, venduto, data_vendita, pin_dispositivo, data_acquisto, note,
-      spese_aggiuntive_mode, spese_aggiuntive_desc, spese_aggiuntive_prezzo, spese_aggiuntive_ritiro_id, owner_email
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      spese_aggiuntive, owner_email
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       id,
       numeroRitiro,
@@ -196,10 +187,7 @@ export async function createRitiro(payload: SaveRitiroPayload, id: string): Prom
       payload.pinDispositivo ?? null,
       payload.dataAcquisto,
       payload.note,
-      payload.speseAggiuntiveMode ?? null,
-      payload.speseAggiuntiveDescrizione ?? null,
-      payload.speseAggiuntivePrezzo ?? null,
-      payload.speseAggiuntiveRitiroId ?? null,
+      payload.speseAggiuntive ? JSON.stringify(payload.speseAggiuntive) : null,
       payload.ownerEmail,
     ]
   );
@@ -232,10 +220,7 @@ export async function updateRitiroById(id: string, payload: SaveRitiroPayload): 
       pin_dispositivo = ?,
       data_acquisto = ?,
       note = ?,
-      spese_aggiuntive_mode = ?,
-      spese_aggiuntive_desc = ?,
-      spese_aggiuntive_prezzo = ?,
-      spese_aggiuntive_ritiro_id = ?
+      spese_aggiuntive = ?
     WHERE id = ? AND owner_email = ?`,
     [
       payload.nomeCliente,
@@ -262,10 +247,7 @@ export async function updateRitiroById(id: string, payload: SaveRitiroPayload): 
       payload.pinDispositivo ?? null,
       payload.dataAcquisto,
       payload.note,
-      payload.speseAggiuntiveMode ?? null,
-      payload.speseAggiuntiveDescrizione ?? null,
-      payload.speseAggiuntivePrezzo ?? null,
-      payload.speseAggiuntiveRitiroId ?? null,
+      payload.speseAggiuntive ? JSON.stringify(payload.speseAggiuntive) : null,
       id,
       payload.ownerEmail,
     ]

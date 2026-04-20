@@ -83,10 +83,11 @@ function buildPayload(req: Request, ownerEmail: string): { payload?: SaveRitiroP
   const venduto = parseBoolean(req.body.venduto);
   const prezzoVendita = parseNumber(req.body.prezzoVendita);
   const dataVendita = toOptionalString(req.body.dataVendita);
-  const speseMode = toOptionalString(req.body.speseAggiuntiveMode) as "manuale" | "automatico" | undefined;
-  const speseDesc = toOptionalString(req.body.speseAggiuntiveDescrizione);
-  const spesePrezzo = parseNumber(req.body.speseAggiuntivePrezzo);
-  const speseRitiroId = toOptionalString(req.body.speseAggiuntiveRitiroId);
+  const speseAggiuntive = (() => {
+    const raw = req.body.speseAggiuntive;
+    if (!raw) return null;
+    try { return JSON.parse(String(raw)) as import("../types/ritiro").SpeseAggiuntiva[]; } catch { return null; }
+  })();
 
   if (venduto && (prezzoVendita === undefined || !dataVendita)) {
     return {
@@ -120,10 +121,7 @@ function buildPayload(req: Request, ownerEmail: string): { payload?: SaveRitiroP
     pinDispositivo: toOptionalString(req.body.pinDispositivo) ?? null,
     dataAcquisto,
     note: toOptionalString(req.body.note) || "",
-    speseAggiuntiveMode: speseMode ?? null,
-    speseAggiuntiveDescrizione: speseDesc ?? null,
-    speseAggiuntivePrezzo: speseMode && spesePrezzo !== undefined ? spesePrezzo : null,
-    speseAggiuntiveRitiroId: speseMode === "automatico" ? (speseRitiroId ?? null) : null,
+    speseAggiuntive: speseAggiuntive && speseAggiuntive.length > 0 ? speseAggiuntive : null,
   };
 
   return { payload };

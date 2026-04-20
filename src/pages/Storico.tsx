@@ -57,18 +57,23 @@ export default function Storico() {
     }
 
     if (search.trim()) {
-      const q = search.toLowerCase();
-      list = list.filter(
-        (r) =>
+      const q = search.trim().toLowerCase();
+      list = list.filter((r) => {
+        const codice = formatCodiceRitiro(r.numeroRitiro, r.dataAcquisto).toLowerCase();
+        const nomeCompleto1 = `${r.nomeCliente} ${r.cognomeCliente}`.toLowerCase();
+        const nomeCompleto2 = `${r.cognomeCliente} ${r.nomeCliente}`.toLowerCase();
+        return (
+          codice.includes(q) ||
+          nomeCompleto1.includes(q) ||
+          nomeCompleto2.includes(q) ||
           r.nomeCliente.toLowerCase().includes(q) ||
           r.cognomeCliente.toLowerCase().includes(q) ||
           r.articolo.toLowerCase().includes(q) ||
           (r.marcaModello || "").toLowerCase().includes(q) ||
           r.codiceFiscale.toLowerCase().includes(q) ||
-          r.numeroDocumento.toLowerCase().includes(q) ||
-          r.id.toLowerCase().includes(q) ||
-          formatCodiceRitiro(r.numeroRitiro, r.dataAcquisto).toLowerCase().includes(q)
-      );
+          r.numeroDocumento.toLowerCase().includes(q)
+        );
+      });
     }
     return list;
   }, [ritiri, search, meseFiltro]);
@@ -147,11 +152,13 @@ export default function Storico() {
               ))}
             </SelectContent>
           </Select>
-        </div>
-
-        <div className="flex justify-end">
-          <Button variant="outline" size="sm" disabled={meseFiltro === "tutti"} onClick={() => meseFiltro !== "tutti" && generateMonthlyReport(filtered, meseFiltro)}>
-            <FileDown className="h-4 w-4 mr-1" /> Genera report PDF
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={meseFiltro === "tutti"}
+            onClick={() => meseFiltro !== "tutti" && generateMonthlyReport(filtered, meseFiltro)}
+          >
+            <FileDown className="h-4 w-4 mr-1" /> Genera PDF
           </Button>
         </div>
 
