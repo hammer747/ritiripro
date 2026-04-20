@@ -50,8 +50,7 @@ export function MonthWheelPicker({ value, options, onChange }: Props) {
       )}
 
       <div className="py-0.5 text-center">
-        <p className="text-stat-foreground font-bold text-base leading-tight">{current.mese}</p>
-        <p className="text-stat-foreground/70 text-xs font-medium">{current.anno}</p>
+        <p className="text-stat-foreground font-bold text-base leading-tight">{current.mese} {current.anno}</p>
       </div>
 
       {next && (
