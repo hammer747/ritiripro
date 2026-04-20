@@ -124,17 +124,23 @@ export default function Index() {
       (a, b) => new Date(b.dataAcquisto).getTime() - new Date(a.dataAcquisto).getTime()
     );
     if (!search.trim()) return sorted.slice(0, 5);
-    const q = search.toLowerCase();
-    return sorted.filter(
-      (r) =>
+    const q = search.trim().toLowerCase();
+    return sorted.filter((r) => {
+      const nomeCompleto1 = `${r.nomeCliente} ${r.cognomeCliente}`.toLowerCase();
+      const nomeCompleto2 = `${r.cognomeCliente} ${r.nomeCliente}`.toLowerCase();
+      return (
+        nomeCompleto1.includes(q) ||
+        nomeCompleto2.includes(q) ||
         r.nomeCliente.toLowerCase().includes(q) ||
         r.cognomeCliente.toLowerCase().includes(q) ||
         r.articolo.toLowerCase().includes(q) ||
+        (r.marcaModello || "").toLowerCase().includes(q) ||
         r.codiceFiscale.toLowerCase().includes(q) ||
         r.numeroDocumento.toLowerCase().includes(q) ||
         r.id.toLowerCase().includes(q) ||
         formatCodiceRitiro(r.numeroRitiro, r.dataAcquisto).toLowerCase().includes(q)
-    );
+      );
+    });
   }, [ritiri, search]);
 
   const handleEdit = (ritiro: Ritiro) => {
