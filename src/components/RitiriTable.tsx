@@ -99,7 +99,7 @@ export default function RitiriTable({ ritiri, onChanged, onEdit, onPrint }: Prop
                 </span>
               </TableCell>
               <TableCell className="text-right font-semibold text-sm">
-                € {r.prezzo.toFixed(2)}
+                € {Math.round(r.prezzo)}
               </TableCell>
               <TableCell>
                 <div className="flex gap-1">
