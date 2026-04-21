@@ -39,6 +39,7 @@ export interface RitiroRecord {
   createdByName: string | null;
   lastEditByName: string | null;
   lastEditAt: string | null;
+  lastEditDetails: string[] | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -72,4 +73,5 @@ export interface SaveRitiroPayload {
   speseAggiuntive: SpeseAggiuntiva[] | null;
   createdByName?: string | null | undefined;
   lastEditByName?: string | null | undefined;
+  lastEditDetails?: string[] | null;
 }

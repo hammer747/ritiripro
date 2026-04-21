@@ -125,6 +125,25 @@ function buildPayload(req: Request, ownerEmail: string, extra?: { createdByName?
   return { payload };
 }
 
+function buildChangeList(existing: import("../types/ritiro").RitiroRecord, payload: SaveRitiroPayload): string[] {
+  const changes: string[] = [];
+  if (Number(existing.prezzo) !== Number(payload.prezzo)) {
+    changes.push(`Prezzo cambiato da €${Math.round(Number(existing.prezzo))} a €${Math.round(Number(payload.prezzo))}`);
+  }
+  if (existing.nomeCliente !== payload.nomeCliente) changes.push("Nome modificato");
+  if (existing.cognomeCliente !== payload.cognomeCliente) changes.push("Cognome modificato");
+  if (existing.codiceFiscale !== payload.codiceFiscale) changes.push("Codice fiscale modificato");
+  if ((existing.serialeImei ?? "") !== (payload.serialeImei ?? "")) changes.push("Seriale modificato");
+  if ((existing.pinDispositivo ?? "") !== (payload.pinDispositivo ?? "")) changes.push("PIN modificato");
+  if (existing.note !== payload.note) changes.push("Note modificate");
+  if ((existing.marcaModello ?? "") !== (payload.marcaModello ?? "")) changes.push("Marca/Modello modificato");
+  if (existing.descrizione !== payload.descrizione) changes.push("Descrizione modificata");
+  if (existing.venduto !== payload.venduto) {
+    changes.push(payload.venduto ? "Articolo marcato come venduto" : "Articolo rimarcato in stock");
+  }
+  return changes;
+}
+
 function formatCodice(numeroRitiro: number, dataAcquisto: string): string {
   const d = new Date(dataAcquisto);
   const dd = String(d.getDate()).padStart(2, "0");
@@ -192,6 +211,10 @@ export async function updateRitiroController(req: Request, res: Response): Promi
   if (!files?.documentoFronte?.[0]) { payload.documentoFrontePath = existing.documentoFrontePath ?? null; payload.documentoFronteNome = existing.documentoFronteNome ?? null; }
   if (!files?.documentoRetro?.[0]) { payload.documentoRetroPath = existing.documentoRetroPath ?? null; payload.documentoRetroNome = existing.documentoRetroNome ?? null; }
   if (!files?.ricevutaAcquisto?.[0]) { payload.ricevutaAcquistoPath = existing.ricevutaAcquistoPath ?? null; payload.ricevutaAcquistoNome = existing.ricevutaAcquistoNome ?? null; }
+
+  if (lastEditByName) {
+    payload.lastEditDetails = buildChangeList(existing, payload);
+  }
 
   const updated = await updateRitiroById(id, payload);
   if (!updated) { res.status(404).json({ message: "Ritiro non trovato" }); return; }

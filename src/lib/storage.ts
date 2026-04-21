@@ -43,6 +43,7 @@ type ApiRitiro = {
   createdByName?: string | null;
   lastEditByName?: string | null;
   lastEditAt?: string | null;
+  lastEditDetails?: string[] | null;
 };
 
 function mapApiToRitiro(item: ApiRitiro): Ritiro {
@@ -88,6 +89,9 @@ function mapApiToRitiro(item: ApiRitiro): Ritiro {
     createdByName: item.createdByName ?? undefined,
     lastEditByName: item.lastEditByName ?? undefined,
     lastEditAt: item.lastEditAt ?? undefined,
+    lastEditDetails: Array.isArray(item.lastEditDetails) && item.lastEditDetails.length > 0
+      ? item.lastEditDetails
+      : undefined,
   };
 }
 

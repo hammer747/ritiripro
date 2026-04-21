@@ -38,4 +38,5 @@ export interface Ritiro {
   createdByName?: string;
   lastEditByName?: string;
   lastEditAt?: string;
+  lastEditDetails?: string[];
 }

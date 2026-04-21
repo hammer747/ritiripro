@@ -6,6 +6,7 @@ import { env } from "../config/env";
 import { RitiroRecord, SaveRitiroPayload } from "../types/ritiro";
 
 interface RitiroRow extends RowDataPacket {
+  last_edit_details: string | null;
   id: string;
   numero_ritiro: number;
   nome_cliente: string;
@@ -74,6 +75,7 @@ function mapRow(row: RitiroRow): RitiroRecord {
     createdByName: row.created_by_name ?? null,
     lastEditByName: row.last_edit_by_name ?? null,
     lastEditAt: row.last_edit_at ?? null,
+    lastEditDetails: row.last_edit_details ? (() => { try { return JSON.parse(row.last_edit_details as string) as string[]; } catch { return null; } })() : null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -133,6 +135,7 @@ export async function initRitiriTable(): Promise<void> {
   await pool.execute(`ALTER TABLE ritiri ADD COLUMN IF NOT EXISTS created_by_name VARCHAR(255) NULL`);
   await pool.execute(`ALTER TABLE ritiri ADD COLUMN IF NOT EXISTS last_edit_by_name VARCHAR(255) NULL`);
   await pool.execute(`ALTER TABLE ritiri ADD COLUMN IF NOT EXISTS last_edit_at DATETIME NULL`);
+  await pool.execute(`ALTER TABLE ritiri ADD COLUMN IF NOT EXISTS last_edit_details TEXT NULL`);
 }
 
 export async function listRitiri(ownerEmail: string): Promise<RitiroRecord[]> {
@@ -233,7 +236,8 @@ export async function updateRitiroById(id: string, payload: SaveRitiroPayload): 
       note = ?,
       spese_aggiuntive = ?,
       last_edit_by_name = CASE WHEN ? IS NOT NULL THEN ? ELSE last_edit_by_name END,
-      last_edit_at = CASE WHEN ? IS NOT NULL THEN NOW() ELSE last_edit_at END
+      last_edit_at = CASE WHEN ? IS NOT NULL THEN NOW() ELSE last_edit_at END,
+      last_edit_details = CASE WHEN ? IS NOT NULL THEN ? ELSE last_edit_details END
     WHERE id = ? AND owner_email = ?`,
     [
       payload.nomeCliente,
@@ -264,6 +268,8 @@ export async function updateRitiroById(id: string, payload: SaveRitiroPayload): 
       payload.lastEditByName ?? null,
       payload.lastEditByName ?? null,
       payload.lastEditByName ?? null,
+      payload.lastEditByName ?? null,
+      payload.lastEditDetails ? JSON.stringify(payload.lastEditDetails) : null,
       id,
       payload.ownerEmail,
     ]
