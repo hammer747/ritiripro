@@ -127,21 +127,24 @@ function buildPayload(req: Request, ownerEmail: string, extra?: { createdByName?
 
 function buildChangeList(existing: import("../types/ritiro").RitiroRecord, payload: SaveRitiroPayload): string[] {
   const changes: string[] = [];
-  if (Number(existing.prezzo) !== Number(payload.prezzo)) {
+  const str = (v: string | null | undefined) => (v ?? "").trim();
+  const num = (v: number | string | null | undefined) => Math.round(Number(v) * 100);
+
+  if (num(existing.prezzo) !== num(payload.prezzo)) {
     changes.push(`Prezzo cambiato da €${Math.round(Number(existing.prezzo))} a €${Math.round(Number(payload.prezzo))}`);
   }
-  if (existing.nomeCliente !== payload.nomeCliente) changes.push("Nome modificato");
-  if (existing.cognomeCliente !== payload.cognomeCliente) changes.push("Cognome modificato");
-  if (existing.codiceFiscale !== payload.codiceFiscale) changes.push("Codice fiscale modificato");
-  if ((existing.serialeImei ?? "") !== (payload.serialeImei ?? "")) changes.push("Seriale modificato");
-  if ((existing.pinDispositivo ?? "") !== (payload.pinDispositivo ?? "")) changes.push("PIN modificato");
-  if (existing.note !== payload.note) changes.push("Note modificate");
-  if ((existing.marcaModello ?? "") !== (payload.marcaModello ?? "")) changes.push("Marca/Modello modificato");
-  if (existing.descrizione !== payload.descrizione) changes.push("Descrizione modificata");
+  if (str(existing.nomeCliente) !== str(payload.nomeCliente)) changes.push("Nome modificato");
+  if (str(existing.cognomeCliente) !== str(payload.cognomeCliente)) changes.push("Cognome modificato");
+  if (str(existing.codiceFiscale) !== str(payload.codiceFiscale)) changes.push("Codice fiscale modificato");
+  if (str(existing.serialeImei) !== str(payload.serialeImei)) changes.push("Seriale modificato");
+  if (str(existing.pinDispositivo) !== str(payload.pinDispositivo)) changes.push("PIN modificato");
+  if (str(existing.note) !== str(payload.note)) changes.push("Note modificate");
+  if (str(existing.marcaModello) !== str(payload.marcaModello)) changes.push("Marca/Modello modificato");
+  if (str(existing.descrizione) !== str(payload.descrizione)) changes.push("Descrizione modificata");
   if (existing.venduto !== payload.venduto) {
     changes.push(payload.venduto ? "Articolo marcato come venduto" : "Articolo rimarcato in stock");
   }
-  return changes;
+  return changes.length > 0 ? changes : ["Modifica effettuata"];
 }
 
 function formatCodice(numeroRitiro: number, dataAcquisto: string): string {

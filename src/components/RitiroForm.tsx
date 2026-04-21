@@ -731,16 +731,17 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
               </p>
             </div>
           </div>
-          {editingRitiro.lastEditDetails && editingRitiro.lastEditDetails.length > 0 && (
-            <ul className="space-y-1 pt-1 border-t border-amber-200 dark:border-amber-800">
-              {editingRitiro.lastEditDetails.map((detail, i) => (
-                <li key={i} className="text-xs text-amber-800 dark:text-amber-300 flex items-start gap-1.5">
-                  <span className="mt-0.5 shrink-0">•</span>
-                  <span>{detail}</span>
-                </li>
-              ))}
-            </ul>
-          )}
+          <ul className="space-y-1 pt-1 border-t border-amber-200 dark:border-amber-800">
+            {(editingRitiro.lastEditDetails && editingRitiro.lastEditDetails.length > 0
+              ? editingRitiro.lastEditDetails
+              : ["Modifica effettuata"]
+            ).map((detail, i) => (
+              <li key={i} className="text-xs text-amber-800 dark:text-amber-300 flex items-start gap-1.5">
+                <span className="mt-0.5 shrink-0">•</span>
+                <span>{detail}</span>
+              </li>
+            ))}
+          </ul>
         </fieldset>
       )}
 
