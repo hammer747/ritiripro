@@ -80,12 +80,6 @@ export default function RitiriTable({ ritiri, onChanged, onEdit, onPrint, userRo
                 <div className="font-bold text-sm">
                   {r.cognomeCliente} {r.nomeCliente}
                 </div>
-                {r.lastEditByName && (
-                  <div className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">
-                    Modif. da {r.lastEditByName}
-                    {r.lastEditAt && ` · ${new Date(r.lastEditAt).toLocaleDateString("it-IT")}`}
-                  </div>
-                )}
               </TableCell>
               <TableCell className="text-sm">
                 <div className="flex items-center gap-1">

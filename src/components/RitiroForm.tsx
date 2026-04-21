@@ -713,6 +713,33 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
         )}
       </fieldset>
 
+      {isEditing && editingRitiro?.lastEditByName && (
+        <fieldset className="space-y-3 rounded-lg border border-amber-200 dark:border-amber-800 p-4 bg-amber-50/50 dark:bg-amber-950/20">
+          <legend className="px-2 text-sm font-medium text-amber-700 dark:text-amber-400">Modifiche Realizzate</legend>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+            <div className="space-y-0.5">
+              <p className="text-xs text-muted-foreground font-medium">Tipo</p>
+              <p className="font-semibold text-foreground">Modifica</p>
+            </div>
+            <div className="space-y-0.5">
+              <p className="text-xs text-muted-foreground font-medium">Operatore</p>
+              <p className="font-semibold text-foreground">{editingRitiro.lastEditByName}</p>
+            </div>
+            <div className="space-y-0.5">
+              <p className="text-xs text-muted-foreground font-medium">Data</p>
+              <p className="font-semibold text-foreground">
+                {editingRitiro.lastEditAt
+                  ? new Date(editingRitiro.lastEditAt).toLocaleDateString("it-IT")
+                  : "—"}
+              </p>
+            </div>
+          </div>
+          <p className="text-xs text-amber-600 dark:text-amber-400 italic">
+            Salvando questa modifica come amministratore, il log verrà rimosso.
+          </p>
+        </fieldset>
+      )}
+
       <div className="flex gap-3">
         <Button type="submit" size="lg" className="w-full sm:w-auto">
           {isEditing ? "Salva Modifiche" : "Registra Ritiro"}

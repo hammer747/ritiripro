@@ -233,7 +233,7 @@ export async function updateRitiroById(id: string, payload: SaveRitiroPayload): 
       note = ?,
       spese_aggiuntive = ?,
       last_edit_by_name = ?,
-      last_edit_at = IF(? IS NOT NULL, NOW(), last_edit_at)
+      last_edit_at = IF(? IS NOT NULL, NOW(), NULL)
     WHERE id = ? AND owner_email = ?`,
     [
       payload.nomeCliente,
