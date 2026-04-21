@@ -24,6 +24,7 @@ interface Props {
   onCancelEdit?: () => void;
   nextNumeroRitiro?: number;
   ritiri?: Ritiro[];
+  userRole?: "admin" | "venditore" | "tecnico";
 }
 
 const emptyForm = {
@@ -78,7 +79,7 @@ function generateUUID(): string {
 
 type SpeseVoce = { mode: "manuale" | "automatico"; descrizione: string; prezzo: string; ritiroId: string };
 
-export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextNumeroRitiro, ritiri = [] }: Props) {
+export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextNumeroRitiro, ritiri = [], userRole = "admin" }: Props) {
   const [form, setForm] = useState(emptyForm);
   const [fieldErrors, setFieldErrors] = useState<Set<string>>(new Set());
   const [speseVoci, setSpeseVoci] = useState<SpeseVoce[]>([]);
@@ -713,9 +714,12 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
         )}
       </fieldset>
 
-      {isEditing && editingRitiro?.lastEditByName && (
-        <fieldset className="space-y-3 rounded-lg border border-amber-200 dark:border-amber-800 p-4 bg-amber-50/50 dark:bg-amber-950/20">
-          <legend className="px-2 text-sm font-medium text-amber-700 dark:text-amber-400">Modifiche Realizzate</legend>
+      {isEditing && userRole === "admin" && editingRitiro?.lastEditByName && (
+        <fieldset className="space-y-3 rounded-lg border border-amber-300 dark:border-amber-700 p-4 bg-amber-50 dark:bg-amber-950/30">
+          <legend className="px-2 text-sm font-semibold text-amber-800 dark:text-amber-300">⚠ Modifiche Realizzate</legend>
+          <p className="text-xs text-amber-700 dark:text-amber-400">
+            Questo ritiro è stato modificato da un operatore e richiede la tua revisione.
+          </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
             <div className="space-y-0.5">
               <p className="text-xs text-muted-foreground font-medium">Tipo</p>

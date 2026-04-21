@@ -248,6 +248,7 @@ export default function Index() {
               onCancelEdit={() => setEditingRitiro(null)}
               nextNumeroRitiro={Math.max(0, ...ritiri.map((r) => r.numeroRitiro ?? 0)) + 1}
               ritiri={ritiri}
+              userRole={currentUser?.role}
             />
           </div>
         )}
