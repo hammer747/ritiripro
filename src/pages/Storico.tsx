@@ -30,7 +30,12 @@ export default function Storico() {
   const [meseFiltro, setMeseFiltro] = useState<string>("tutti");
   const [labelRitiro, setLabelRitiro] = useState<Ritiro | null>(null);
   const [currentUser, setCurrentUser] = useState<RegisteredUser | null>(() => {
-    try { return JSON.parse(localStorage.getItem("ritiri_facili_user") || "null"); } catch { return null; }
+    try {
+      const parsed = JSON.parse(localStorage.getItem("ritiri_facili_user") || "null");
+      if (!parsed?.email) return null;
+      const role = (parsed.role === "venditore" || parsed.role === "tecnico") ? parsed.role : "admin";
+      return { ...parsed, role };
+    } catch { return null; }
   });
 
   const reload = useCallback(() => {

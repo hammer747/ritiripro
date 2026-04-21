@@ -13,7 +13,12 @@ import { toast } from "sonner";
 export default function AdminPage() {
   const navigate = useNavigate();
   const [currentUser] = useState<RegisteredUser | null>(() => {
-    try { return JSON.parse(localStorage.getItem("ritiri_facili_user") || "null"); } catch { return null; }
+    try {
+      const parsed = JSON.parse(localStorage.getItem("ritiri_facili_user") || "null");
+      if (!parsed?.email) return null;
+      const role = (parsed.role === "venditore" || parsed.role === "tecnico") ? parsed.role : "admin";
+      return { ...parsed, role };
+    } catch { return null; }
   });
 
   const [users, setUsers] = useState<SubUser[]>([]);
