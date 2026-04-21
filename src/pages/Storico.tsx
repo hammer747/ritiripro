@@ -88,7 +88,8 @@ export default function Storico() {
     return list;
   }, [ritiri, search, meseFiltro]);
 
-  const totale = filtered.reduce((s, r) => s + r.prezzo, 0);
+  const speseSum = (r: Ritiro) => (r.speseAggiuntive ?? []).reduce((s, v) => s + v.prezzo, 0);
+  const totale = filtered.reduce((s, r) => s + r.prezzo + speseSum(r), 0);
 
   const formatMese = (key: string) => {
     const [anno, mese] = key.split("-").map(Number);

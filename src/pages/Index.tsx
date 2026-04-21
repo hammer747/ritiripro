@@ -102,7 +102,8 @@ export default function Index() {
     });
   }, [ritiri, meseSelezionato]);
 
-  const totaleMese = ritiriDelMese.reduce((s, r) => s + r.prezzo, 0);
+  const speseSum = (r: Ritiro) => (r.speseAggiuntive ?? []).reduce((s, v) => s + v.prezzo, 0);
+  const totaleMese = ritiriDelMese.reduce((s, r) => s + r.prezzo + speseSum(r), 0);
 
   const guadagniDelMese = useMemo(() => {
     const [anno, mese] = meseSelezionato.split("-").map(Number);
