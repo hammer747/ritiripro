@@ -186,6 +186,7 @@ export default function Storico() {
           onChanged={reload}
           onEdit={(r) => navigate("/", { state: { editRitiro: r } })}
           onPrint={(r) => setLabelRitiro(r)}
+          userRole={currentUser?.role}
         />
       </main>
 

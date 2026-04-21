@@ -40,6 +40,9 @@ type ApiRitiro = {
   dataAcquisto: string;
   note: string | null;
   speseAggiuntive: import("./types").SpeseAggiuntiva[] | string | null;
+  createdByName?: string | null;
+  lastEditByName?: string | null;
+  lastEditAt?: string | null;
 };
 
 function mapApiToRitiro(item: ApiRitiro): Ritiro {
@@ -77,6 +80,9 @@ function mapApiToRitiro(item: ApiRitiro): Ritiro {
       }
       return item.speseAggiuntive.length > 0 ? item.speseAggiuntive : undefined;
     })(),
+    createdByName: item.createdByName ?? undefined,
+    lastEditByName: item.lastEditByName ?? undefined,
+    lastEditAt: item.lastEditAt ?? undefined,
   };
 }
 
@@ -93,11 +99,13 @@ function getCurrentUser(): RegisteredUser | null {
       return null;
     }
 
+    const role = (parsed?.role === "venditore" || parsed?.role === "tecnico") ? parsed.role : "admin";
     return {
       nome: typeof parsed?.nome === "string" ? parsed.nome : "",
       cognome: typeof parsed?.cognome === "string" ? parsed.cognome : "",
       cel: typeof parsed?.cel === "string" ? parsed.cel : undefined,
       email,
+      role,
       password: typeof parsed?.password === "string" ? parsed.password : "",
     };
   } catch {
@@ -250,4 +258,32 @@ export async function deleteRitiro(id: string): Promise<void> {
     const text = await res.text();
     throw new Error(text || "Errore durante eliminazione");
   }
+}
+
+export type SubUser = { nome: string; cognome: string; cel?: string | null; email: string; role: "venditore" | "tecnico" };
+
+export async function getAdminUsers(): Promise<SubUser[]> {
+  return requestJson<SubUser[]>(`${API_BASE_URL}/api/admin/users`, { headers: getAuthHeaders() });
+}
+
+export async function createAdminUser(data: { nome: string; cognome: string; cel?: string; email: string; password: string; role: "venditore" | "tecnico" }): Promise<SubUser> {
+  return requestJson<SubUser>(`${API_BASE_URL}/api/admin/users`, {
+    method: "POST",
+    headers: { ...getAuthHeaders(), "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteAdminUser(email: string): Promise<void> {
+  const res = await fetch(`${API_BASE_URL}/api/admin/users/${encodeURIComponent(email)}`, {
+    method: "DELETE",
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) { const t = await res.text(); throw new Error(t || "Errore eliminazione utente"); }
+}
+
+export type LogRecord = { id: string; userEmail: string; userName: string; userRole: string; action: string; ritiroId: string | null; ritirodice: string | null; details: string | null; createdAt: string };
+
+export async function getAdminLogs(): Promise<LogRecord[]> {
+  return requestJson<LogRecord[]>(`${API_BASE_URL}/api/admin/logs`, { headers: getAuthHeaders() });
 }

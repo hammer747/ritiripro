@@ -36,6 +36,9 @@ export interface RitiroRecord {
   note: string;
   speseAggiuntive: SpeseAggiuntiva[] | null;
   ownerEmail: string;
+  createdByName: string | null;
+  lastEditByName: string | null;
+  lastEditAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -67,4 +70,6 @@ export interface SaveRitiroPayload {
   dataAcquisto: string;
   note: string;
   speseAggiuntive: SpeseAggiuntiva[] | null;
+  createdByName?: string | null | undefined;
+  lastEditByName?: string | null | undefined;
 }

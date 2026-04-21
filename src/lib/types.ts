@@ -35,4 +35,7 @@ export interface Ritiro {
   dataAcquisto: string;
   note: string;
   speseAggiuntive?: SpeseAggiuntiva[];
+  createdByName?: string;
+  lastEditByName?: string;
+  lastEditAt?: string;
 }

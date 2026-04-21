@@ -2,12 +2,16 @@ import bcrypt from "bcrypt";
 import { RowDataPacket } from "mysql2";
 import { pool } from "../config/db";
 
+export type UserRole = "admin" | "venditore" | "tecnico";
+
 interface UserRow extends RowDataPacket {
   nome: string;
   cognome: string;
   cel: string | null;
   email: string;
   password_hash: string;
+  role: UserRole;
+  parent_admin_email: string | null;
 }
 
 export interface UserRecord {
@@ -16,6 +20,8 @@ export interface UserRecord {
   cel: string | null;
   email: string;
   passwordHash: string;
+  role: UserRole;
+  parentAdminEmail: string | null;
 }
 
 export async function initUsersTable(): Promise<void> {
@@ -27,30 +33,57 @@ export async function initUsersTable(): Promise<void> {
       cel VARCHAR(32) NULL,
       email VARCHAR(255) NOT NULL UNIQUE,
       password_hash VARCHAR(255) NOT NULL,
+      role ENUM('admin','venditore','tecnico') NOT NULL DEFAULT 'admin',
+      parent_admin_email VARCHAR(255) NULL,
       created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
     )
   `);
+
+  await pool.execute(`ALTER TABLE users ADD COLUMN IF NOT EXISTS role ENUM('admin','venditore','tecnico') NOT NULL DEFAULT 'admin'`);
+  await pool.execute(`ALTER TABLE users ADD COLUMN IF NOT EXISTS parent_admin_email VARCHAR(255) NULL`);
 }
 
 export async function findUserByEmail(email: string): Promise<UserRecord | null> {
   const [rows] = await pool.query<UserRow[]>(
-    "SELECT nome, cognome, cel, email, password_hash FROM users WHERE email = ? LIMIT 1",
+    "SELECT nome, cognome, cel, email, password_hash, role, parent_admin_email FROM users WHERE email = ? LIMIT 1",
     [email]
   );
   const row = rows[0];
   if (!row) return null;
-  return { nome: row.nome, cognome: row.cognome, cel: row.cel, email: row.email, passwordHash: row.password_hash };
+  return {
+    nome: row.nome,
+    cognome: row.cognome,
+    cel: row.cel,
+    email: row.email,
+    passwordHash: row.password_hash,
+    role: row.role ?? "admin",
+    parentAdminEmail: row.parent_admin_email ?? null,
+  };
 }
 
-export async function createUser(nome: string, cognome: string, cel: string | null, email: string, password: string): Promise<void> {
+export async function createUser(
+  nome: string,
+  cognome: string,
+  cel: string | null,
+  email: string,
+  password: string,
+  role: UserRole = "admin",
+  parentAdminEmail: string | null = null
+): Promise<void> {
   const hash = await bcrypt.hash(password, 10);
   await pool.execute(
-    "INSERT INTO users (nome, cognome, cel, email, password_hash) VALUES (?, ?, ?, ?, ?)",
-    [nome, cognome, cel, email, hash]
+    "INSERT INTO users (nome, cognome, cel, email, password_hash, role, parent_admin_email) VALUES (?, ?, ?, ?, ?, ?, ?)",
+    [nome, cognome, cel, email, hash, role, parentAdminEmail]
   );
 }
 
-export async function updateUser(email: string, nome: string, cognome: string, cel: string | null, newPassword?: string): Promise<void> {
+export async function updateUser(
+  email: string,
+  nome: string,
+  cognome: string,
+  cel: string | null,
+  newPassword?: string
+): Promise<void> {
   if (newPassword) {
     const hash = await bcrypt.hash(newPassword, 10);
     await pool.execute(
@@ -63,4 +96,24 @@ export async function updateUser(email: string, nome: string, cognome: string, c
       [nome, cognome, cel, email]
     );
   }
+}
+
+export async function listSubUsers(adminEmail: string): Promise<Omit<UserRecord, "passwordHash">[]> {
+  const [rows] = await pool.query<UserRow[]>(
+    "SELECT nome, cognome, cel, email, role, parent_admin_email FROM users WHERE parent_admin_email = ? ORDER BY created_at ASC",
+    [adminEmail]
+  );
+  return rows.map((row) => ({
+    nome: row.nome,
+    cognome: row.cognome,
+    cel: row.cel,
+    email: row.email,
+    role: row.role,
+    parentAdminEmail: row.parent_admin_email ?? null,
+  }));
+}
+
+export async function deleteUserByEmail(email: string): Promise<boolean> {
+  const [result] = await pool.execute("DELETE FROM users WHERE email = ? AND role != 'admin'", [email]);
+  return ((result as { affectedRows?: number }).affectedRows ?? 0) > 0;
 }

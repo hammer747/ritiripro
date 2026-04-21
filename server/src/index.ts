@@ -5,8 +5,10 @@ import path from "path";
 import { env } from "./config/env";
 import ritiriRoutes from "./routes/ritiri.routes";
 import authRoutes from "./routes/auth.routes";
+import adminRoutes from "./routes/admin.routes";
 import { initRitiriTable } from "./services/ritiri.service";
 import { initUsersTable } from "./services/users.service";
+import { initLogsTable } from "./services/logs.service";
 
 const app = express();
 
@@ -23,6 +25,7 @@ app.get("/health", (_req, res) => {
 
 app.use("/api/ritiri", ritiriRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
 
 const distPath = path.resolve(__dirname, "../../dist");
 if (fs.existsSync(distPath)) {
@@ -40,6 +43,7 @@ app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
 async function bootstrap() {
   await initUsersTable();
   await initRitiriTable();
+  await initLogsTable();
   app.listen(env.PORT, () => {
     console.log(`API in ascolto su http://localhost:${env.PORT}`);
   });

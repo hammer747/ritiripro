@@ -18,13 +18,17 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { API_BASE_URL } from "@/lib/api";
-import { ChevronDown, LogOut, UserCog } from "lucide-react";
+import { ChevronDown, LogOut, UserCog, ShieldCheck } from "lucide-react";
+import { Link } from "react-router-dom";
+
+export type UserRole = "admin" | "venditore" | "tecnico";
 
 export type RegisteredUser = {
   nome: string;
   cognome: string;
   cel?: string;
   email: string;
+  role: UserRole;
 };
 
 type LoginDialogProps = {
@@ -159,9 +163,22 @@ export function LoginDialog({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            <div className="px-3 py-1.5 text-xs text-muted-foreground border-b mb-1">
+              {currentUser.nome} {currentUser.cognome}
+              <span className={`ml-2 font-semibold capitalize ${currentUser.role === "admin" ? "text-primary" : currentUser.role === "venditore" ? "text-blue-500" : "text-purple-500"}`}>
+                · {currentUser.role}
+              </span>
+            </div>
             <DropdownMenuItem onSelect={() => setIsProfileOpen(true)}>
               <UserCog className="h-4 w-4 mr-2" /> Modifica profilo
             </DropdownMenuItem>
+            {currentUser.role === "admin" && (
+              <DropdownMenuItem asChild>
+                <Link to="/admin" className="flex items-center gap-2 cursor-pointer">
+                  <ShieldCheck className="h-4 w-4" /> Gestione utenti
+                </Link>
+              </DropdownMenuItem>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem onSelect={onLogout} className="text-destructive focus:text-destructive">
               <LogOut className="h-4 w-4 mr-2" /> Esci

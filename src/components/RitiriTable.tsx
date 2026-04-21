@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Trash2, Pencil, FileText, Tag } from "lucide-react";
 import { toast } from "sonner";
+import { UserRole } from "@/components/ui/login-dialog";
 
 const DOC_LABELS: Record<string, string> = {
   carta_identita: "C.I.",
@@ -24,9 +25,14 @@ interface Props {
   onChanged: () => void;
   onEdit: (ritiro: Ritiro) => void;
   onPrint?: (ritiro: Ritiro) => void;
+  userRole?: UserRole;
 }
 
-export default function RitiriTable({ ritiri, onChanged, onEdit, onPrint }: Props) {
+export default function RitiriTable({ ritiri, onChanged, onEdit, onPrint, userRole = "admin" }: Props) {
+  const canDelete = userRole === "admin";
+  const canEdit = userRole !== "tecnico";
+  const showPrice = userRole !== "tecnico";
+
   const handleDelete = async (id: string) => {
     if (!confirm("Eliminare questo ritiro?")) return;
     try {
@@ -74,6 +80,12 @@ export default function RitiriTable({ ritiri, onChanged, onEdit, onPrint }: Prop
                 <div className="font-bold text-sm">
                   {r.cognomeCliente} {r.nomeCliente}
                 </div>
+                {r.lastEditByName && (
+                  <div className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">
+                    Modif. da {r.lastEditByName}
+                    {r.lastEditAt && ` · ${new Date(r.lastEditAt).toLocaleDateString("it-IT")}`}
+                  </div>
+                )}
               </TableCell>
               <TableCell className="text-sm">
                 <div className="flex items-center gap-1">
@@ -99,37 +111,28 @@ export default function RitiriTable({ ritiri, onChanged, onEdit, onPrint }: Prop
                 </span>
               </TableCell>
               <TableCell className="text-right font-semibold text-sm">
-                € {Math.round(r.prezzo)}
+                {showPrice
+                  ? `€ ${Math.round(r.prezzo)}`
+                  : <span className="text-muted-foreground text-xs font-normal italic">— Riservato —</span>
+                }
               </TableCell>
               <TableCell>
                 <div className="flex gap-1">
                   {onPrint && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-primary hover:text-primary"
-                      title="Stampa etichetta"
-                      onClick={() => onPrint(r)}
-                    >
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:text-primary" title="Stampa etichetta" onClick={() => onPrint(r)}>
                       <Tag className="h-4 w-4" />
                     </Button>
                   )}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                    onClick={() => onEdit(r)}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-destructive hover:text-destructive"
-                    onClick={() => handleDelete(r.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  {canEdit && (
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => onEdit(r)}>
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  )}
+                  {canDelete && (
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => handleDelete(r.id)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               </TableCell>
             </TableRow>

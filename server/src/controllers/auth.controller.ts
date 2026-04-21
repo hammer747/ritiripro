@@ -7,6 +7,10 @@ function ownerEmail(req: Request): string | null {
   return v ? v.trim().toLowerCase() || null : null;
 }
 
+function userToJson(user: NonNullable<Awaited<ReturnType<typeof findUserByEmail>>>) {
+  return { nome: user.nome, cognome: user.cognome, cel: user.cel, email: user.email, role: user.role };
+}
+
 export async function registerController(req: Request, res: Response): Promise<void> {
   const { nome, cognome, cel, email, password } = req.body as Record<string, string>;
 
@@ -22,9 +26,9 @@ export async function registerController(req: Request, res: Response): Promise<v
     return;
   }
 
-  await createUser(nome.trim(), cognome.trim(), cel?.trim() || null, normalizedEmail, password);
+  await createUser(nome.trim(), cognome.trim(), cel?.trim() || null, normalizedEmail, password, "admin", null);
   const user = await findUserByEmail(normalizedEmail);
-  res.status(201).json({ nome: user!.nome, cognome: user!.cognome, cel: user!.cel, email: user!.email });
+  res.status(201).json(userToJson(user!));
 }
 
 export async function loginController(req: Request, res: Response): Promise<void> {
@@ -47,7 +51,7 @@ export async function loginController(req: Request, res: Response): Promise<void
     return;
   }
 
-  res.json({ nome: user.nome, cognome: user.cognome, cel: user.cel, email: user.email });
+  res.json(userToJson(user));
 }
 
 export async function updateProfileController(req: Request, res: Response): Promise<void> {
@@ -82,5 +86,5 @@ export async function updateProfileController(req: Request, res: Response): Prom
 
   await updateUser(email, nome.trim(), cognome.trim(), cel?.trim() || null, newPassword?.trim() || undefined);
   const updated = await findUserByEmail(email);
-  res.json({ nome: updated!.nome, cognome: updated!.cognome, cel: updated!.cel, email: updated!.email });
+  res.json(userToJson(updated!));
 }

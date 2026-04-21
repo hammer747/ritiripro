@@ -228,15 +228,17 @@ export default function Index() {
             </div>
           </div>
         </div>
-        <div ref={formRef} className="rounded-xl bg-card p-6 shadow-sm border">
-          <RitiroForm
-            onSaved={handleSaved}
-            editingRitiro={editingRitiro}
-            onCancelEdit={() => setEditingRitiro(null)}
-            nextNumeroRitiro={Math.max(0, ...ritiri.map((r) => r.numeroRitiro ?? 0)) + 1}
-            ritiri={ritiri}
-          />
-        </div>
+        {currentUser?.role !== "tecnico" && (
+          <div ref={formRef} className="rounded-xl bg-card p-6 shadow-sm border">
+            <RitiroForm
+              onSaved={handleSaved}
+              editingRitiro={editingRitiro}
+              onCancelEdit={() => setEditingRitiro(null)}
+              nextNumeroRitiro={Math.max(0, ...ritiri.map((r) => r.numeroRitiro ?? 0)) + 1}
+              ritiri={ritiri}
+            />
+          </div>
+        )}
 
         <div className="space-y-4">
           <div className="relative max-w-sm">
@@ -253,6 +255,7 @@ export default function Index() {
             onChanged={() => { reload().catch(() => void 0); }}
             onEdit={handleEdit}
             onPrint={(r) => setLabelRitiro(r)}
+            userRole={currentUser?.role}
           />
         </div>
       </main>
