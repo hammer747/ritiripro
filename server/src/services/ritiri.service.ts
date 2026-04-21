@@ -232,8 +232,8 @@ export async function updateRitiroById(id: string, payload: SaveRitiroPayload): 
       data_acquisto = ?,
       note = ?,
       spese_aggiuntive = ?,
-      last_edit_by_name = ?,
-      last_edit_at = IF(? IS NOT NULL, NOW(), NULL)
+      last_edit_by_name = CASE WHEN ? IS NOT NULL THEN ? ELSE last_edit_by_name END,
+      last_edit_at = CASE WHEN ? IS NOT NULL THEN NOW() ELSE last_edit_at END
     WHERE id = ? AND owner_email = ?`,
     [
       payload.nomeCliente,
@@ -261,6 +261,7 @@ export async function updateRitiroById(id: string, payload: SaveRitiroPayload): 
       payload.dataAcquisto,
       payload.note,
       payload.speseAggiuntive ? JSON.stringify(payload.speseAggiuntive) : null,
+      payload.lastEditByName ?? null,
       payload.lastEditByName ?? null,
       payload.lastEditByName ?? null,
       id,

@@ -734,9 +734,6 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
               </p>
             </div>
           </div>
-          <p className="text-xs text-amber-600 dark:text-amber-400 italic">
-            Salvando questa modifica come amministratore, il log verrà rimosso.
-          </p>
         </fieldset>
       )}
 
