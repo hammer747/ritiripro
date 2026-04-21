@@ -34,11 +34,13 @@ export default function Index() {
         return null;
       }
 
+      const role = (parsed?.role === "venditore" || parsed?.role === "tecnico") ? parsed.role : "admin";
       return {
         nome: typeof parsed?.nome === "string" ? parsed.nome : "",
         cognome: typeof parsed?.cognome === "string" ? parsed.cognome : "",
         cel: typeof parsed?.cel === "string" ? parsed.cel : undefined,
         email,
+        role,
       };
     } catch {
       localStorage.removeItem("ritiri_facili_user");
