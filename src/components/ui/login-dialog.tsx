@@ -1,4 +1,5 @@
 import { useEffect, useId, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -19,7 +20,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { API_BASE_URL } from "@/lib/api";
 import { ChevronDown, LogOut, UserCog, ShieldCheck } from "lucide-react";
-import { Link } from "react-router-dom";
 
 export type UserRole = "admin" | "venditore" | "tecnico";
 
@@ -67,6 +67,7 @@ export function LoginDialog({
   onLogout = () => {},
 }: LoginDialogProps) {
   const id = useId();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [isRegisterMode, setIsRegisterMode] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -173,10 +174,8 @@ export function LoginDialog({
               <UserCog className="h-4 w-4 mr-2" /> Modifica profilo
             </DropdownMenuItem>
             {currentUser.role === "admin" && (
-              <DropdownMenuItem asChild>
-                <Link to="/admin" className="flex items-center gap-2 cursor-pointer">
-                  <ShieldCheck className="h-4 w-4" /> Gestione utenti
-                </Link>
+              <DropdownMenuItem onSelect={() => navigate("/admin")}>
+                <ShieldCheck className="h-4 w-4 mr-2" /> Gestione utenti
               </DropdownMenuItem>
             )}
             <DropdownMenuSeparator />
