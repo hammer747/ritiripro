@@ -59,7 +59,7 @@ function parseTipoArticolo(value: unknown): TipoArticolo | undefined {
   return undefined;
 }
 
-function buildPayload(req: Request, ownerEmail: string, extra?: { createdByName?: string; lastEditByName?: string }): { payload?: SaveRitiroPayload; error?: string } {
+function buildPayload(req: Request, ownerEmail: string, extra?: { createdByName?: string | undefined; lastEditByName?: string | undefined }): { payload?: SaveRitiroPayload; error?: string } {
   const files = req.files as { documentoFronte?: Express.Multer.File[]; documentoRetro?: Express.Multer.File[]; ricevutaAcquisto?: Express.Multer.File[] } | undefined;
 
   const documentoFronte = files?.documentoFronte?.[0];
@@ -162,7 +162,7 @@ export async function createRitiroController(req: Request, res: Response): Promi
   if (!resolved) { res.status(401).json({ message: "Utente non trovato" }); return; }
   if (resolved.role === "tecnico") { res.status(403).json({ message: "Tecnici non possono creare ritiri." }); return; }
 
-  const createdByName = resolved.role !== "admin" ? resolved.fullName : undefined;
+  const createdByName: string | undefined = resolved.role !== "admin" ? resolved.fullName : undefined;
   const { payload, error } = buildPayload(req, resolved.effectiveOwnerEmail, { createdByName });
   if (!payload) { res.status(400).json({ message: error || "Payload non valido" }); return; }
 
@@ -184,7 +184,7 @@ export async function updateRitiroController(req: Request, res: Response): Promi
   const existing = await getRitiroById(id, resolved.effectiveOwnerEmail);
   if (!existing) { res.status(404).json({ message: "Ritiro non trovato" }); return; }
 
-  const lastEditByName = resolved.role !== "admin" ? resolved.fullName : undefined;
+  const lastEditByName: string | undefined = resolved.role !== "admin" ? resolved.fullName : undefined;
   const { payload, error } = buildPayload(req, resolved.effectiveOwnerEmail, { lastEditByName });
   if (!payload) { res.status(400).json({ message: error || "Payload non valido" }); return; }
 
