@@ -74,11 +74,16 @@ function mapApiToRitiro(item: ApiRitiro): Ritiro {
     dataAcquisto: item.dataAcquisto,
     note: item.note || "",
     speseAggiuntive: (() => {
-      if (!item.speseAggiuntive) return undefined;
-      if (typeof item.speseAggiuntive === "string") {
-        try { return JSON.parse(item.speseAggiuntive); } catch { return undefined; }
+      let arr = item.speseAggiuntive;
+      if (!arr) return undefined;
+      if (typeof arr === "string") {
+        try { arr = JSON.parse(arr); } catch { return undefined; }
       }
-      return item.speseAggiuntive.length > 0 ? item.speseAggiuntive : undefined;
+      if (!Array.isArray(arr) || arr.length === 0) return undefined;
+      return (arr as import("./types").SpeseAggiuntiva[]).map((v) => ({
+        ...v,
+        prezzo: Number(v.prezzo) || 0,
+      }));
     })(),
     createdByName: item.createdByName ?? undefined,
     lastEditByName: item.lastEditByName ?? undefined,

@@ -112,7 +112,7 @@ export default function RitiriTable({ ritiri, onChanged, onEdit, onPrint, userRo
               </TableCell>
               <TableCell className="text-right font-semibold text-sm">
                 {showPrice
-                  ? `€ ${Math.round(r.prezzo + (r.speseAggiuntive ?? []).reduce((s, v) => s + v.prezzo, 0))}`
+                  ? `€ ${Math.round(r.prezzo + (r.speseAggiuntive ?? []).reduce((s, v) => s + (Number(v.prezzo) || 0), 0))}`
                   : <span className="text-muted-foreground text-xs font-normal italic">— Riservato —</span>
                 }
               </TableCell>

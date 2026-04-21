@@ -146,6 +146,15 @@ export default function Index() {
   };
 
   const handleSaved = async (ritiro: Ritiro) => {
+    setRitiri((prev) => {
+      const idx = prev.findIndex((r) => r.id === ritiro.id);
+      if (idx >= 0) {
+        const updated = [...prev];
+        updated[idx] = ritiro;
+        return updated;
+      }
+      return [...prev, ritiro];
+    });
     await reload();
     if (!editingRitiro) {
       setLabelRitiro(ritiro);
