@@ -73,37 +73,14 @@ export default function EtichettaLabel({ ritiro, open, onClose }: Props) {
         {/* Preview */}
         <div
           ref={printAreaRef}
-          className="border rounded-lg p-4 bg-white text-black space-y-2 mx-auto"
+          className="border rounded-lg p-4 bg-white text-black mx-auto"
           style={{ width: "240px" }}
         >
-          <div className="label">
-            <div className="header text-center font-bold text-base border-b border-black pb-1">
-              RITIRO #{shortId}
+          <div className="label" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", padding: "4px" }}>
+            <div className="header" style={{ fontWeight: 700, fontSize: "22pt", textAlign: "center" }}>
+              #{shortId}
             </div>
-            <div className="row flex justify-between text-sm mt-1">
-              <span className="key text-xs text-gray-500">Cliente:</span>
-              <span className="val font-semibold">
-                {ritiro.cognomeCliente} {ritiro.nomeCliente}
-              </span>
-            </div>
-            {ritiro.pinDispositivo && (
-              <div className="row flex justify-between text-sm">
-                <span className="key text-xs text-gray-500">PIN:</span>
-                <span className="val font-semibold font-mono">
-                  {ritiro.pinDispositivo}
-                </span>
-              </div>
-            )}
-            {ritiro.marcaModello && (
-              <div className="row flex justify-between text-sm">
-                <span className="key text-xs text-gray-500">Dispositivo:</span>
-                <span className="val font-semibold text-right max-w-[140px] truncate">
-                  {ritiro.marcaModello}
-                </span>
-              </div>
-            )}
-
-            <div className="code text-center text-[10px] text-gray-400 tracking-wider">
+            <div style={{ fontSize: "10pt", color: "#555", textAlign: "center" }}>
               {dataFormattata}
             </div>
           </div>
