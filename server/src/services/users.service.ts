@@ -143,6 +143,7 @@ export async function listSubUsers(adminEmail: string): Promise<Omit<UserRecord,
     ditta: row.ditta ?? null,
     indirizzo: row.indirizzo ?? null,
     piva: row.piva ?? null,
+    allowRegistration: row.allow_registration !== 0,
   }));
 }
 
