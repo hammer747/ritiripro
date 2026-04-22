@@ -81,7 +81,7 @@ export async function generateRicevuta(ritiro: Ritiro, admin: AdminInfo): Promis
   doc.setFontSize(15);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...DARK);
-  doc.text("RICEVUTA DI ACQUISTO", 105, 43, { align: "center" });
+  doc.text("RICEVUTA DI RITIRO", 105, 43, { align: "center" });
 
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
