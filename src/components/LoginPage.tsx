@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,6 +21,14 @@ export default function LoginPage({ onLogin }: Props) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [registrationEnabled, setRegistrationEnabled] = useState(false);
+
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/api/auth/registration-status`)
+      .then((r) => r.json())
+      .then((d: { enabled: boolean }) => setRegistrationEnabled(d.enabled))
+      .catch(() => setRegistrationEnabled(false));
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -111,16 +119,19 @@ export default function LoginPage({ onLogin }: Props) {
             </Button>
           </form>
 
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">oppure</span>
-            </div>
-          </div>
-
-          <Button type="button" variant="outline" className="w-full" onClick={() => { setMode(mode === "login" ? "register" : "login"); setError(""); }}>
-            {mode === "login" ? "Crea nuovo account" : "Hai già un account? Accedi"}
-          </Button>
+          {registrationEnabled && (
+            <>
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">oppure</span>
+                </div>
+              </div>
+              <Button type="button" variant="outline" className="w-full" onClick={() => { setMode(mode === "login" ? "register" : "login"); setError(""); }}>
+                {mode === "login" ? "Crea nuovo account" : "Hai già un account? Accedi"}
+              </Button>
+            </>
+          )}
         </div>
 
         <ShinyButton className="w-full">RitiriPro di Hammer Guerrero</ShinyButton>
