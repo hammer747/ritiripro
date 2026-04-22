@@ -55,7 +55,7 @@ export async function generateRicevuta(ritiro: Ritiro, admin: AdminInfo): Promis
   const dataFormatted = new Date(ritiro.dataAcquisto).toLocaleDateString("it-IT", {
     day: "2-digit", month: "long", year: "numeric",
   });
-  const companyName = admin.ditta?.trim() || `${admin.nome} ${admin.cognome}`;
+  const companyName = admin.ditta?.trim() || "";
 
   // --- HEADER ---
   const logoData = await loadImageAsBase64("/logo.png");
@@ -64,9 +64,11 @@ export async function generateRicevuta(ritiro: Ritiro, admin: AdminInfo): Promis
   }
 
   doc.setFontSize(9);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(...DARK);
-  doc.text(companyName, 196, 13, { align: "right" });
+  if (companyName) {
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...DARK);
+    doc.text(companyName, 196, 13, { align: "right" });
+  }
 
   doc.setFont("helvetica", "normal");
   doc.setTextColor(...GRAY);
@@ -198,7 +200,7 @@ export async function generateRicevuta(ritiro: Ritiro, admin: AdminInfo): Promis
   doc.setFontSize(7);
   doc.setTextColor(190, 190, 190);
   doc.text(
-    `RitiriPro — ${companyName} — Documento generato il ${new Date().toLocaleDateString("it-IT")}`,
+    `RitiriPro${companyName ? ` — ${companyName}` : ""} — Documento generato il ${new Date().toLocaleDateString("it-IT")}`,
     105, 288, { align: "center" }
   );
 
