@@ -1,5 +1,11 @@
 export type TipoArticolo = "smartphone" | "computer" | "console" | "camera" | "altro";
 
+export type EditEntry = {
+  name: string;
+  at: string;
+  details: string[];
+};
+
 export type SpeseAggiuntiva = {
   mode: "manuale" | "automatico";
   descrizione: string;
@@ -38,5 +44,5 @@ export interface Ritiro {
   createdByName?: string;
   lastEditByName?: string;
   lastEditAt?: string;
-  lastEditDetails?: string[];
+  lastEditDetails?: EditEntry[];
 }

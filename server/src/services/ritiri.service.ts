@@ -3,7 +3,7 @@ import path from "path";
 import { RowDataPacket } from "mysql2";
 import { pool } from "../config/db";
 import { env } from "../config/env";
-import { RitiroRecord, SaveRitiroPayload } from "../types/ritiro";
+import { RitiroRecord, SaveRitiroPayload, EditEntry } from "../types/ritiro";
 
 interface RitiroRow extends RowDataPacket {
   last_edit_details: string | null;
@@ -75,7 +75,14 @@ function mapRow(row: RitiroRow): RitiroRecord {
     createdByName: row.created_by_name ?? null,
     lastEditByName: row.last_edit_by_name ?? null,
     lastEditAt: row.last_edit_at ?? null,
-    lastEditDetails: row.last_edit_details ? (() => { try { return JSON.parse(row.last_edit_details as string) as string[]; } catch { return null; } })() : null,
+    lastEditDetails: row.last_edit_details ? (() => {
+      try {
+        const parsed = JSON.parse(row.last_edit_details as string) as unknown[];
+        if (!Array.isArray(parsed) || parsed.length === 0) return null;
+        if (typeof parsed[0] === "string") return null;
+        return parsed as EditEntry[];
+      } catch { return null; }
+    })() : null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

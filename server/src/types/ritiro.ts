@@ -7,6 +7,12 @@ export type SpeseAggiuntiva = {
   ritiroId?: string;
 };
 
+export type EditEntry = {
+  name: string;
+  at: string;
+  details: string[];
+};
+
 export interface RitiroRecord {
   id: string;
   numeroRitiro: number;
@@ -39,7 +45,7 @@ export interface RitiroRecord {
   createdByName: string | null;
   lastEditByName: string | null;
   lastEditAt: string | null;
-  lastEditDetails: string[] | null;
+  lastEditDetails: EditEntry[] | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -73,5 +79,5 @@ export interface SaveRitiroPayload {
   speseAggiuntive: SpeseAggiuntiva[] | null;
   createdByName?: string | null | undefined;
   lastEditByName?: string | null | undefined;
-  lastEditDetails?: string[] | null;
+  lastEditDetails?: EditEntry[] | null;
 }

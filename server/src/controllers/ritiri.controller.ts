@@ -8,7 +8,7 @@ import {
 } from "../services/ritiri.service";
 import { findUserByEmail } from "../services/users.service";
 import { createLog } from "../services/logs.service";
-import { SaveRitiroPayload, TipoArticolo } from "../types/ritiro";
+import { SaveRitiroPayload, TipoArticolo, EditEntry } from "../types/ritiro";
 
 async function resolveUser(email: string) {
   const user = await findUserByEmail(email);
@@ -125,7 +125,7 @@ function buildPayload(req: Request, ownerEmail: string, extra?: { createdByName?
   return { payload };
 }
 
-function buildChangeList(existing: import("../types/ritiro").RitiroRecord, payload: SaveRitiroPayload): string[] {
+function buildChangeList(existing: import("../types/ritiro").RitiroRecord, payload: SaveRitiroPayload, editorName: string): string[] {
   const changes: string[] = [];
   const str = (v: string | null | undefined) => (v ?? "").trim();
   const num = (v: number | string | null | undefined) => Math.round(Number(v) * 100);
@@ -151,6 +151,23 @@ function buildChangeList(existing: import("../types/ritiro").RitiroRecord, paylo
   if (str(existing.note) !== str(payload.note)) changes.push("Note modificate");
   if (str(existing.dataAcquisto) !== str(payload.dataAcquisto)) changes.push("Data acquisto modificata");
   if (num(existing.prezzoVendita) !== num(payload.prezzoVendita)) changes.push("Prezzo di vendita modificato");
+
+  const existingSpese = existing.speseAggiuntive ?? [];
+  const newSpese = payload.speseAggiuntive ?? [];
+  for (const spesa of newSpese) {
+    if (spesa.mode !== "manuale") continue;
+    const found = existingSpese.some(
+      (e) => e.mode === "manuale" && e.descrizione === spesa.descrizione && num(e.prezzo) === num(spesa.prezzo)
+    );
+    if (!found) changes.push(`${editorName} ha aggiunto: ${spesa.descrizione} ${Math.round(Number(spesa.prezzo))}€`);
+  }
+  for (const spesa of existingSpese) {
+    if (spesa.mode !== "manuale") continue;
+    const found = newSpese.some(
+      (e) => e.mode === "manuale" && e.descrizione === spesa.descrizione && num(e.prezzo) === num(spesa.prezzo)
+    );
+    if (!found) changes.push(`${editorName} ha rimosso: ${spesa.descrizione} ${Math.round(Number(spesa.prezzo))}€`);
+  }
 
   return changes.length > 0 ? changes : ["Modifica effettuata"];
 }
@@ -224,7 +241,10 @@ export async function updateRitiroController(req: Request, res: Response): Promi
   if (!files?.ricevutaAcquisto?.[0]) { payload.ricevutaAcquistoPath = existing.ricevutaAcquistoPath ?? null; payload.ricevutaAcquistoNome = existing.ricevutaAcquistoNome ?? null; }
 
   if (lastEditByName) {
-    payload.lastEditDetails = buildChangeList(existing, payload);
+    const changeDetails = buildChangeList(existing, payload, lastEditByName);
+    const newEntry: EditEntry = { name: lastEditByName, at: new Date().toISOString(), details: changeDetails };
+    const existingHistory: EditEntry[] = Array.isArray(existing.lastEditDetails) ? existing.lastEditDetails : [];
+    payload.lastEditDetails = [...existingHistory, newEntry];
   }
 
   const updated = await updateRitiroById(id, payload);

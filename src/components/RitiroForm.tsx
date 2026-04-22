@@ -714,34 +714,29 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
         )}
       </fieldset>
 
-      {isEditing && editingRitiro?.lastEditByName && (
+      {isEditing && editingRitiro?.lastEditDetails && editingRitiro.lastEditDetails.length > 0 && (
         <fieldset className="space-y-3 rounded-lg border border-amber-300 dark:border-amber-700 p-4 bg-amber-50 dark:bg-amber-950/30">
           <legend className="px-2 text-sm font-semibold text-amber-800 dark:text-amber-300">⚠ Modifiche Realizzate</legend>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-            <div className="space-y-0.5">
-              <p className="text-xs text-muted-foreground font-medium">Operatore</p>
-              <p className="font-semibold text-foreground">{editingRitiro.lastEditByName}</p>
-            </div>
-            <div className="space-y-0.5">
-              <p className="text-xs text-muted-foreground font-medium">Data</p>
-              <p className="font-semibold text-foreground">
-                {editingRitiro.lastEditAt
-                  ? new Date(editingRitiro.lastEditAt).toLocaleDateString("it-IT")
-                  : "—"}
-              </p>
-            </div>
-          </div>
-          <ul className="space-y-1 pt-1 border-t border-amber-200 dark:border-amber-800">
-            {(editingRitiro.lastEditDetails && editingRitiro.lastEditDetails.length > 0
-              ? editingRitiro.lastEditDetails
-              : ["Modifica effettuata"]
-            ).map((detail, i) => (
-              <li key={i} className="text-xs text-amber-800 dark:text-amber-300 flex items-start gap-1.5">
-                <span className="mt-0.5 shrink-0">•</span>
-                <span>{detail}</span>
-              </li>
+          <div className="space-y-3">
+            {[...editingRitiro.lastEditDetails].reverse().map((entry, i) => (
+              <div key={i} className={i > 0 ? "pt-3 border-t border-amber-200 dark:border-amber-800" : ""}>
+                <div className="flex items-center justify-between gap-2 mb-1.5">
+                  <p className="text-xs font-semibold text-amber-900 dark:text-amber-200">{entry.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {new Date(entry.at).toLocaleDateString("it-IT")} {new Date(entry.at).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" })}
+                  </p>
+                </div>
+                <ul className="space-y-0.5">
+                  {entry.details.map((detail, j) => (
+                    <li key={j} className="text-xs text-amber-800 dark:text-amber-300 flex items-start gap-1.5">
+                      <span className="mt-0.5 shrink-0">•</span>
+                      <span>{detail}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             ))}
-          </ul>
+          </div>
         </fieldset>
       )}
 

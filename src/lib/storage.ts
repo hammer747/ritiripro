@@ -1,6 +1,6 @@
 import { API_BASE_URL } from "./api";
 import { RegisteredUser } from "@/components/ui/login-dialog";
-import { Ritiro, TipoArticolo } from "./types";
+import { Ritiro, TipoArticolo, EditEntry } from "./types";
 
 export function formatCodiceRitiro(numeroRitiro: number | undefined, dataAcquisto: string): string {
   if (!numeroRitiro) return "";
@@ -43,7 +43,7 @@ type ApiRitiro = {
   createdByName?: string | null;
   lastEditByName?: string | null;
   lastEditAt?: string | null;
-  lastEditDetails?: string[] | null;
+  lastEditDetails?: EditEntry[] | string | null;
 };
 
 function mapApiToRitiro(item: ApiRitiro): Ritiro {
@@ -89,9 +89,16 @@ function mapApiToRitiro(item: ApiRitiro): Ritiro {
     createdByName: item.createdByName ?? undefined,
     lastEditByName: item.lastEditByName ?? undefined,
     lastEditAt: item.lastEditAt ?? undefined,
-    lastEditDetails: Array.isArray(item.lastEditDetails) && item.lastEditDetails.length > 0
-      ? item.lastEditDetails
-      : undefined,
+    lastEditDetails: (() => {
+      let raw = item.lastEditDetails;
+      if (!raw) return undefined;
+      if (typeof raw === "string") {
+        try { raw = JSON.parse(raw) as EditEntry[]; } catch { return undefined; }
+      }
+      if (!Array.isArray(raw) || raw.length === 0) return undefined;
+      if (typeof raw[0] === "string") return undefined;
+      return raw as EditEntry[];
+    })(),
   };
 }
 
