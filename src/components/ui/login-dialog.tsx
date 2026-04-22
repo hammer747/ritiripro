@@ -1,4 +1,4 @@
-import { useEffect, useId, useState, useCallback } from "react";
+import { useEffect, useId, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -79,11 +79,12 @@ export function LoginDialog({
   const [registrationEnabled, setRegistrationEnabled] = useState(true);
 
   useEffect(() => {
+    if (currentUser) return;
     fetch(`${API_BASE_URL}/api/auth/registration-status`)
       .then((r) => r.json())
       .then((d: { enabled: boolean }) => setRegistrationEnabled(d.enabled))
       .catch(() => setRegistrationEnabled(true));
-  }, []);
+  }, [currentUser]);
   const [error, setError] = useState("");
   const [profileError, setProfileError] = useState("");
   const [loading, setLoading] = useState(false);
