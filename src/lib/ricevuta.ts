@@ -133,7 +133,7 @@ export async function generateRicevuta(ritiro: Ritiro, admin: AdminInfo): Promis
   doc.setFontSize(8);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...GREEN);
-  doc.text("OGGETTO ACQUISTATO", 14, y);
+  doc.text("OGGETTO VENDUTO", 14, y);
   y += 5;
 
   const prodRows: [string, string][] = [
