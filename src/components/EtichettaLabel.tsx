@@ -77,8 +77,11 @@ export default function EtichettaLabel({ ritiro, open, onClose }: Props) {
           style={{ width: "240px" }}
         >
           <div className="label" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", padding: "4px" }}>
-            <div className="header" style={{ fontWeight: 700, fontSize: "22pt", textAlign: "center" }}>
-              #{shortId}
+            <div style={{ fontWeight: 700, fontSize: "22pt", textAlign: "center", lineHeight: 1.1 }}>
+              Ritiro
+            </div>
+            <div style={{ fontWeight: 700, fontSize: "22pt", textAlign: "center", lineHeight: 1.1 }}>
+              {shortId}
             </div>
             <div style={{ fontSize: "10pt", color: "#555", textAlign: "center" }}>
               {dataFormattata}
