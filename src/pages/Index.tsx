@@ -6,6 +6,7 @@ import { Ritiro } from "@/lib/types";
 import RitiroForm from "@/components/RitiroForm";
 import RitiriTable from "@/components/RitiriTable";
 import EtichettaLabel from "@/components/EtichettaLabel";
+import { generateRicevuta } from "@/lib/ricevuta";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Search, Package, Euro, List, TrendingUp } from "lucide-react";
@@ -268,6 +269,16 @@ export default function Index() {
             onChanged={() => { reload().catch(() => void 0); }}
             onEdit={handleEdit}
             onPrint={(r) => setLabelRitiro(r)}
+            onRicevuta={(r) => {
+              if (!currentUser) return;
+              void generateRicevuta(r, {
+                nome: currentUser.nome,
+                cognome: currentUser.cognome,
+                ditta: currentUser.ditta,
+                indirizzo: currentUser.indirizzo,
+                piva: currentUser.piva,
+              });
+            }}
             userRole={currentUser?.role}
           />
         </div>

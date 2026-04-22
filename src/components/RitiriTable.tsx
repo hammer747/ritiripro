@@ -9,7 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Trash2, Pencil, FileText, Tag } from "lucide-react";
+import { Trash2, Pencil, FileText, Tag, Receipt } from "lucide-react";
 import { toast } from "sonner";
 import { UserRole } from "@/components/ui/login-dialog";
 
@@ -25,10 +25,11 @@ interface Props {
   onChanged: () => void;
   onEdit: (ritiro: Ritiro) => void;
   onPrint?: (ritiro: Ritiro) => void;
+  onRicevuta?: (ritiro: Ritiro) => void;
   userRole?: UserRole;
 }
 
-export default function RitiriTable({ ritiri, onChanged, onEdit, onPrint, userRole = "admin" }: Props) {
+export default function RitiriTable({ ritiri, onChanged, onEdit, onPrint, onRicevuta, userRole = "admin" }: Props) {
   const canDelete = userRole === "admin";
   const canEdit = userRole !== "tecnico";
   const showPrice = userRole !== "tecnico";
@@ -112,6 +113,11 @@ export default function RitiriTable({ ritiri, onChanged, onEdit, onPrint, userRo
               </TableCell>
               <TableCell>
                 <div className="flex gap-1">
+                  {onRicevuta && (
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-green-600 hover:text-green-700" title="Genera ricevuta PDF" onClick={() => onRicevuta(r)}>
+                      <Receipt className="h-4 w-4" />
+                    </Button>
+                  )}
                   {onPrint && (
                     <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:text-primary" title="Stampa etichetta" onClick={() => onPrint(r)}>
                       <Tag className="h-4 w-4" />
