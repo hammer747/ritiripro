@@ -167,8 +167,8 @@ export async function getRitiroById(id: string, ownerEmail: string): Promise<Rit
 export async function createRitiro(payload: SaveRitiroPayload, id: string): Promise<void> {
   interface NextNumRow extends RowDataPacket { next_num: number; }
   const [numRows] = await pool.query<NextNumRow[]>(
-    "SELECT COALESCE(MAX(numero_ritiro), 0) + 1 AS next_num FROM ritiri WHERE owner_email = ?",
-    [payload.ownerEmail]
+    "SELECT COALESCE(MAX(numero_ritiro), 0) + 1 AS next_num FROM ritiri WHERE owner_email = ? AND data_acquisto = ?",
+    [payload.ownerEmail, payload.dataAcquisto]
   );
   const numeroRitiro = numRows[0]?.next_num ?? 1;
 
