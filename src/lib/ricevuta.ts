@@ -60,44 +60,51 @@ export async function generateRicevuta(ritiro: Ritiro, admin: AdminInfo): Promis
   // --- HEADER ---
   const logoData = await loadImageAsBase64("/logo.png");
   if (logoData) {
-    doc.addImage(logoData, "PNG", 14, 10, 38, 18);
+    const logoW = 50;
+    const logoH = 24;
+    doc.addImage(logoData, "PNG", (210 - logoW) / 2, 8, logoW, logoH);
   }
 
   doc.setFontSize(9);
   if (companyName) {
     doc.setFont("helvetica", "bold");
     doc.setTextColor(...DARK);
-    doc.text(companyName, 196, 13, { align: "right" });
+    doc.text(companyName, 105, 36, { align: "center" });
   }
 
   doc.setFont("helvetica", "normal");
   doc.setTextColor(...GRAY);
-  if (admin.indirizzo?.trim()) doc.text(admin.indirizzo.trim(), 196, 18, { align: "right" });
-  if (admin.piva?.trim()) doc.text(`P.IVA: ${admin.piva.trim()}`, 196, 23, { align: "right" });
+  const infoLines: string[] = [];
+  if (admin.indirizzo?.trim()) infoLines.push(admin.indirizzo.trim());
+  if (admin.piva?.trim()) infoLines.push(`P.IVA: ${admin.piva.trim()}`);
+  if (infoLines.length > 0) {
+    doc.text(infoLines.join("   |   "), 105, 41, { align: "center" });
+  }
 
   // green bar
+  const barY = infoLines.length > 0 ? 45 : (companyName ? 40 : 35);
   doc.setFillColor(...GREEN);
-  doc.rect(14, 32, 182, 1.2, "F");
+  doc.rect(14, barY, 182, 1.2, "F");
 
   // --- TITLE ---
   doc.setFontSize(15);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...DARK);
-  doc.text("RICEVUTA DI RITIRO", 105, 43, { align: "center" });
+  doc.text("RICEVUTA DI RITIRO", 105, barY + 10, { align: "center" });
 
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(...GRAY);
-  doc.text(`N° ${codice}`, 14, 51);
-  doc.text(`Data: ${dataFormatted}`, 196, 51, { align: "right" });
+  doc.text(`N° ${codice}`, 14, barY + 18);
+  doc.text(`Data: ${dataFormatted}`, 196, barY + 18, { align: "right" });
 
   // thin separator
   doc.setDrawColor(220, 220, 220);
   doc.setLineWidth(0.3);
-  doc.line(14, 55, 196, 55);
+  doc.line(14, barY + 22, 196, barY + 22);
 
   // --- CLIENT SECTION ---
-  let y = 63;
+  let y = barY + 30;
   doc.setFontSize(8);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...GREEN);
