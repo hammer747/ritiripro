@@ -219,7 +219,7 @@ export function LoginDialog({
                 <Input id={`${id}-profile-indirizzo`} value={profileIndirizzo} onChange={(e) => setProfileIndirizzo(e.target.value)} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor={`${id}-profile-piva`}>P.IVA (facoltativo)</Label>
+                <Label htmlFor={`${id}-profile-piva`}>P.Iva (facoltativo)</Label>
                 <Input id={`${id}-profile-piva`} value={profilePiva} onChange={(e) => setProfilePiva(e.target.value)} />
               </div>
               <div className="space-y-2">

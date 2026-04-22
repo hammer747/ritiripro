@@ -125,6 +125,9 @@ export async function listSubUsers(adminEmail: string): Promise<Omit<UserRecord,
     email: row.email,
     role: row.role,
     parentAdminEmail: row.parent_admin_email ?? null,
+    ditta: row.ditta ?? null,
+    indirizzo: row.indirizzo ?? null,
+    piva: row.piva ?? null,
   }));
 }
 
