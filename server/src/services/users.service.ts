@@ -12,6 +12,9 @@ interface UserRow extends RowDataPacket {
   password_hash: string;
   role: UserRole;
   parent_admin_email: string | null;
+  ditta: string | null;
+  indirizzo: string | null;
+  piva: string | null;
 }
 
 export interface UserRecord {
@@ -22,6 +25,9 @@ export interface UserRecord {
   passwordHash: string;
   role: UserRole;
   parentAdminEmail: string | null;
+  ditta: string | null;
+  indirizzo: string | null;
+  piva: string | null;
 }
 
 export async function initUsersTable(): Promise<void> {
@@ -41,11 +47,14 @@ export async function initUsersTable(): Promise<void> {
 
   await pool.execute(`ALTER TABLE users ADD COLUMN IF NOT EXISTS role ENUM('admin','venditore','tecnico') NOT NULL DEFAULT 'admin'`);
   await pool.execute(`ALTER TABLE users ADD COLUMN IF NOT EXISTS parent_admin_email VARCHAR(255) NULL`);
+  await pool.execute(`ALTER TABLE users ADD COLUMN IF NOT EXISTS ditta VARCHAR(255) NULL`);
+  await pool.execute(`ALTER TABLE users ADD COLUMN IF NOT EXISTS indirizzo VARCHAR(255) NULL`);
+  await pool.execute(`ALTER TABLE users ADD COLUMN IF NOT EXISTS piva VARCHAR(64) NULL`);
 }
 
 export async function findUserByEmail(email: string): Promise<UserRecord | null> {
   const [rows] = await pool.query<UserRow[]>(
-    "SELECT nome, cognome, cel, email, password_hash, role, parent_admin_email FROM users WHERE email = ? LIMIT 1",
+    "SELECT nome, cognome, cel, email, password_hash, role, parent_admin_email, ditta, indirizzo, piva FROM users WHERE email = ? LIMIT 1",
     [email]
   );
   const row = rows[0];
@@ -58,6 +67,9 @@ export async function findUserByEmail(email: string): Promise<UserRecord | null>
     passwordHash: row.password_hash,
     role: row.role ?? "admin",
     parentAdminEmail: row.parent_admin_email ?? null,
+    ditta: row.ditta ?? null,
+    indirizzo: row.indirizzo ?? null,
+    piva: row.piva ?? null,
   };
 }
 
@@ -82,18 +94,21 @@ export async function updateUser(
   nome: string,
   cognome: string,
   cel: string | null,
-  newPassword?: string
+  newPassword?: string,
+  ditta?: string | null,
+  indirizzo?: string | null,
+  piva?: string | null,
 ): Promise<void> {
   if (newPassword) {
     const hash = await bcrypt.hash(newPassword, 10);
     await pool.execute(
-      "UPDATE users SET nome = ?, cognome = ?, cel = ?, password_hash = ? WHERE email = ?",
-      [nome, cognome, cel, hash, email]
+      "UPDATE users SET nome = ?, cognome = ?, cel = ?, password_hash = ?, ditta = ?, indirizzo = ?, piva = ? WHERE email = ?",
+      [nome, cognome, cel, hash, ditta ?? null, indirizzo ?? null, piva ?? null, email]
     );
   } else {
     await pool.execute(
-      "UPDATE users SET nome = ?, cognome = ?, cel = ? WHERE email = ?",
-      [nome, cognome, cel, email]
+      "UPDATE users SET nome = ?, cognome = ?, cel = ?, ditta = ?, indirizzo = ?, piva = ? WHERE email = ?",
+      [nome, cognome, cel, ditta ?? null, indirizzo ?? null, piva ?? null, email]
     );
   }
 }

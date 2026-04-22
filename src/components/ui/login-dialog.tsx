@@ -29,6 +29,9 @@ export type RegisteredUser = {
   cel?: string;
   email: string;
   role: UserRole;
+  ditta?: string;
+  indirizzo?: string;
+  piva?: string;
 };
 
 type LoginDialogProps = {
@@ -84,6 +87,9 @@ export function LoginDialog({
   const [profileNome, setProfileNome] = useState("");
   const [profileCognome, setProfileCognome] = useState("");
   const [profileCel, setProfileCel] = useState("");
+  const [profileDitta, setProfileDitta] = useState("");
+  const [profileIndirizzo, setProfileIndirizzo] = useState("");
+  const [profilePiva, setProfilePiva] = useState("");
   const [showPasswordChange, setShowPasswordChange] = useState(false);
   const [currentPasswordInput, setCurrentPasswordInput] = useState("");
   const [newPasswordInput, setNewPasswordInput] = useState("");
@@ -99,6 +105,9 @@ export function LoginDialog({
     setProfileNome(currentUser.nome);
     setProfileCognome(currentUser.cognome);
     setProfileCel(currentUser.cel ?? "");
+    setProfileDitta(currentUser.ditta ?? "");
+    setProfileIndirizzo(currentUser.indirizzo ?? "");
+    setProfilePiva(currentUser.piva ?? "");
     setShowPasswordChange(false);
     setCurrentPasswordInput("");
     setNewPasswordInput("");
@@ -141,7 +150,7 @@ export function LoginDialog({
 
       setLoading(true);
       try {
-        const body: Record<string, string> = { nome: profileNome.trim(), cognome: profileCognome.trim(), cel: profileCel.trim() };
+        const body: Record<string, string> = { nome: profileNome.trim(), cognome: profileCognome.trim(), cel: profileCel.trim(), ditta: profileDitta.trim(), indirizzo: profileIndirizzo.trim(), piva: profilePiva.trim() };
         if (showPasswordChange) { body.currentPassword = currentPasswordInput; body.newPassword = newPasswordInput; }
         const updated = await apiPut<RegisteredUser>("/api/auth/profile", body, { "x-user-email": currentUser.email });
         localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(updated));
@@ -200,6 +209,18 @@ export function LoginDialog({
               <div className="space-y-2">
                 <Label htmlFor={`${id}-profile-cel`}>Cellulare (facoltativo)</Label>
                 <Input id={`${id}-profile-cel`} type="tel" value={profileCel} onChange={(e) => setProfileCel(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor={`${id}-profile-ditta`}>Ditta (facoltativo)</Label>
+                <Input id={`${id}-profile-ditta`} value={profileDitta} onChange={(e) => setProfileDitta(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor={`${id}-profile-indirizzo`}>Indirizzo (facoltativo)</Label>
+                <Input id={`${id}-profile-indirizzo`} value={profileIndirizzo} onChange={(e) => setProfileIndirizzo(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor={`${id}-profile-piva`}>P.IVA (facoltativo)</Label>
+                <Input id={`${id}-profile-piva`} value={profilePiva} onChange={(e) => setProfilePiva(e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label>Email</Label>

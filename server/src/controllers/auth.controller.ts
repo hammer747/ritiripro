@@ -8,7 +8,7 @@ function ownerEmail(req: Request): string | null {
 }
 
 function userToJson(user: NonNullable<Awaited<ReturnType<typeof findUserByEmail>>>) {
-  return { nome: user.nome, cognome: user.cognome, cel: user.cel, email: user.email, role: user.role };
+  return { nome: user.nome, cognome: user.cognome, cel: user.cel, email: user.email, role: user.role, ditta: user.ditta, indirizzo: user.indirizzo, piva: user.piva };
 }
 
 export async function registerController(req: Request, res: Response): Promise<void> {
@@ -58,7 +58,7 @@ export async function updateProfileController(req: Request, res: Response): Prom
   const email = ownerEmail(req);
   if (!email) { res.status(401).json({ message: "Login richiesto." }); return; }
 
-  const { nome, cognome, cel, currentPassword, newPassword } = req.body as Record<string, string>;
+  const { nome, cognome, cel, currentPassword, newPassword, ditta, indirizzo, piva } = req.body as Record<string, string>;
 
   if (!nome?.trim() || !cognome?.trim()) {
     res.status(400).json({ message: "Nome e cognome sono obbligatori." });
@@ -84,7 +84,7 @@ export async function updateProfileController(req: Request, res: Response): Prom
     }
   }
 
-  await updateUser(email, nome.trim(), cognome.trim(), cel?.trim() || null, newPassword?.trim() || undefined);
+  await updateUser(email, nome.trim(), cognome.trim(), cel?.trim() || null, newPassword?.trim() || undefined, ditta?.trim() || null, indirizzo?.trim() || null, piva?.trim() || null);
   const updated = await findUserByEmail(email);
   res.json(userToJson(updated!));
 }
