@@ -15,6 +15,7 @@ interface UserRow extends RowDataPacket {
   ditta: string | null;
   indirizzo: string | null;
   piva: string | null;
+  allow_registration: number;
 }
 
 export interface UserRecord {
@@ -28,6 +29,7 @@ export interface UserRecord {
   ditta: string | null;
   indirizzo: string | null;
   piva: string | null;
+  allowRegistration: boolean;
 }
 
 export async function initUsersTable(): Promise<void> {
@@ -50,11 +52,12 @@ export async function initUsersTable(): Promise<void> {
   await pool.execute(`ALTER TABLE users ADD COLUMN IF NOT EXISTS ditta VARCHAR(255) NULL`);
   await pool.execute(`ALTER TABLE users ADD COLUMN IF NOT EXISTS indirizzo VARCHAR(255) NULL`);
   await pool.execute(`ALTER TABLE users ADD COLUMN IF NOT EXISTS piva VARCHAR(64) NULL`);
+  await pool.execute(`ALTER TABLE users ADD COLUMN IF NOT EXISTS allow_registration TINYINT(1) NOT NULL DEFAULT 1`);
 }
 
 export async function findUserByEmail(email: string): Promise<UserRecord | null> {
   const [rows] = await pool.query<UserRow[]>(
-    "SELECT nome, cognome, cel, email, password_hash, role, parent_admin_email, ditta, indirizzo, piva FROM users WHERE email = ? LIMIT 1",
+    "SELECT nome, cognome, cel, email, password_hash, role, parent_admin_email, ditta, indirizzo, piva, allow_registration FROM users WHERE email = ? LIMIT 1",
     [email]
   );
   const row = rows[0];
@@ -70,7 +73,17 @@ export async function findUserByEmail(email: string): Promise<UserRecord | null>
     ditta: row.ditta ?? null,
     indirizzo: row.indirizzo ?? null,
     piva: row.piva ?? null,
+    allowRegistration: row.allow_registration !== 0,
   };
+}
+
+export async function isRegistrationEnabled(): Promise<boolean> {
+  interface CountRow extends RowDataPacket { cnt: number }
+  const [rows] = await pool.query<CountRow[]>("SELECT COUNT(*) AS cnt FROM users WHERE role = 'admin'");
+  const total = rows[0]?.cnt ?? 0;
+  if (total === 0) return true;
+  const [enabled] = await pool.query<CountRow[]>("SELECT COUNT(*) AS cnt FROM users WHERE role = 'admin' AND allow_registration = 1");
+  return (enabled[0]?.cnt ?? 0) > 0;
 }
 
 export async function createUser(
@@ -98,17 +111,19 @@ export async function updateUser(
   ditta?: string | null,
   indirizzo?: string | null,
   piva?: string | null,
+  allowRegistration?: boolean,
 ): Promise<void> {
+  const ar = allowRegistration === false ? 0 : 1;
   if (newPassword) {
     const hash = await bcrypt.hash(newPassword, 10);
     await pool.execute(
-      "UPDATE users SET nome = ?, cognome = ?, cel = ?, password_hash = ?, ditta = ?, indirizzo = ?, piva = ? WHERE email = ?",
-      [nome, cognome, cel, hash, ditta ?? null, indirizzo ?? null, piva ?? null, email]
+      "UPDATE users SET nome = ?, cognome = ?, cel = ?, password_hash = ?, ditta = ?, indirizzo = ?, piva = ?, allow_registration = ? WHERE email = ?",
+      [nome, cognome, cel, hash, ditta ?? null, indirizzo ?? null, piva ?? null, ar, email]
     );
   } else {
     await pool.execute(
-      "UPDATE users SET nome = ?, cognome = ?, cel = ?, ditta = ?, indirizzo = ?, piva = ? WHERE email = ?",
-      [nome, cognome, cel, ditta ?? null, indirizzo ?? null, piva ?? null, email]
+      "UPDATE users SET nome = ?, cognome = ?, cel = ?, ditta = ?, indirizzo = ?, piva = ?, allow_registration = ? WHERE email = ?",
+      [nome, cognome, cel, ditta ?? null, indirizzo ?? null, piva ?? null, ar, email]
     );
   }
 }

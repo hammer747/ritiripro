@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 import { Request, Response } from "express";
-import { createUser, findUserByEmail, updateUser } from "../services/users.service";
+import { createUser, findUserByEmail, updateUser, isRegistrationEnabled } from "../services/users.service";
 
 function ownerEmail(req: Request): string | null {
   const v = req.header("x-user-email");
@@ -8,7 +8,12 @@ function ownerEmail(req: Request): string | null {
 }
 
 function userToJson(user: NonNullable<Awaited<ReturnType<typeof findUserByEmail>>>) {
-  return { nome: user.nome, cognome: user.cognome, cel: user.cel, email: user.email, role: user.role, ditta: user.ditta, indirizzo: user.indirizzo, piva: user.piva };
+  return { nome: user.nome, cognome: user.cognome, cel: user.cel, email: user.email, role: user.role, ditta: user.ditta, indirizzo: user.indirizzo, piva: user.piva, allowRegistration: user.allowRegistration };
+}
+
+export async function registrationStatusController(_req: Request, res: Response): Promise<void> {
+  const enabled = await isRegistrationEnabled();
+  res.json({ enabled });
 }
 
 export async function registerController(req: Request, res: Response): Promise<void> {
@@ -58,7 +63,7 @@ export async function updateProfileController(req: Request, res: Response): Prom
   const email = ownerEmail(req);
   if (!email) { res.status(401).json({ message: "Login richiesto." }); return; }
 
-  const { nome, cognome, cel, currentPassword, newPassword, ditta, indirizzo, piva } = req.body as Record<string, string>;
+  const { nome, cognome, cel, currentPassword, newPassword, ditta, indirizzo, piva, allowRegistration } = req.body as Record<string, string>;
 
   if (!nome?.trim() || !cognome?.trim()) {
     res.status(400).json({ message: "Nome e cognome sono obbligatori." });
@@ -84,7 +89,7 @@ export async function updateProfileController(req: Request, res: Response): Prom
     }
   }
 
-  await updateUser(email, nome.trim(), cognome.trim(), cel?.trim() || null, newPassword?.trim() || undefined, ditta?.trim() || null, indirizzo?.trim() || null, piva?.trim() || null);
+  await updateUser(email, nome.trim(), cognome.trim(), cel?.trim() || null, newPassword?.trim() || undefined, ditta?.trim() || null, indirizzo?.trim() || null, piva?.trim() || null, allowRegistration !== "false");
   const updated = await findUserByEmail(email);
   res.json(userToJson(updated!));
 }

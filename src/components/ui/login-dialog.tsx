@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { API_BASE_URL } from "@/lib/api";
 import { ChevronDown, LogOut, UserCog, ShieldCheck } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 
 export type UserRole = "admin" | "venditore" | "tecnico";
 
@@ -32,6 +33,7 @@ export type RegisteredUser = {
   ditta?: string;
   indirizzo?: string;
   piva?: string;
+  allowRegistration?: boolean;
 };
 
 type LoginDialogProps = {
@@ -74,6 +76,14 @@ export function LoginDialog({
   const [open, setOpen] = useState(false);
   const [isRegisterMode, setIsRegisterMode] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [registrationEnabled, setRegistrationEnabled] = useState(true);
+
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/api/auth/registration-status`)
+      .then((r) => r.json())
+      .then((d: { enabled: boolean }) => setRegistrationEnabled(d.enabled))
+      .catch(() => setRegistrationEnabled(true));
+  }, []);
   const [error, setError] = useState("");
   const [profileError, setProfileError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -90,6 +100,7 @@ export function LoginDialog({
   const [profileDitta, setProfileDitta] = useState("");
   const [profileIndirizzo, setProfileIndirizzo] = useState("");
   const [profilePiva, setProfilePiva] = useState("");
+  const [profileAllowRegistration, setProfileAllowRegistration] = useState(true);
   const [showPasswordChange, setShowPasswordChange] = useState(false);
   const [currentPasswordInput, setCurrentPasswordInput] = useState("");
   const [newPasswordInput, setNewPasswordInput] = useState("");
@@ -108,6 +119,7 @@ export function LoginDialog({
     setProfileDitta(currentUser.ditta ?? "");
     setProfileIndirizzo(currentUser.indirizzo ?? "");
     setProfilePiva(currentUser.piva ?? "");
+    setProfileAllowRegistration(currentUser.allowRegistration !== false);
     setShowPasswordChange(false);
     setCurrentPasswordInput("");
     setNewPasswordInput("");
@@ -150,7 +162,7 @@ export function LoginDialog({
 
       setLoading(true);
       try {
-        const body: Record<string, string> = { nome: profileNome.trim(), cognome: profileCognome.trim(), cel: profileCel.trim(), ditta: profileDitta.trim(), indirizzo: profileIndirizzo.trim(), piva: profilePiva.trim() };
+        const body: Record<string, string> = { nome: profileNome.trim(), cognome: profileCognome.trim(), cel: profileCel.trim(), ditta: profileDitta.trim(), indirizzo: profileIndirizzo.trim(), piva: profilePiva.trim(), allowRegistration: String(profileAllowRegistration) };
         if (showPasswordChange) { body.currentPassword = currentPasswordInput; body.newPassword = newPasswordInput; }
         const updated = await apiPut<RegisteredUser>("/api/auth/profile", body, { "x-user-email": currentUser.email });
         localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(updated));
@@ -222,6 +234,15 @@ export function LoginDialog({
                 <Label htmlFor={`${id}-profile-piva`}>P.Iva</Label>
                 <Input id={`${id}-profile-piva`} value={profilePiva} onChange={(e) => setProfilePiva(e.target.value)} />
               </div>
+              {currentUser.role === "admin" && (
+                <div className="flex items-center justify-between rounded-md border p-3">
+                  <div>
+                    <p className="text-sm font-medium">Registrazione nuovi account</p>
+                    <p className="text-xs text-muted-foreground">{profileAllowRegistration ? "Il form di registrazione è visibile" : "Il form di registrazione è nascosto"}</p>
+                  </div>
+                  <Switch checked={profileAllowRegistration} onCheckedChange={setProfileAllowRegistration} />
+                </div>
+              )}
               <div className="space-y-2">
                 <Label>Email</Label>
                 <Input value={currentUser.email} disabled />
@@ -320,11 +341,13 @@ export function LoginDialog({
 
           {error && <p className="text-sm text-destructive">{error}</p>}
 
-          <div className="grid grid-cols-2 gap-2">
+          <div className={registrationEnabled ? "grid grid-cols-2 gap-2" : ""}>
             <Button type="submit" className="w-full" disabled={loading}>{isRegisterMode ? "Crea account" : "Accedi"}</Button>
-            <Button type="button" variant="secondary" className="w-full" onClick={() => { setIsRegisterMode((p) => !p); setError(""); setPassword(""); }}>
-              {isRegisterMode ? "Torna ad accesso" : "Registrati"}
-            </Button>
+            {registrationEnabled && (
+              <Button type="button" variant="secondary" className="w-full" onClick={() => { setIsRegisterMode((p) => !p); setError(""); setPassword(""); }}>
+                {isRegisterMode ? "Torna ad accesso" : "Registrati"}
+              </Button>
+            )}
           </div>
         </form>
       </DialogContent>
