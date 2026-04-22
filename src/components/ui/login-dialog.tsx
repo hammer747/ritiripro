@@ -207,19 +207,19 @@ export function LoginDialog({
                 <Input id={`${id}-profile-cognome`} value={profileCognome} onChange={(e) => setProfileCognome(e.target.value)} required />
               </div>
               <div className="space-y-2">
-                <Label htmlFor={`${id}-profile-cel`}>Cellulare (facoltativo)</Label>
+                <Label htmlFor={`${id}-profile-cel`}>Cellulare</Label>
                 <Input id={`${id}-profile-cel`} type="tel" value={profileCel} onChange={(e) => setProfileCel(e.target.value)} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor={`${id}-profile-ditta`}>Ditta (facoltativo)</Label>
+                <Label htmlFor={`${id}-profile-ditta`}>Ditta</Label>
                 <Input id={`${id}-profile-ditta`} value={profileDitta} onChange={(e) => setProfileDitta(e.target.value)} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor={`${id}-profile-indirizzo`}>Indirizzo (facoltativo)</Label>
+                <Label htmlFor={`${id}-profile-indirizzo`}>Indirizzo</Label>
                 <Input id={`${id}-profile-indirizzo`} value={profileIndirizzo} onChange={(e) => setProfileIndirizzo(e.target.value)} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor={`${id}-profile-piva`}>P.Iva (facoltativo)</Label>
+                <Label htmlFor={`${id}-profile-piva`}>P.Iva</Label>
                 <Input id={`${id}-profile-piva`} value={profilePiva} onChange={(e) => setProfilePiva(e.target.value)} />
               </div>
               <div className="space-y-2">
