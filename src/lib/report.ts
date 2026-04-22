@@ -25,7 +25,7 @@ export function generateMonthlyReport(ritiri: Ritiro[], meseKey: string): void {
   doc.text("RitiriPro — Report Mensile", 14, 12);
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
-  doc.text(`Torino Hi-Tech / Hammer Guerrero`, 297 - 14, 8, { align: "right" });
+  doc.text(`Torino Hi-Tech`, 297 - 14, 8, { align: "right" });
   doc.text(`Generato il ${new Date().toLocaleDateString("it-IT")}`, 297 - 14, 14, { align: "right" });
 
   doc.setTextColor(...DARK);
