@@ -69,8 +69,7 @@ export default function LoginPage({ onLogin }: Props) {
     <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4">
       <div className="w-full max-w-sm space-y-6">
         <div className="flex flex-col items-center gap-2 text-center">
-          <img src="/logo.png" alt="Torino Hi-Tech" className="h-24 w-auto object-contain dark:hidden" />
-          <img src="/logo-dark.png" alt="Torino Hi-Tech" className="h-24 w-auto object-contain hidden dark:block" />
+          <img src="/logo.png" alt="Torino Hi-Tech" className="h-24 w-auto object-contain dark:invert" />
           <p className="text-sm text-muted-foreground">
             {mode === "login" ? "Accedi al tuo account" : "Crea un nuovo account"}
           </p>
