@@ -133,17 +133,25 @@ function buildChangeList(existing: import("../types/ritiro").RitiroRecord, paylo
   if (num(existing.prezzo) !== num(payload.prezzo)) {
     changes.push(`Prezzo cambiato da €${Math.round(Number(existing.prezzo))} a €${Math.round(Number(payload.prezzo))}`);
   }
-  if (str(existing.nomeCliente) !== str(payload.nomeCliente)) changes.push("Nome modificato");
-  if (str(existing.cognomeCliente) !== str(payload.cognomeCliente)) changes.push("Cognome modificato");
-  if (str(existing.codiceFiscale) !== str(payload.codiceFiscale)) changes.push("Codice fiscale modificato");
-  if (str(existing.serialeImei) !== str(payload.serialeImei)) changes.push("Seriale modificato");
-  if (str(existing.pinDispositivo) !== str(payload.pinDispositivo)) changes.push("PIN modificato");
-  if (str(existing.note) !== str(payload.note)) changes.push("Note modificate");
-  if (str(existing.marcaModello) !== str(payload.marcaModello)) changes.push("Marca/Modello modificato");
-  if (str(existing.descrizione) !== str(payload.descrizione)) changes.push("Descrizione modificata");
   if (existing.venduto !== payload.venduto) {
     changes.push(payload.venduto ? "Articolo marcato come venduto" : "Articolo rimarcato in stock");
   }
+  if (str(existing.nomeCliente) !== str(payload.nomeCliente)) changes.push("Nome modificato");
+  if (str(existing.cognomeCliente) !== str(payload.cognomeCliente)) changes.push("Cognome modificato");
+  if (str(existing.codiceFiscale) !== str(payload.codiceFiscale)) changes.push("Codice fiscale modificato");
+  if (str(existing.telefonoCliente) !== str(payload.telefonoCliente)) changes.push("Telefono modificato");
+  if (str(existing.tipoDocumento) !== str(payload.tipoDocumento)) changes.push("Tipo documento modificato");
+  if (str(existing.numeroDocumento) !== str(payload.numeroDocumento)) changes.push("Numero documento modificato");
+  if (str(existing.tipoArticolo) !== str(payload.tipoArticolo)) changes.push("Tipo articolo modificato");
+  if (str(existing.marcaModello) !== str(payload.marcaModello)) changes.push("Marca/Modello modificato");
+  if (str(existing.serialeImei) !== str(payload.serialeImei)) changes.push("Seriale modificato");
+  if (str(existing.pinDispositivo) !== str(payload.pinDispositivo)) changes.push("PIN modificato");
+  if (str(existing.articolo) !== str(payload.articolo)) changes.push("Articolo modificato");
+  if (str(existing.descrizione) !== str(payload.descrizione)) changes.push("Descrizione modificata");
+  if (str(existing.note) !== str(payload.note)) changes.push("Note modificate");
+  if (str(existing.dataAcquisto) !== str(payload.dataAcquisto)) changes.push("Data acquisto modificata");
+  if (num(existing.prezzoVendita) !== num(payload.prezzoVendita)) changes.push("Prezzo di vendita modificato");
+
   return changes.length > 0 ? changes : ["Modifica effettuata"];
 }
 
