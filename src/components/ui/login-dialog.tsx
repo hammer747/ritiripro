@@ -219,22 +219,26 @@ export function LoginDialog({
                 <Label htmlFor={`${id}-profile-cognome`}>Cognome</Label>
                 <Input id={`${id}-profile-cognome`} value={profileCognome} onChange={(e) => setProfileCognome(e.target.value)} required />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor={`${id}-profile-cel`}>Cellulare</Label>
-                <Input id={`${id}-profile-cel`} type="tel" value={profileCel} onChange={(e) => setProfileCel(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor={`${id}-profile-ditta`}>Ditta</Label>
-                <Input id={`${id}-profile-ditta`} value={profileDitta} onChange={(e) => setProfileDitta(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor={`${id}-profile-indirizzo`}>Indirizzo</Label>
-                <Input id={`${id}-profile-indirizzo`} value={profileIndirizzo} onChange={(e) => setProfileIndirizzo(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor={`${id}-profile-piva`}>P.Iva</Label>
-                <Input id={`${id}-profile-piva`} value={profilePiva} onChange={(e) => setProfilePiva(e.target.value)} />
-              </div>
+              {currentUser.role === "admin" && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor={`${id}-profile-cel`}>Cellulare</Label>
+                    <Input id={`${id}-profile-cel`} type="tel" value={profileCel} onChange={(e) => setProfileCel(e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor={`${id}-profile-ditta`}>Ditta</Label>
+                    <Input id={`${id}-profile-ditta`} value={profileDitta} onChange={(e) => setProfileDitta(e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor={`${id}-profile-indirizzo`}>Indirizzo</Label>
+                    <Input id={`${id}-profile-indirizzo`} value={profileIndirizzo} onChange={(e) => setProfileIndirizzo(e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor={`${id}-profile-piva`}>P.Iva</Label>
+                    <Input id={`${id}-profile-piva`} value={profilePiva} onChange={(e) => setProfilePiva(e.target.value)} />
+                  </div>
+                </>
+              )}
               {currentUser.role === "admin" && (
                 <div className="flex items-center justify-between rounded-md border p-3">
                   <div>
