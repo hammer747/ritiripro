@@ -100,7 +100,7 @@ export default function RitiriTable({ ritiri, onChanged, onEdit, onPrint, userRo
                 </div>
               </TableCell>
               <TableCell>
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold text-white ${r.venduto ? "bg-green-500" : "bg-blue-500"}`}>
+                <span className={`inline-flex items-center whitespace-nowrap px-2.5 py-0.5 rounded-full text-xs font-semibold text-white ${r.venduto ? "bg-green-500" : "bg-blue-500"}`}>
                   {r.venduto ? "Venduto" : "In stock"}
                 </span>
               </TableCell>
