@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { UserPlus, Pencil, Upload, X, FileText, Download, Plus, Trash2 } from "lucide-react";
 import { SpeseAggiuntiva } from "@/lib/types";
 import { Checkbox } from "@/components/ui/checkbox";
+import { AuthenticatedImage, fetchAuthenticatedBlob } from "@/components/ui/authenticated-image";
 
 interface Props {
   onSaved: (ritiro: Ritiro) => void;
@@ -58,14 +59,13 @@ const emptyForm = {
 
 async function downloadFile(url: string, filename: string) {
   try {
-    const res = await fetch(url);
-    const blob = await res.blob();
-    const blobUrl = URL.createObjectURL(blob);
+    const blobUrl = await fetchAuthenticatedBlob(url);
+    if (!blobUrl) { window.open(url, "_blank"); return; }
     const a = document.createElement("a");
     a.href = blobUrl;
     a.download = filename;
     a.click();
-    URL.revokeObjectURL(blobUrl);
+    if (!blobUrl.startsWith("data:")) URL.revokeObjectURL(blobUrl);
   } catch {
     window.open(url, "_blank");
   }
@@ -421,7 +421,7 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
               {form.documentoFronteBase64 ? (
                 <div className="rounded-md border bg-muted/50 p-2 space-y-2">
                   {(form.documentoFronteBase64.startsWith("data:image") || form.documentoFronteBase64.startsWith("http")) && (
-                    <img src={form.documentoFronteBase64} alt="Fronte documento" className="max-h-32 rounded-md object-contain border w-full" />
+                    <AuthenticatedImage src={form.documentoFronteBase64} alt="Fronte documento" className="max-h-32 rounded-md object-contain border w-full" />
                   )}
                   <div className="flex items-center gap-1">
                     <span className="text-xs truncate flex-1">{form.documentoFronteNome}</span>
@@ -444,7 +444,7 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
               {form.documentoRetroBase64 ? (
                 <div className="rounded-md border bg-muted/50 p-2 space-y-2">
                   {(form.documentoRetroBase64.startsWith("data:image") || form.documentoRetroBase64.startsWith("http")) && (
-                    <img src={form.documentoRetroBase64} alt="Retro documento" className="max-h-32 rounded-md object-contain border w-full" />
+                    <AuthenticatedImage src={form.documentoRetroBase64} alt="Retro documento" className="max-h-32 rounded-md object-contain border w-full" />
                   )}
                   <div className="flex items-center gap-1">
                     <span className="text-xs truncate flex-1">{form.documentoRetroNome}</span>

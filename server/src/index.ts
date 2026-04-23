@@ -25,9 +25,14 @@ app.use(cors({
 app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: true }));
 
-// Serve uploaded files only to authenticated users
+// Serve uploaded files only to authenticated users via proxy endpoint
 const uploadsPath = path.resolve(process.cwd(), env.UPLOAD_DIR);
-app.use("/uploads", authMiddleware, express.static(uploadsPath));
+app.get("/api/uploads/:filename", authMiddleware, (req, res) => {
+  const filename = path.basename(req.params.filename as string);
+  const filepath = path.join(uploadsPath, filename);
+  if (!fs.existsSync(filepath)) { res.status(404).json({ message: "File non trovato." }); return; }
+  res.sendFile(filepath);
+});
 
 app.get("/health", (_req, res) => {
   res.json({ ok: true, service: "ritiripro-api" });
