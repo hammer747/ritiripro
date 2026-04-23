@@ -135,6 +135,7 @@ export default function Index() {
         (r.marcaModello || "").toLowerCase().includes(q) ||
         r.codiceFiscale.toLowerCase().includes(q) ||
         r.numeroDocumento.toLowerCase().includes(q) ||
+        (r.serialeImei || "").toLowerCase().includes(q) ||
         r.id.toLowerCase().includes(q) ||
         formatCodiceRitiro(r.numeroRitiro, r.dataAcquisto).toLowerCase().includes(q)
       );
