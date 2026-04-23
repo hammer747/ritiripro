@@ -14,6 +14,7 @@ import { Ritiro } from "@/lib/types";
 import RitiriTable from "@/components/RitiriTable";
 import EtichettaLabel from "@/components/EtichettaLabel";
 import { generateMonthlyReport } from "@/lib/report";
+import { generateRicevuta } from "@/lib/ricevuta";
 import { Search, ArrowLeft, Package, Euro, FileDown } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LoginDialog, RegisteredUser } from "@/components/ui/login-dialog";
@@ -192,6 +193,16 @@ export default function Storico() {
           onChanged={reload}
           onEdit={(r) => navigate("/", { state: { editRitiro: r } })}
           onPrint={(r) => setLabelRitiro(r)}
+          onRicevuta={(r) => {
+            if (!currentUser) return;
+            void generateRicevuta(r, {
+              nome: currentUser.nome,
+              cognome: currentUser.cognome,
+              ditta: currentUser.ditta,
+              indirizzo: currentUser.indirizzo,
+              piva: currentUser.piva,
+            });
+          }}
           userRole={currentUser?.role}
         />
       </main>
