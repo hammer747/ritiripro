@@ -536,7 +536,11 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
         {form.metodoPagamento === "Bonifico" && (
           <div className="space-y-1.5">
             <Label htmlFor="iban">IBAN:</Label>
-            <Input id="iban" value={form.iban} onChange={(e) => set("iban", e.target.value.toUpperCase())} placeholder="IT60 X054 2811 1010 0000 0123 456" />
+            <Input id="iban" value={form.iban} onChange={(e) => {
+              const raw = e.target.value.replace(/\s/g, "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 34);
+              const formatted = raw.match(/.{1,4}/g)?.join(" ") ?? raw;
+              set("iban", formatted);
+            }} placeholder="IT60 X054 2811 1010 0000 0123 456" />
           </div>
         )}
         <div className="flex items-center gap-2 pt-2">
