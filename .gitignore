@@ -25,3 +25,8 @@ server/uploads/
 *.njsproj
 *.sln
 *.sw?
+
+# Environment variables
+.env
+.env.*
+!.env.example

@@ -19,6 +19,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { API_BASE_URL } from "@/lib/api";
+import { saveToken, clearToken, getToken } from "@/lib/storage";
 import { ChevronDown, LogOut, UserCog, ShieldCheck } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 
@@ -44,10 +45,10 @@ type LoginDialogProps = {
 
 const CURRENT_USER_KEY = "ritiri_facili_user";
 
-async function apiPost<T>(path: string, body: Record<string, string>, headers?: Record<string, string>): Promise<T> {
+async function apiPost<T>(path: string, body: Record<string, string>): Promise<T> {
   const res = await fetch(`${API_BASE_URL}${path}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", ...headers },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
   const data = await res.json() as { message?: string } & T;
@@ -55,10 +56,11 @@ async function apiPost<T>(path: string, body: Record<string, string>, headers?: 
   return data as T;
 }
 
-async function apiPut<T>(path: string, body: Record<string, string>, headers?: Record<string, string>): Promise<T> {
+async function apiPut<T>(path: string, body: Record<string, string>): Promise<T> {
+  const token = getToken();
   const res = await fetch(`${API_BASE_URL}${path}`, {
     method: "PUT",
-    headers: { "Content-Type": "application/json", ...headers },
+    headers: { "Content-Type": "application/json", ...(token ? { "Authorization": `Bearer ${token}` } : {}) },
     body: JSON.stringify(body),
   });
   const data = await res.json() as { message?: string } & T;
@@ -135,12 +137,16 @@ export function LoginDialog({
     try {
       if (isRegisterMode) {
         if (!nome.trim() || !cognome.trim()) { setError("Nome e cognome sono obbligatori."); return; }
-        const user = await apiPost<RegisteredUser>("/api/auth/register", { nome: nome.trim(), cognome: cognome.trim(), cel: cel.trim(), email: email.trim().toLowerCase(), password });
+        const res = await apiPost<{ token: string } & RegisteredUser>("/api/auth/register", { nome: nome.trim(), cognome: cognome.trim(), cel: cel.trim(), email: email.trim().toLowerCase(), password });
+        const { token, ...user } = res;
+        saveToken(token);
         localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
         onAuthSuccess(user);
         setOpen(false);
       } else {
-        const user = await apiPost<RegisteredUser>("/api/auth/login", { email: email.trim().toLowerCase(), password });
+        const res = await apiPost<{ token: string } & RegisteredUser>("/api/auth/login", { email: email.trim().toLowerCase(), password });
+        const { token, ...user } = res;
+        saveToken(token);
         localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
         onAuthSuccess(user);
         setOpen(false);
@@ -165,7 +171,7 @@ export function LoginDialog({
       try {
         const body: Record<string, string> = { nome: profileNome.trim(), cognome: profileCognome.trim(), cel: profileCel.trim(), ditta: profileDitta.trim(), indirizzo: profileIndirizzo.trim(), piva: profilePiva.trim(), allowRegistration: String(profileAllowRegistration) };
         if (showPasswordChange) { body.currentPassword = currentPasswordInput; body.newPassword = newPasswordInput; }
-        const updated = await apiPut<RegisteredUser>("/api/auth/profile", body, { "x-user-email": currentUser.email });
+        const updated = await apiPut<RegisteredUser>("/api/auth/profile", body);
         localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(updated));
         onAuthSuccess(updated);
         setIsProfileOpen(false);
@@ -201,7 +207,7 @@ export function LoginDialog({
               </DropdownMenuItem>
             )}
             <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={onLogout} className="text-destructive focus:text-destructive">
+            <DropdownMenuItem onSelect={() => { clearToken(); onLogout(); }} className="text-destructive focus:text-destructive">
               <LogOut className="h-4 w-4 mr-2" /> Esci
             </DropdownMenuItem>
           </DropdownMenuContent>

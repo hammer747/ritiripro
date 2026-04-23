@@ -1,14 +1,15 @@
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 import { Request, Response } from "express";
 import { createUser, findUserByEmail, updateUser, isRegistrationEnabled } from "../services/users.service";
-
-function ownerEmail(req: Request): string | null {
-  const v = req.header("x-user-email");
-  return v ? v.trim().toLowerCase() || null : null;
-}
+import { env } from "../config/env";
 
 function userToJson(user: NonNullable<Awaited<ReturnType<typeof findUserByEmail>>>) {
   return { nome: user.nome, cognome: user.cognome, cel: user.cel, email: user.email, role: user.role, ditta: user.ditta, indirizzo: user.indirizzo, piva: user.piva, allowRegistration: user.allowRegistration };
+}
+
+function signToken(email: string, role: string): string {
+  return jwt.sign({ email, role }, env.JWT_SECRET, { expiresIn: "7d" });
 }
 
 export async function registrationStatusController(_req: Request, res: Response): Promise<void> {
@@ -33,7 +34,8 @@ export async function registerController(req: Request, res: Response): Promise<v
 
   await createUser(nome.trim(), cognome.trim(), cel?.trim() || null, normalizedEmail, password, "admin", null);
   const user = await findUserByEmail(normalizedEmail);
-  res.status(201).json(userToJson(user!));
+  const token = signToken(user!.email, user!.role);
+  res.status(201).json({ token, ...userToJson(user!) });
 }
 
 export async function loginController(req: Request, res: Response): Promise<void> {
@@ -56,11 +58,12 @@ export async function loginController(req: Request, res: Response): Promise<void
     return;
   }
 
-  res.json(userToJson(user));
+  const token = signToken(user.email, user.role);
+  res.json({ token, ...userToJson(user) });
 }
 
 export async function updateProfileController(req: Request, res: Response): Promise<void> {
-  const email = ownerEmail(req);
+  const email = req.auth?.email ?? null;
   if (!email) { res.status(401).json({ message: "Login richiesto." }); return; }
 
   const { nome, cognome, cel, currentPassword, newPassword, ditta, indirizzo, piva, allowRegistration } = req.body as Record<string, string>;
@@ -89,7 +92,7 @@ export async function updateProfileController(req: Request, res: Response): Prom
     }
   }
 
-  await updateUser(email, nome.trim(), cognome.trim(), cel?.trim() || null, newPassword?.trim() || undefined, ditta?.trim() || null, indirizzo?.trim() || null, piva?.trim() || null, allowRegistration !== "false");
+  await updateUser(email, nome.trim(), cognome.trim(), cel?.trim() || null, newPassword?.trim() || undefined, ditta?.trim() || null, indirizzo?.trim() || null, piva?.trim() || null, allowRegistration === "true");
   const updated = await findUserByEmail(email);
   res.json(userToJson(updated!));
 }

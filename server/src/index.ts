@@ -9,15 +9,25 @@ import adminRoutes from "./routes/admin.routes";
 import { initRitiriTable } from "./services/ritiri.service";
 import { initUsersTable } from "./services/users.service";
 import { initLogsTable } from "./services/logs.service";
+import { authMiddleware } from "./middleware/auth.middleware";
 
 const app = express();
 
-app.use(cors({ origin: true, credentials: true }));
+// In production the frontend is served from the same origin — no CORS needed.
+// In development allow the Vite dev server.
+const isDev = process.env.NODE_ENV !== "production";
+const allowedOrigin = env.ALLOWED_ORIGIN || (isDev ? "http://localhost:5173" : "");
+app.use(cors({
+  origin: allowedOrigin || false,
+  credentials: true,
+}));
+
 app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: true }));
 
+// Serve uploaded files only to authenticated users
 const uploadsPath = path.resolve(process.cwd(), env.UPLOAD_DIR);
-app.use("/uploads", express.static(uploadsPath));
+app.use("/uploads", authMiddleware, express.static(uploadsPath));
 
 app.get("/health", (_req, res) => {
   res.json({ ok: true, service: "ritiripro-api" });
@@ -36,7 +46,8 @@ if (fs.existsSync(distPath)) {
 }
 
 app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
-  const message = err instanceof Error ? err.message : "Errore interno del server";
+  console.error(err);
+  const message = isDev && err instanceof Error ? err.message : "Errore interno del server.";
   res.status(500).json({ message });
 });
 

@@ -15,6 +15,7 @@ import { LoginDialog, RegisteredUser } from "@/components/ui/login-dialog";
 import LoginPage from "@/components/LoginPage";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ReportReminderDialog, shouldShowReportReminder, markReportDone, markReportShown } from "@/components/ReportReminderDialog";
+import { clearToken } from "@/lib/storage";
 
 const MESI = [
   "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
@@ -204,6 +205,7 @@ export default function Index() {
               currentUser={currentUser}
               onAuthSuccess={(user) => setCurrentUser(user)}
               onLogout={() => {
+                clearToken();
                 localStorage.removeItem("ritiri_facili_user");
                 setCurrentUser(null);
                 setRitiri([]);

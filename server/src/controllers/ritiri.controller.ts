@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import "../middleware/auth.middleware"; // load AuthPayload type augmentation
 import {
   createRitiro,
   deleteRitiroById,
@@ -22,10 +23,7 @@ async function resolveUser(email: string) {
 }
 
 function getOwnerEmail(req: Request): string | null {
-  const value = req.header("x-user-email");
-  if (!value) return null;
-  const trimmed = value.trim().toLowerCase();
-  return trimmed || null;
+  return req.auth?.email ?? null;
 }
 
 function toOptionalString(value: unknown): string | undefined {

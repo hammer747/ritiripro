@@ -134,14 +134,24 @@ function getCurrentUser(): RegisteredUser | null {
   }
 }
 
+export const TOKEN_KEY = "ritiri_facili_token";
+
+export function getToken(): string | null {
+  return localStorage.getItem(TOKEN_KEY);
+}
+
+export function saveToken(token: string): void {
+  localStorage.setItem(TOKEN_KEY, token);
+}
+
+export function clearToken(): void {
+  localStorage.removeItem(TOKEN_KEY);
+}
+
 function getAuthHeaders(): HeadersInit {
-  const user = getCurrentUser();
-  if (!user?.email) {
-    throw new Error("Login richiesto");
-  }
-  return {
-    "x-user-email": user.email.toLowerCase(),
-  };
+  const token = getToken();
+  if (!token) throw new Error("Login richiesto");
+  return { "Authorization": `Bearer ${token}` };
 }
 
 async function requestJson<T>(url: string, options?: RequestInit): Promise<T> {

@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RegisteredUser } from "@/components/ui/login-dialog";
 import { API_BASE_URL } from "@/lib/api";
+import { saveToken } from "@/lib/storage";
 import { ShinyButton } from "@/components/ui/shiny-button";
 
 interface Props {
@@ -61,11 +62,13 @@ export default function LoginPage({ onLogin }: Props) {
         });
       }
 
-      const data = await res.json() as RegisteredUser & { message?: string };
+      const data = await res.json() as RegisteredUser & { token?: string; message?: string };
       if (!res.ok) { setError(data.message || "Errore"); return; }
 
-      localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(data));
-      onLogin(data);
+      if (data.token) saveToken(data.token);
+      const { token: _t, ...user } = data;
+      localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
+      onLogin(user as RegisteredUser);
     } catch {
       setError("Errore di connessione al server.");
     } finally {

@@ -1,24 +1,24 @@
 import { Request, Response } from "express";
 import { findUserByEmail, createUser, deleteUserByEmail, listSubUsers, UserRole } from "../services/users.service";
 import { listLogs } from "../services/logs.service";
+import "../middleware/auth.middleware";
 
-async function requireAdmin(req: Request, res: Response): Promise<string | null> {
-  const email = req.header("x-user-email")?.trim().toLowerCase() || null;
-  if (!email) { res.status(401).json({ message: "Login richiesto." }); return null; }
-  const user = await findUserByEmail(email);
-  if (!user || user.role !== "admin") { res.status(403).json({ message: "Accesso riservato agli amministratori." }); return null; }
-  return email;
+function requireAdmin(req: Request, res: Response): string | null {
+  const auth = req.auth;
+  if (!auth) { res.status(401).json({ message: "Login richiesto." }); return null; }
+  if (auth.role !== "admin") { res.status(403).json({ message: "Accesso riservato agli amministratori." }); return null; }
+  return auth.email;
 }
 
 export async function listUsersController(req: Request, res: Response): Promise<void> {
-  const adminEmail = await requireAdmin(req, res);
+  const adminEmail = requireAdmin(req, res);
   if (!adminEmail) return;
   const users = await listSubUsers(adminEmail);
   res.json(users);
 }
 
 export async function createUserController(req: Request, res: Response): Promise<void> {
-  const adminEmail = await requireAdmin(req, res);
+  const adminEmail = requireAdmin(req, res);
   if (!adminEmail) return;
 
   const { nome, cognome, cel, email, password, role } = req.body as Record<string, string>;
@@ -41,7 +41,7 @@ export async function createUserController(req: Request, res: Response): Promise
 }
 
 export async function deleteUserController(req: Request, res: Response): Promise<void> {
-  const adminEmail = await requireAdmin(req, res);
+  const adminEmail = requireAdmin(req, res);
   if (!adminEmail) return;
 
   const rawEmail = Array.isArray(req.params.email) ? req.params.email[0] : req.params.email;
@@ -60,7 +60,7 @@ export async function deleteUserController(req: Request, res: Response): Promise
 }
 
 export async function listLogsController(req: Request, res: Response): Promise<void> {
-  const adminEmail = await requireAdmin(req, res);
+  const adminEmail = requireAdmin(req, res);
   if (!adminEmail) return;
   const logs = await listLogs(adminEmail);
   res.json(logs);

@@ -20,19 +20,23 @@ const storage = multer.diskStorage({
   },
 });
 
+const ALLOWED_MIME = new Set([
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+  "application/pdf",
+]);
+
+const ALLOWED_EXT = new Set([".jpg", ".jpeg", ".png", ".webp", ".pdf"]);
+
 const fileFilter: multer.Options["fileFilter"] = (_req, file, cb) => {
-  const allowed = [
-    "image/jpeg",
-    "image/jpg",
-    "image/png",
-    "image/webp",
-    "application/pdf",
-  ];
-  if (allowed.includes(file.mimetype)) {
-    cb(null, true);
+  const ext = path.extname(file.originalname).toLowerCase();
+  if (!ALLOWED_MIME.has(file.mimetype) || !ALLOWED_EXT.has(ext)) {
+    cb(new Error("Tipo file non supportato. Consentiti: JPG, PNG, WebP, PDF"));
     return;
   }
-  cb(new Error("Tipo file non supportato. Consentiti: JPG, PNG, WebP, PDF"));
+  cb(null, true);
 };
 
 export const upload = multer({

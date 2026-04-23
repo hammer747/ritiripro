@@ -18,6 +18,7 @@ import { generateRicevuta } from "@/lib/ricevuta";
 import { Search, ArrowLeft, Package, Euro, FileDown } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LoginDialog, RegisteredUser } from "@/components/ui/login-dialog";
+import { clearToken } from "@/lib/storage";
 
 const MESI = [
   "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
@@ -117,6 +118,7 @@ export default function Storico() {
               currentUser={currentUser}
               onAuthSuccess={(user) => setCurrentUser(user)}
               onLogout={() => {
+                clearToken();
                 localStorage.removeItem("ritiri_facili_user");
                 setCurrentUser(null);
                 navigate("/");

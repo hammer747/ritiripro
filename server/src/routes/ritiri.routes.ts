@@ -7,8 +7,11 @@ import {
   updateRitiroController,
 } from "../controllers/ritiri.controller";
 import { upload } from "../middleware/upload";
+import { authMiddleware } from "../middleware/auth.middleware";
 
 const router = Router();
+
+router.use(authMiddleware);
 
 router.get("/", getAllRitiriController);
 router.get("/:id", getRitiroByIdController);
