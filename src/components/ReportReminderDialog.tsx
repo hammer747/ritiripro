@@ -42,7 +42,7 @@ export function ReportReminderDialog({ open, onLater, onDone }: Props) {
           </div>
           <AlertDialogTitle className="text-center">Promemoria report mensile</AlertDialogTitle>
           <AlertDialogDescription className="text-center">
-            Ricorda di inviare il <span className="font-semibold capitalize">{mese}</span> al commercialista.
+            Ricorda di inviare il report di <span className="font-semibold capitalize">{mese}</span> al commercialista.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="flex-col sm:flex-row gap-2">
