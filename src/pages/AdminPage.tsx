@@ -9,6 +9,7 @@ import { getAdminUsers, createAdminUser, deleteAdminUser, SubUser, getAdminLogs,
 import { RegisteredUser } from "@/components/ui/login-dialog";
 import { ArrowLeft, Trash2, UserPlus, ShieldCheck, Wrench, Store } from "lucide-react";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export default function AdminPage() {
   const navigate = useNavigate();
@@ -31,6 +32,7 @@ export default function AdminPage() {
   const [role, setRole] = useState<"venditore" | "tecnico">("venditore");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [confirmUser, setConfirmUser] = useState<SubUser | null>(null);
 
   const reload = useCallback(async () => {
     try {
@@ -62,8 +64,7 @@ export default function AdminPage() {
     }
   };
 
-  const handleDelete = async (userEmail: string, userName: string) => {
-    if (!confirm(`Eliminare l'utente ${userName}?`)) return;
+  const handleDelete = async (userEmail: string) => {
     try {
       await deleteAdminUser(userEmail);
       toast.success("Utente eliminato.");
@@ -169,7 +170,7 @@ export default function AdminPage() {
                       </span>
                     </td>
                     <td className="p-3">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => void handleDelete(u.email, `${u.nome} ${u.cognome}`)}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => setConfirmUser(u)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </td>
@@ -210,6 +211,16 @@ export default function AdminPage() {
           </div>
         )}
       </main>
+
+      <ConfirmDialog
+        open={!!confirmUser}
+        title="Eliminare l'utente?"
+        description={confirmUser ? `Stai per eliminare l'utente ${confirmUser.cognome} ${confirmUser.nome} (${confirmUser.email}). L'operazione è irreversibile.` : "Questa operazione è irreversibile."}
+        confirmLabel="Elimina"
+        cancelLabel="Annulla"
+        onConfirm={() => { if (confirmUser) { void handleDelete(confirmUser.email); } setConfirmUser(null); }}
+        onCancel={() => setConfirmUser(null)}
+      />
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Ritiro } from "@/lib/types";
 import { deleteRitiro, formatCodiceRitiro } from "@/lib/storage";
 import {
@@ -12,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Trash2, Pencil, FileText, Tag, Receipt } from "lucide-react";
 import { toast } from "sonner";
 import { UserRole } from "@/components/ui/login-dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 const DOC_LABELS: Record<string, string> = {
   carta_identita: "C.I.",
@@ -34,8 +36,10 @@ export default function RitiriTable({ ritiri, onChanged, onEdit, onPrint, onRice
   const canEdit = userRole !== "tecnico";
   const showPrice = userRole !== "tecnico";
 
+  const [confirmId, setConfirmId] = useState<string | null>(null);
+  const confirmRitiro = confirmId ? ritiri.find((r) => r.id === confirmId) : null;
+
   const handleDelete = async (id: string) => {
-    if (!confirm("Eliminare questo ritiro?")) return;
     try {
       await deleteRitiro(id);
       toast.success("Ritiro eliminato");
@@ -129,7 +133,7 @@ export default function RitiriTable({ ritiri, onChanged, onEdit, onPrint, onRice
                     </Button>
                   )}
                   {canDelete && (
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => handleDelete(r.id)}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => setConfirmId(r.id)}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   )}
@@ -140,5 +144,19 @@ export default function RitiriTable({ ritiri, onChanged, onEdit, onPrint, onRice
         </TableBody>
       </Table>
     </div>
+
+    <ConfirmDialog
+      open={!!confirmId}
+      title="Eliminare il ritiro?"
+      description={
+        confirmRitiro
+          ? `Stai per eliminare il ritiro di ${confirmRitiro.cognomeCliente} ${confirmRitiro.nomeCliente} — ${confirmRitiro.marcaModello || confirmRitiro.articolo}. L'operazione è irreversibile.`
+          : "Questa operazione è irreversibile."
+      }
+      confirmLabel="Elimina"
+      cancelLabel="Annulla"
+      onConfirm={() => { if (confirmId) { void handleDelete(confirmId); } setConfirmId(null); }}
+      onCancel={() => setConfirmId(null)}
+    />
   );
 }
