@@ -143,6 +143,8 @@ function buildChangeList(existing: import("../types/ritiro").RitiroRecord, paylo
   if (str(existing.tipoDocumento) !== str(payload.tipoDocumento)) changes.push("Tipo documento modificato");
   if (str(existing.numeroDocumento) !== str(payload.numeroDocumento)) changes.push("Numero documento modificato");
   if (str(existing.tipoArticolo) !== str(payload.tipoArticolo)) changes.push("Tipo articolo modificato");
+  if (str(existing.documentoFrontePath) !== str(payload.documentoFrontePath)) changes.push("Foto fronte documento modificata");
+  if (str(existing.documentoRetroPath) !== str(payload.documentoRetroPath)) changes.push("Foto retro documento modificata");
   if (str(existing.marcaModello) !== str(payload.marcaModello)) changes.push("Marca/Modello modificato");
   if (str(existing.serialeImei) !== str(payload.serialeImei)) changes.push("Seriale modificato");
   if (str(existing.pinDispositivo) !== str(payload.pinDispositivo)) changes.push("PIN modificato");
