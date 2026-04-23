@@ -254,8 +254,6 @@ export async function updateRitiroController(req: Request, res: Response): Promi
     const codice = formatCodice(record.numeroRitiro, record.dataAcquisto);
     await createLog(email, resolved.fullName, resolved.role, "modifica", id, codice, `Modificato da ${resolved.fullName}`);
   }
-
-  const record = await getRitiroById(id, resolved.effectiveOwnerEmail);
   res.json(record);
 }
 
