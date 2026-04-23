@@ -185,7 +185,7 @@ export async function generateRicevuta(ritiro: Ritiro, admin: AdminInfo): Promis
   doc.setFont("helvetica", "italic");
   doc.setTextColor(...GRAY);
   doc.text(
-    "Il sottoscritto dichiara di cedere volontariamente il bene sopra descritto, confermandone la piena proprietà e la libera disponibilità, sollevando l'esercente da qualsiasi responsabilità relativa alla provenienza del bene.",
+    "Il sottoscritto dichiara di cedere volontariamente il bene sopra descritto, confermandone la piena proprietà e la libera disponibilità, sollevando l'esercente da qualsiasi responsabilità relativa alla provenienza del bene. Il venditore dichiara che tale prodotto non proviene da abbonamenti e che non è gravato da vincoli o finanziamenti, tantomeno da derivazione illegale o illecita.",
     14, y, { maxWidth: 182 }
   );
 
