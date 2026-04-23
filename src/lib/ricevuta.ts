@@ -172,7 +172,7 @@ export async function generateRicevuta(ritiro: Ritiro, admin: AdminInfo): Promis
   doc.setFontSize(10);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...DARK);
-  doc.text("Prezzo di acquisto:", 20, y + 11);
+  doc.text("Prezzo concordato:", 20, y + 11);
 
   doc.setFontSize(14);
   doc.setTextColor(30, 140, 50);
