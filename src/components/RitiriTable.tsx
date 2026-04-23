@@ -58,6 +58,7 @@ export default function RitiriTable({ ritiri, onChanged, onEdit, onPrint, onRice
   }
 
   return (
+    <>
     <div className="rounded-lg border overflow-x-auto">
       <Table>
         <TableHeader>
@@ -158,5 +159,6 @@ export default function RitiriTable({ ritiri, onChanged, onEdit, onPrint, onRice
       onConfirm={() => { if (confirmId) { void handleDelete(confirmId); } setConfirmId(null); }}
       onCancel={() => setConfirmId(null)}
     />
+    </>
   );
 }
