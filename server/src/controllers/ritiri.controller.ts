@@ -210,7 +210,7 @@ export async function createRitiroController(req: Request, res: Response): Promi
   if (!resolved) { res.status(401).json({ message: "Utente non trovato" }); return; }
   if (resolved.role === "tecnico") { res.status(403).json({ message: "Tecnici non possono creare ritiri." }); return; }
 
-  const createdByName: string | undefined = resolved.role !== "admin" ? resolved.fullName : undefined;
+  const createdByName: string = resolved.fullName;
   const { payload, error } = buildPayload(req, resolved.effectiveOwnerEmail, { createdByName });
   if (!payload) { res.status(400).json({ message: error || "Payload non valido" }); return; }
 
@@ -232,7 +232,7 @@ export async function updateRitiroController(req: Request, res: Response): Promi
   const existing = await getRitiroById(id, resolved.effectiveOwnerEmail);
   if (!existing) { res.status(404).json({ message: "Ritiro non trovato" }); return; }
 
-  const lastEditByName: string | undefined = resolved.role !== "admin" ? resolved.fullName : undefined;
+  const lastEditByName: string = resolved.fullName;
   const { payload, error } = buildPayload(req, resolved.effectiveOwnerEmail, { lastEditByName });
   if (!payload) { res.status(400).json({ message: error || "Payload non valido" }); return; }
 
@@ -241,22 +241,18 @@ export async function updateRitiroController(req: Request, res: Response): Promi
   if (!files?.documentoRetro?.[0]) { payload.documentoRetroPath = existing.documentoRetroPath ?? null; payload.documentoRetroNome = existing.documentoRetroNome ?? null; }
   if (!files?.ricevutaAcquisto?.[0]) { payload.ricevutaAcquistoPath = existing.ricevutaAcquistoPath ?? null; payload.ricevutaAcquistoNome = existing.ricevutaAcquistoNome ?? null; }
 
-  if (lastEditByName) {
-    const changeDetails = buildChangeList(existing, payload, lastEditByName);
-    const newEntry: EditEntry = { name: lastEditByName, at: new Date().toISOString(), details: changeDetails };
-    const existingHistory: EditEntry[] = Array.isArray(existing.lastEditDetails) ? existing.lastEditDetails : [];
-    payload.lastEditDetails = [...existingHistory, newEntry];
-  }
+  const changeDetails = buildChangeList(existing, payload, lastEditByName);
+  const newEntry: EditEntry = { name: lastEditByName, at: new Date().toISOString(), details: changeDetails };
+  const existingHistory: EditEntry[] = Array.isArray(existing.lastEditDetails) ? existing.lastEditDetails : [];
+  payload.lastEditDetails = [...existingHistory, newEntry];
 
   const updated = await updateRitiroById(id, payload);
   if (!updated) { res.status(404).json({ message: "Ritiro non trovato" }); return; }
 
-  if (resolved.role === "venditore") {
-    const record = await getRitiroById(id, resolved.effectiveOwnerEmail);
-    if (record) {
-      const codice = formatCodice(record.numeroRitiro, record.dataAcquisto);
-      await createLog(email, resolved.fullName, resolved.role, "modifica", id, codice, `Modificato da ${resolved.fullName}`);
-    }
+  const record = await getRitiroById(id, resolved.effectiveOwnerEmail);
+  if (record) {
+    const codice = formatCodice(record.numeroRitiro, record.dataAcquisto);
+    await createLog(email, resolved.fullName, resolved.role, "modifica", id, codice, `Modificato da ${resolved.fullName}`);
   }
 
   const record = await getRitiroById(id, resolved.effectiveOwnerEmail);
