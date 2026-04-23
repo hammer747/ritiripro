@@ -208,78 +208,127 @@ export function LoginDialog({
         </DropdownMenu>
 
         <Dialog open={isProfileOpen} onOpenChange={setIsProfileOpen}>
-          <DialogContent>
+          <DialogContent className="sm:max-w-2xl">
             <DialogHeader><DialogTitle>Profilo utente</DialogTitle></DialogHeader>
-            <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); void handleSaveProfile(); }}>
-              <div className="space-y-2">
-                <Label htmlFor={`${id}-profile-nome`}>Nome</Label>
-                <Input id={`${id}-profile-nome`} value={profileNome} onChange={(e) => setProfileNome(e.target.value)} required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor={`${id}-profile-cognome`}>Cognome</Label>
-                <Input id={`${id}-profile-cognome`} value={profileCognome} onChange={(e) => setProfileCognome(e.target.value)} required />
-              </div>
-              {currentUser.role === "admin" && (
-                <>
+            <form onSubmit={(e) => { e.preventDefault(); void handleSaveProfile(); }}>
+              {currentUser.role === "admin" ? (
+                <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+                  {/* Colonna sinistra — dati personali */}
+                  <div className="space-y-4">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Dati personali</p>
+                    <div className="space-y-2">
+                      <Label htmlFor={`${id}-profile-nome`}>Nome</Label>
+                      <Input id={`${id}-profile-nome`} value={profileNome} onChange={(e) => setProfileNome(e.target.value)} required />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`${id}-profile-cognome`}>Cognome</Label>
+                      <Input id={`${id}-profile-cognome`} value={profileCognome} onChange={(e) => setProfileCognome(e.target.value)} required />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`${id}-profile-cel`}>Cellulare</Label>
+                      <Input id={`${id}-profile-cel`} type="tel" value={profileCel} onChange={(e) => setProfileCel(e.target.value)} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Email</Label>
+                      <Input value={currentUser.email} disabled />
+                    </div>
+                  </div>
+
+                  {/* Colonna destra — dati aziendali */}
+                  <div className="space-y-4">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Dati aziendali</p>
+                    <div className="space-y-2">
+                      <Label htmlFor={`${id}-profile-ditta`}>Ditta</Label>
+                      <Input id={`${id}-profile-ditta`} value={profileDitta} onChange={(e) => setProfileDitta(e.target.value)} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`${id}-profile-indirizzo`}>Indirizzo</Label>
+                      <Input id={`${id}-profile-indirizzo`} value={profileIndirizzo} onChange={(e) => setProfileIndirizzo(e.target.value)} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`${id}-profile-piva`}>P.Iva</Label>
+                      <Input id={`${id}-profile-piva`} value={profilePiva} onChange={(e) => setProfilePiva(e.target.value)} />
+                    </div>
+                    <div className="flex items-center justify-between rounded-md border p-3">
+                      <div>
+                        <p className="text-sm font-medium">Registrazione</p>
+                        <p className="text-xs text-muted-foreground">{profileAllowRegistration ? "Form visibile" : "Form nascosto"}</p>
+                      </div>
+                      <Switch checked={profileAllowRegistration} onCheckedChange={setProfileAllowRegistration} />
+                    </div>
+                  </div>
+
+                  {/* Sezione sicurezza — span full width */}
+                  <div className="col-span-2 rounded-md border p-3 space-y-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-medium">Sicurezza account</p>
+                      <Button type="button" variant="secondary" size="sm" onClick={() => { setShowPasswordChange((p) => !p); setCurrentPasswordInput(""); setNewPasswordInput(""); setConfirmNewPasswordInput(""); setProfileError(""); }}>
+                        {showPasswordChange ? "Nascondi cambio password" : "Cambia password"}
+                      </Button>
+                    </div>
+                    {showPasswordChange && (
+                      <div className="grid grid-cols-3 gap-3">
+                        <div className="space-y-2">
+                          <Label htmlFor={`${id}-cur-pw`}>Password attuale</Label>
+                          <Input id={`${id}-cur-pw`} type="password" value={currentPasswordInput} onChange={(e) => setCurrentPasswordInput(e.target.value)} placeholder="••••••••" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor={`${id}-new-pw`}>Nuova password</Label>
+                          <Input id={`${id}-new-pw`} type="password" value={newPasswordInput} onChange={(e) => setNewPasswordInput(e.target.value)} placeholder="••••••••" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor={`${id}-conf-pw`}>Conferma password</Label>
+                          <Input id={`${id}-conf-pw`} type="password" value={confirmNewPasswordInput} onChange={(e) => setConfirmNewPasswordInput(e.target.value)} placeholder="••••••••" />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <p className="col-span-2 text-sm text-destructive min-h-[1.25rem]">{profileError}</p>
+                  <Button type="submit" className="col-span-2 w-full" disabled={loading}>Salva modifiche</Button>
+                </div>
+              ) : (
+                <div className="space-y-4 mt-2">
                   <div className="space-y-2">
-                    <Label htmlFor={`${id}-profile-cel`}>Cellulare</Label>
-                    <Input id={`${id}-profile-cel`} type="tel" value={profileCel} onChange={(e) => setProfileCel(e.target.value)} />
+                    <Label htmlFor={`${id}-profile-nome`}>Nome</Label>
+                    <Input id={`${id}-profile-nome`} value={profileNome} onChange={(e) => setProfileNome(e.target.value)} required />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor={`${id}-profile-ditta`}>Ditta</Label>
-                    <Input id={`${id}-profile-ditta`} value={profileDitta} onChange={(e) => setProfileDitta(e.target.value)} />
+                    <Label htmlFor={`${id}-profile-cognome`}>Cognome</Label>
+                    <Input id={`${id}-profile-cognome`} value={profileCognome} onChange={(e) => setProfileCognome(e.target.value)} required />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor={`${id}-profile-indirizzo`}>Indirizzo</Label>
-                    <Input id={`${id}-profile-indirizzo`} value={profileIndirizzo} onChange={(e) => setProfileIndirizzo(e.target.value)} />
+                    <Label>Email</Label>
+                    <Input value={currentUser.email} disabled />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor={`${id}-profile-piva`}>P.Iva</Label>
-                    <Input id={`${id}-profile-piva`} value={profilePiva} onChange={(e) => setProfilePiva(e.target.value)} />
+                  <div className="rounded-md border p-3 space-y-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-medium">Sicurezza account</p>
+                      <Button type="button" variant="secondary" size="sm" onClick={() => { setShowPasswordChange((p) => !p); setCurrentPasswordInput(""); setNewPasswordInput(""); setConfirmNewPasswordInput(""); setProfileError(""); }}>
+                        {showPasswordChange ? "Nascondi cambio password" : "Cambia password"}
+                      </Button>
+                    </div>
+                    {showPasswordChange && (
+                      <div className="space-y-3">
+                        <div className="space-y-2">
+                          <Label htmlFor={`${id}-cur-pw`}>Password attuale</Label>
+                          <Input id={`${id}-cur-pw`} type="password" value={currentPasswordInput} onChange={(e) => setCurrentPasswordInput(e.target.value)} placeholder="Password attuale" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor={`${id}-new-pw`}>Nuova password</Label>
+                          <Input id={`${id}-new-pw`} type="password" value={newPasswordInput} onChange={(e) => setNewPasswordInput(e.target.value)} placeholder="Nuova password" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor={`${id}-conf-pw`}>Conferma nuova password</Label>
+                          <Input id={`${id}-conf-pw`} type="password" value={confirmNewPasswordInput} onChange={(e) => setConfirmNewPasswordInput(e.target.value)} placeholder="Conferma nuova password" />
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </>
-              )}
-              {currentUser.role === "admin" && (
-                <div className="flex items-center justify-between rounded-md border p-3">
-                  <div>
-                    <p className="text-sm font-medium">Registrazione nuovi account</p>
-                    <p className="text-xs text-muted-foreground">{profileAllowRegistration ? "Il form di registrazione è visibile" : "Il form di registrazione è nascosto"}</p>
-                  </div>
-                  <Switch checked={profileAllowRegistration} onCheckedChange={setProfileAllowRegistration} />
+                  <p className="text-sm text-destructive min-h-[1.25rem]">{profileError}</p>
+                  <Button type="submit" className="w-full" disabled={loading}>Salva modifiche</Button>
                 </div>
               )}
-              <div className="space-y-2">
-                <Label>Email</Label>
-                <Input value={currentUser.email} disabled />
-              </div>
-
-              <div className="rounded-md border p-3 space-y-3">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-medium">Sicurezza account</p>
-                  <Button type="button" variant="secondary" size="sm" onClick={() => { setShowPasswordChange((p) => !p); setCurrentPasswordInput(""); setNewPasswordInput(""); setConfirmNewPasswordInput(""); setProfileError(""); }}>
-                    {showPasswordChange ? "Nascondi cambio password" : "Cambia password"}
-                  </Button>
-                </div>
-                {showPasswordChange && (
-                  <div className="space-y-3">
-                    <div className="space-y-2">
-                      <Label htmlFor={`${id}-cur-pw`}>Password attuale</Label>
-                      <Input id={`${id}-cur-pw`} type="password" value={currentPasswordInput} onChange={(e) => setCurrentPasswordInput(e.target.value)} placeholder="Password attuale" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor={`${id}-new-pw`}>Nuova password</Label>
-                      <Input id={`${id}-new-pw`} type="password" value={newPasswordInput} onChange={(e) => setNewPasswordInput(e.target.value)} placeholder="Nuova password" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor={`${id}-conf-pw`}>Conferma nuova password</Label>
-                      <Input id={`${id}-conf-pw`} type="password" value={confirmNewPasswordInput} onChange={(e) => setConfirmNewPasswordInput(e.target.value)} placeholder="Conferma nuova password" />
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <p className="text-sm text-destructive min-h-[1.25rem]">{profileError}</p>
-              <Button type="submit" className="w-full" disabled={loading}>Salva modifiche</Button>
             </form>
           </DialogContent>
         </Dialog>
