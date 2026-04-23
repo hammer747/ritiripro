@@ -42,6 +42,10 @@ export default function Index() {
         cel: typeof parsed?.cel === "string" ? parsed.cel : undefined,
         email,
         role,
+        ditta: typeof parsed?.ditta === "string" ? parsed.ditta : undefined,
+        indirizzo: typeof parsed?.indirizzo === "string" ? parsed.indirizzo : undefined,
+        piva: typeof parsed?.piva === "string" ? parsed.piva : undefined,
+        allowRegistration: typeof parsed?.allowRegistration === "boolean" ? parsed.allowRegistration : undefined,
       };
     } catch {
       localStorage.removeItem("ritiri_facili_user");
