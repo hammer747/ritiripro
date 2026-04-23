@@ -167,7 +167,7 @@ export async function generateRicevuta(ritiro: Ritiro, admin: AdminInfo): Promis
   doc.setFillColor(...LIGHT_GREEN);
   doc.setDrawColor(...GREEN);
   doc.setLineWidth(0.6);
-  doc.roundedRect(14, y, 182, 18, 3, 3, "FD");
+  doc.roundedRect(14, y, 182, 22, 3, 3, "FD");
 
   doc.setFontSize(10);
   doc.setFont("helvetica", "bold");
@@ -178,7 +178,14 @@ export async function generateRicevuta(ritiro: Ritiro, admin: AdminInfo): Promis
   doc.setTextColor(30, 140, 50);
   doc.text(`€ ${ritiro.prezzo.toLocaleString("it-IT", { minimumFractionDigits: 2 })}`, 190, y + 11, { align: "right" });
 
-  y += 28;
+  if (ritiro.metodoPagamento?.trim()) {
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(...GRAY);
+    doc.text(`Metodo di pagamento: ${ritiro.metodoPagamento.trim()}`, 20, y + 16);
+  }
+
+  y += 32;
 
   // --- DECLARATION ---
   doc.setFontSize(8);
