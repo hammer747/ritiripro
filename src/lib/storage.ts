@@ -38,6 +38,7 @@ type ApiRitiro = {
   dataVendita: string | null;
   pinDispositivo: string | null;
   dataAcquisto: string;
+  metodoPagamento?: string | null;
   note: string | null;
   speseAggiuntive: import("./types").SpeseAggiuntiva[] | string | null;
   createdByName?: string | null;
@@ -73,6 +74,7 @@ function mapApiToRitiro(item: ApiRitiro): Ritiro {
     dataVendita: item.dataVendita || undefined,
     pinDispositivo: item.pinDispositivo || undefined,
     dataAcquisto: item.dataAcquisto,
+    metodoPagamento: item.metodoPagamento || undefined,
     note: item.note || "",
     speseAggiuntive: (() => {
       let arr = item.speseAggiuntive;
@@ -188,6 +190,7 @@ function toFormData(ritiro: Ritiro): FormData {
   form.append("dataVendita", ritiro.dataVendita || "");
   form.append("pinDispositivo", ritiro.pinDispositivo || "");
   form.append("dataAcquisto", ritiro.dataAcquisto);
+  form.append("metodoPagamento", ritiro.metodoPagamento || "");
   form.append("note", ritiro.note || "");
 
   // Send images as real file uploads (multer expects documentoFronte/Retro/ricevutaAcquisto)

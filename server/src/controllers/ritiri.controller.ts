@@ -116,6 +116,7 @@ function buildPayload(req: Request, ownerEmail: string, extra?: { createdByName?
     dataVendita: venduto ? (dataVendita ?? null) : null,
     pinDispositivo: toOptionalString(req.body.pinDispositivo) ?? null,
     dataAcquisto,
+    metodoPagamento: toOptionalString(req.body.metodoPagamento) ?? null,
     note: toOptionalString(req.body.note) || "",
     speseAggiuntive: speseAggiuntive && speseAggiuntive.length > 0 ? speseAggiuntive : null,
     createdByName: extra?.createdByName ?? null,

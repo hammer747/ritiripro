@@ -51,6 +51,7 @@ const emptyForm = {
   dataVendita: "",
   pinDispositivo: "",
   dataAcquisto: new Date().toISOString().split("T")[0],
+  metodoPagamento: "",
   note: "",
 };
 
@@ -119,6 +120,7 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
         dataVendita: editingRitiro.dataVendita || "",
         pinDispositivo: editingRitiro.pinDispositivo || "",
         dataAcquisto: editingRitiro.dataAcquisto,
+        metodoPagamento: editingRitiro.metodoPagamento || "",
         note: editingRitiro.note,
       });
       setSpeseVoci(
@@ -294,6 +296,7 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
       dataVendita: form.venduto ? form.dataVendita || undefined : undefined,
       pinDispositivo: form.pinDispositivo.trim() || undefined,
       dataAcquisto: form.dataAcquisto,
+      metodoPagamento: form.metodoPagamento || undefined,
       note: form.note.trim(),
       speseAggiuntive: speseVoci.length > 0
         ? speseVoci
@@ -514,6 +517,17 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
           <div className="space-y-1.5">
             <Label htmlFor="data">Data Acquisto:</Label>
             <Input id="data" type="date" value={form.dataAcquisto} onChange={(e) => set("dataAcquisto", e.target.value)} className={`w-full appearance-none ${errClass("dataAcquisto")}`} />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="metodoPagamento">Metodo di pagamento:</Label>
+            <Select value={form.metodoPagamento} onValueChange={(v) => set("metodoPagamento", v)}>
+              <SelectTrigger id="metodoPagamento"><SelectValue placeholder="Seleziona..." /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Contanti">Contanti</SelectItem>
+                <SelectItem value="Paypal">Paypal</SelectItem>
+                <SelectItem value="Bonifico">Bonifico</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
         <div className="flex items-center gap-2 pt-2">
