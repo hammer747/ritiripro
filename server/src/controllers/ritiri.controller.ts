@@ -152,6 +152,11 @@ function buildChangeList(existing: import("../types/ritiro").RitiroRecord, paylo
   if (str(existing.note) !== str(payload.note)) changes.push("Note modificate");
   if (str(existing.dataAcquisto) !== str(payload.dataAcquisto)) changes.push("Data acquisto modificata");
   if (num(existing.prezzoVendita) !== num(payload.prezzoVendita)) changes.push("Prezzo di vendita modificato");
+  if (str(existing.metodoPagamento) !== str(payload.metodoPagamento)) {
+    const da = existing.metodoPagamento?.trim() || "non specificato";
+    const a = payload.metodoPagamento?.trim() || "non specificato";
+    changes.push(`Tipo pagamento modificato da ${da} a ${a}`);
+  }
 
   const existingSpese = existing.speseAggiuntive ?? [];
   const newSpese = payload.speseAggiuntive ?? [];
