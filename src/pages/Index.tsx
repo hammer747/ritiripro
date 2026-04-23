@@ -14,6 +14,7 @@ import { MonthWheelPicker } from "@/components/MonthWheelPicker";
 import { LoginDialog, RegisteredUser } from "@/components/ui/login-dialog";
 import LoginPage from "@/components/LoginPage";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { ReportReminderDialog, shouldShowReportReminder, markReportDone, markReportShown } from "@/components/ReportReminderDialog";
 
 const MESI = [
   "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
@@ -52,6 +53,7 @@ export default function Index() {
       return null;
     }
   });
+  const [showReportReminder, setShowReportReminder] = useState(false);
   const [search, setSearch] = useState("");
   const [editingRitiro, setEditingRitiro] = useState<Ritiro | null>(null);
   const [labelRitiro, setLabelRitiro] = useState<Ritiro | null>(null);
@@ -76,6 +78,11 @@ export default function Index() {
     reload().catch(() => {
       setRitiri([]);
     });
+
+    if (currentUser.role === "admin" && shouldShowReportReminder()) {
+      setShowReportReminder(true);
+      markReportShown();
+    }
   }, [reload, currentUser?.email]);
 
   useEffect(() => {
@@ -293,6 +300,12 @@ export default function Index() {
         ritiro={labelRitiro}
         open={!!labelRitiro}
         onClose={() => setLabelRitiro(null)}
+      />
+
+      <ReportReminderDialog
+        open={showReportReminder}
+        onLater={() => setShowReportReminder(false)}
+        onDone={() => { markReportDone(); setShowReportReminder(false); }}
       />
     </div>
   );
