@@ -52,6 +52,7 @@ const emptyForm = {
   pinDispositivo: "",
   dataAcquisto: new Date().toISOString().split("T")[0],
   metodoPagamento: "",
+  iban: "",
   note: "",
 };
 
@@ -121,6 +122,7 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
         pinDispositivo: editingRitiro.pinDispositivo || "",
         dataAcquisto: editingRitiro.dataAcquisto,
         metodoPagamento: editingRitiro.metodoPagamento || "",
+        iban: editingRitiro.iban || "",
         note: editingRitiro.note,
       });
       setSpeseVoci(
@@ -297,6 +299,7 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
       pinDispositivo: form.pinDispositivo.trim() || undefined,
       dataAcquisto: form.dataAcquisto,
       metodoPagamento: form.metodoPagamento || undefined,
+      iban: form.metodoPagamento === "Bonifico" ? (form.iban.trim().toUpperCase() || undefined) : undefined,
       note: form.note.trim(),
       speseAggiuntive: speseVoci.length > 0
         ? speseVoci
@@ -520,7 +523,7 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="metodoPagamento">Metodo di pagamento:</Label>
-            <Select value={form.metodoPagamento} onValueChange={(v) => set("metodoPagamento", v)}>
+            <Select value={form.metodoPagamento} onValueChange={(v) => { set("metodoPagamento", v); if (v !== "Bonifico") set("iban", ""); }}>
               <SelectTrigger id="metodoPagamento"><SelectValue placeholder="Seleziona..." /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="Contanti">Contanti</SelectItem>
@@ -530,6 +533,12 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
             </Select>
           </div>
         </div>
+        {form.metodoPagamento === "Bonifico" && (
+          <div className="space-y-1.5">
+            <Label htmlFor="iban">IBAN:</Label>
+            <Input id="iban" value={form.iban} onChange={(e) => set("iban", e.target.value.toUpperCase())} placeholder="IT60 X054 2811 1010 0000 0123 456" />
+          </div>
+        )}
         <div className="flex items-center gap-2 pt-2">
           <Checkbox
             id="venduto"

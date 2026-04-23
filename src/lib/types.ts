@@ -40,6 +40,7 @@ export interface Ritiro {
   pinDispositivo?: string;
   dataAcquisto: string;
   metodoPagamento?: string;
+  iban?: string;
   note: string;
   speseAggiuntive?: SpeseAggiuntiva[];
   createdByName?: string;

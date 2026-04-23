@@ -40,6 +40,7 @@ export interface RitiroRecord {
   pinDispositivo: string | null;
   dataAcquisto: string;
   metodoPagamento: string | null;
+  iban: string | null;
   note: string;
   speseAggiuntive: SpeseAggiuntiva[] | null;
   ownerEmail: string;
@@ -77,6 +78,7 @@ export interface SaveRitiroPayload {
   pinDispositivo: string | null;
   dataAcquisto: string;
   metodoPagamento: string | null;
+  iban: string | null;
   note: string;
   speseAggiuntive: SpeseAggiuntiva[] | null;
   createdByName?: string | null | undefined;

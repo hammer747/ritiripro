@@ -33,6 +33,7 @@ interface RitiroRow extends RowDataPacket {
   pin_dispositivo: string | null;
   data_acquisto: string;
   metodo_pagamento: string | null;
+  iban: string | null;
   note: string;
   spese_aggiuntive: string | null;
   owner_email: string;
@@ -71,6 +72,7 @@ function mapRow(row: RitiroRow): RitiroRecord {
     pinDispositivo: row.pin_dispositivo,
     dataAcquisto: row.data_acquisto,
     metodoPagamento: row.metodo_pagamento ?? null,
+    iban: row.iban ?? null,
     note: row.note,
     speseAggiuntive: row.spese_aggiuntive ? (() => { try { return JSON.parse(row.spese_aggiuntive as string); } catch { return null; } })() : null,
     ownerEmail: row.owner_email,
@@ -142,6 +144,7 @@ export async function initRitiriTable(): Promise<void> {
   `);
 
   await pool.execute(`ALTER TABLE ritiri ADD COLUMN IF NOT EXISTS metodo_pagamento VARCHAR(64) NULL`);
+  await pool.execute(`ALTER TABLE ritiri ADD COLUMN IF NOT EXISTS iban VARCHAR(64) NULL`);
   await pool.execute(`ALTER TABLE ritiri ADD COLUMN IF NOT EXISTS created_by_name VARCHAR(255) NULL`);
   await pool.execute(`ALTER TABLE ritiri ADD COLUMN IF NOT EXISTS last_edit_by_name VARCHAR(255) NULL`);
   await pool.execute(`ALTER TABLE ritiri ADD COLUMN IF NOT EXISTS last_edit_at DATETIME NULL`);
@@ -180,9 +183,9 @@ export async function createRitiro(payload: SaveRitiroPayload, id: string): Prom
       id, numero_ritiro, nome_cliente, cognome_cliente, codice_fiscale, telefono_cliente, tipo_documento, numero_documento,
       documento_fronte_path, documento_fronte_nome, documento_retro_path, documento_retro_nome,
       ricevuta_acquisto_path, ricevuta_acquisto_nome, tipo_articolo, marca_modello, seriale_imei,
-      articolo, descrizione, prezzo, prezzo_vendita, venduto, data_vendita, pin_dispositivo, data_acquisto, metodo_pagamento, note,
+      articolo, descrizione, prezzo, prezzo_vendita, venduto, data_vendita, pin_dispositivo, data_acquisto, metodo_pagamento, iban, note,
       spese_aggiuntive, owner_email, created_by_name
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       id,
       numeroRitiro,
@@ -210,6 +213,7 @@ export async function createRitiro(payload: SaveRitiroPayload, id: string): Prom
       payload.pinDispositivo ?? null,
       payload.dataAcquisto,
       payload.metodoPagamento ?? null,
+      payload.iban ?? null,
       payload.note,
       payload.speseAggiuntive ? JSON.stringify(payload.speseAggiuntive) : null,
       payload.ownerEmail,
@@ -245,6 +249,7 @@ export async function updateRitiroById(id: string, payload: SaveRitiroPayload): 
       pin_dispositivo = ?,
       data_acquisto = ?,
       metodo_pagamento = ?,
+      iban = ?,
       note = ?,
       spese_aggiuntive = ?,
       last_edit_by_name = CASE WHEN ? IS NOT NULL THEN ? ELSE last_edit_by_name END,
@@ -276,6 +281,7 @@ export async function updateRitiroById(id: string, payload: SaveRitiroPayload): 
       payload.pinDispositivo ?? null,
       payload.dataAcquisto,
       payload.metodoPagamento ?? null,
+      payload.iban ?? null,
       payload.note,
       payload.speseAggiuntive ? JSON.stringify(payload.speseAggiuntive) : null,
       payload.lastEditByName ?? null,

@@ -182,7 +182,10 @@ export async function generateRicevuta(ritiro: Ritiro, admin: AdminInfo): Promis
     doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(...GRAY);
-    doc.text(`Metodo di pagamento: ${ritiro.metodoPagamento.trim()}`, 20, y + 16);
+    const metodoLine = ritiro.iban?.trim()
+      ? `Metodo di pagamento: ${ritiro.metodoPagamento.trim()}   |   IBAN: ${ritiro.iban.trim()}`
+      : `Metodo di pagamento: ${ritiro.metodoPagamento.trim()}`;
+    doc.text(metodoLine, 20, y + 16);
   }
 
   y += 32;
