@@ -9,14 +9,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { FileDown } from "lucide-react";
 
-const DONE_KEY = "ritiri_report_reminder_done";
-const SHOWN_KEY = "ritiri_report_reminder_shown";
+const doneKey = (email: string) => `ritiri_report_reminder_done_${email}`;
+const shownKey = (email: string) => `ritiri_report_reminder_shown_${email}`;
 
-export function shouldShowReportReminder(): boolean {
+export function shouldShowReportReminder(email: string): boolean {
   const today = new Date();
   const currentMonthKey = `${today.getFullYear()}-${today.getMonth() + 1}`;
-  const doneMonth = localStorage.getItem(DONE_KEY);
-  const shownMonth = localStorage.getItem(SHOWN_KEY);
+  const doneMonth = localStorage.getItem(doneKey(email));
+  const shownMonth = localStorage.getItem(shownKey(email));
   const isFirstOfMonth = today.getDate() === 1;
   return doneMonth !== currentMonthKey && (isFirstOfMonth || shownMonth === currentMonthKey || !doneMonth);
 }
@@ -58,14 +58,14 @@ export function ReportReminderDialog({ open, onLater, onDone }: Props) {
   );
 }
 
-export function markReportDone() {
+export function markReportDone(email: string) {
   const today = new Date();
   const currentMonthKey = `${today.getFullYear()}-${today.getMonth() + 1}`;
-  localStorage.setItem(DONE_KEY, currentMonthKey);
+  localStorage.setItem(doneKey(email), currentMonthKey);
 }
 
-export function markReportShown() {
+export function markReportShown(email: string) {
   const today = new Date();
   const currentMonthKey = `${today.getFullYear()}-${today.getMonth() + 1}`;
-  localStorage.setItem(SHOWN_KEY, currentMonthKey);
+  localStorage.setItem(shownKey(email), currentMonthKey);
 }

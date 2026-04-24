@@ -82,9 +82,9 @@ export default function Index() {
       setRitiri([]);
     });
 
-    if (currentUser.role === "admin" && shouldShowReportReminder()) {
+    if (currentUser.role === "admin" && shouldShowReportReminder(currentUser.email)) {
       setShowReportReminder(true);
-      markReportShown();
+      markReportShown(currentUser.email);
     }
   }, [reload, currentUser?.email]);
 
@@ -351,7 +351,7 @@ export default function Index() {
       <ReportReminderDialog
         open={showReportReminder}
         onLater={() => setShowReportReminder(false)}
-        onDone={() => { markReportDone(); setShowReportReminder(false); }}
+        onDone={() => { if (currentUser) markReportDone(currentUser.email); setShowReportReminder(false); }}
       />
     </div>
   );
