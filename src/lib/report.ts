@@ -22,16 +22,10 @@ export function generateMonthlyReport(ritiri: Ritiro[], meseKey: string): void {
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
-  doc.text("RitiriPro — Report Mensile", 14, 12);
-  doc.setFontSize(10);
+  doc.text(`RitiriPro — Report ${meseName}`, 14, 12);
+  doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
-  doc.text(`Torino Hi-Tech`, 297 - 14, 8, { align: "right" });
-  doc.text(`Generato il ${new Date().toLocaleDateString("it-IT")}`, 297 - 14, 14, { align: "right" });
-
-  doc.setTextColor(...DARK);
-  doc.setFontSize(13);
-  doc.setFont("helvetica", "bold");
-  doc.text(meseName, 14, 28);
+  doc.text(`Generato il ${new Date().toLocaleDateString("it-IT")}`, 297 - 14, 12, { align: "right" });
 
   const venduti = ritiri.filter((r) => r.venduto);
   const inStock = ritiri.filter((r) => !r.venduto);
@@ -39,12 +33,13 @@ export function generateMonthlyReport(ritiri: Ritiro[], meseKey: string): void {
   const totAcquisti = ritiri.reduce((s, r) => s + r.prezzo + speseSum(r), 0);
   const totGuadagni = venduti.reduce((s, r) => s + ((r.prezzoVendita ?? 0) - (r.prezzo + speseSum(r))), 0);
 
+  doc.setTextColor(...DARK);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   doc.text(
-    `Totale ritiri: ${ritiri.length}   |   In stock: ${inStock.length}   |   Venduti: ${venduti.length}   |   Totale acquisti: € ${totAcquisti.toFixed(2)}   |   Guadagni: € ${totGuadagni.toFixed(2)}`,
+    `📦 Ritiri: ${ritiri.length}  |  📤 In stock: ${inStock.length}  |  ✅ Venduti: ${venduti.length}  |  💰 Acquisti: € ${totAcquisti.toFixed(2)}  |  📈 Guadagni: € ${totGuadagni.toFixed(2)}`,
     14,
-    36
+    28
   );
 
   const rows = ritiri.map((r) => {
@@ -70,7 +65,7 @@ export function generateMonthlyReport(ritiri: Ritiro[], meseKey: string): void {
   autoTable(doc, {
     head: [["N°", "Data", "Cliente", "Articolo", "Seriale/IMEI", "Acquisto", "Spese +", "Costo Tot.", "Stato", "Vendita", "Margine"]],
     body: rows,
-    startY: 42,
+    startY: 35,
     styles: { fontSize: 7.5, cellPadding: 2 },
     headStyles: { fillColor: GREEN, textColor: [255, 255, 255], fontStyle: "bold" },
     alternateRowStyles: { fillColor: [245, 250, 245] },
