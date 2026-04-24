@@ -255,13 +255,6 @@ export function LoginDialog({
                       <Label htmlFor={`${id}-profile-piva`}>P.Iva</Label>
                       <Input id={`${id}-profile-piva`} value={profilePiva} onChange={(e) => setProfilePiva(e.target.value)} />
                     </div>
-                    <div className="flex items-center justify-between rounded-md border p-3">
-                      <div>
-                        <p className="text-sm font-medium">Registrazione</p>
-                        <p className="text-xs text-muted-foreground">{profileAllowRegistration ? "Form visibile" : "Form nascosto"}</p>
-                      </div>
-                      <Switch checked={profileAllowRegistration} onCheckedChange={setProfileAllowRegistration} />
-                    </div>
                   </div>
 
                   {/* Sezione sicurezza — span full width */}
