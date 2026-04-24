@@ -23,9 +23,12 @@ export function generateMonthlyReport(ritiri: Ritiro[], meseKey: string): void {
   doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
   doc.text(`RitiriPro — Report ${meseName}`, 14, 12);
-  doc.setFontSize(9);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.text("Torino Hi-Tech", 297 - 14, 8, { align: "right" });
+  doc.setFontSize(8);
   doc.setFont("helvetica", "normal");
-  doc.text(`Generato il ${new Date().toLocaleDateString("it-IT")}`, 297 - 14, 12, { align: "right" });
+  doc.text(`Generato il ${new Date().toLocaleDateString("it-IT")}`, 297 - 14, 14, { align: "right" });
 
   const venduti = ritiri.filter((r) => r.venduto);
   const inStock = ritiri.filter((r) => !r.venduto);
