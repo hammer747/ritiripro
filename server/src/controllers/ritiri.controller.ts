@@ -215,7 +215,6 @@ export async function createRitiroController(req: Request, res: Response): Promi
   if (!email) { res.status(401).json({ message: "Login richiesto" }); return; }
   const resolved = await resolveUser(email);
   if (!resolved) { res.status(401).json({ message: "Utente non trovato" }); return; }
-  if (resolved.role === "tecnico") { res.status(403).json({ message: "Tecnici non possono creare ritiri." }); return; }
 
   const createdByName: string = resolved.fullName;
   const { payload, error } = buildPayload(req, resolved.effectiveOwnerEmail, { createdByName });
@@ -232,7 +231,6 @@ export async function updateRitiroController(req: Request, res: Response): Promi
   if (!email) { res.status(401).json({ message: "Login richiesto" }); return; }
   const resolved = await resolveUser(email);
   if (!resolved) { res.status(401).json({ message: "Utente non trovato" }); return; }
-  if (resolved.role === "tecnico") { res.status(403).json({ message: "Tecnici non possono modificare ritiri." }); return; }
 
   const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   if (!id) { res.status(400).json({ message: "ID non valido" }); return; }

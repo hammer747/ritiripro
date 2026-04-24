@@ -28,13 +28,11 @@ interface Props {
   onEdit: (ritiro: Ritiro) => void;
   onPrint?: (ritiro: Ritiro) => void;
   onRicevuta?: (ritiro: Ritiro) => void;
-  userRole?: UserRole;
+  userRole?: "admin" | "venditore";
 }
 
 export default function RitiriTable({ ritiri, onChanged, onEdit, onPrint, onRicevuta, userRole = "admin" }: Props) {
   const canDelete = userRole === "admin";
-  const canEdit = userRole !== "tecnico";
-  const showPrice = userRole !== "tecnico";
 
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const confirmRitiro = confirmId ? ritiri.find((r) => r.id === confirmId) : null;
@@ -111,10 +109,7 @@ export default function RitiriTable({ ritiri, onChanged, onEdit, onPrint, onRice
                 </span>
               </TableCell>
               <TableCell className="text-right font-semibold text-sm">
-                {showPrice
-                  ? `€ ${Math.round(r.prezzo + (r.speseAggiuntive ?? []).reduce((s, v) => s + (Number(v.prezzo) || 0), 0))}`
-                  : <span className="text-muted-foreground text-xs font-normal italic">— Riservato —</span>
-                }
+                {`€ ${Math.round(r.prezzo + (r.speseAggiuntive ?? []).reduce((s, v) => s + (Number(v.prezzo) || 0), 0))}`}
               </TableCell>
               <TableCell>
                 <div className="flex gap-1">
@@ -128,11 +123,9 @@ export default function RitiriTable({ ritiri, onChanged, onEdit, onPrint, onRice
                       <Tag className="h-4 w-4" />
                     </Button>
                   )}
-                  {canEdit && (
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => onEdit(r)}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  )}
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => onEdit(r)}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
                   {canDelete && (
                     <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => setConfirmId(r.id)}>
                       <Trash2 className="h-4 w-4" />

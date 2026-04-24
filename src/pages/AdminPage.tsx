@@ -3,11 +3,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { getAdminUsers, createAdminUser, deleteAdminUser, SubUser, getAdminLogs, LogRecord } from "@/lib/storage";
 import { RegisteredUser } from "@/components/ui/login-dialog";
-import { ArrowLeft, Trash2, UserPlus, ShieldCheck, Wrench, Store } from "lucide-react";
+import { ArrowLeft, Trash2, UserPlus, ShieldCheck, Store } from "lucide-react";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
@@ -17,7 +16,7 @@ export default function AdminPage() {
     try {
       const parsed = JSON.parse(localStorage.getItem("ritiri_facili_user") || "null");
       if (!parsed?.email) return null;
-      const role = (parsed.role === "venditore" || parsed.role === "tecnico") ? parsed.role : "admin";
+      const role = parsed.role === "venditore" ? parsed.role : "admin";
       return { ...parsed, role };
     } catch { return null; }
   });
@@ -29,7 +28,7 @@ export default function AdminPage() {
   const [cognome, setCognome] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<"venditore" | "tecnico">("venditore");
+  const [role] = useState<"venditore">("venditore");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [confirmUser, setConfirmUser] = useState<SubUser | null>(null);
@@ -74,9 +73,9 @@ export default function AdminPage() {
     }
   };
 
-  const roleIcon = (r: string) => r === "tecnico" ? <Wrench className="h-3.5 w-3.5" /> : <Store className="h-3.5 w-3.5" />;
-  const roleLabel = (r: string) => r === "tecnico" ? "Tecnico" : "Venditore";
-  const roleColor = (r: string) => r === "tecnico" ? "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300" : "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300";
+  const roleIcon = (_r: string) => <Store className="h-3.5 w-3.5" />;
+  const roleLabel = (_r: string) => "Venditore";
+  const roleColor = (_r: string) => "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300";
 
   return (
     <div className="min-h-screen">
@@ -127,16 +126,6 @@ export default function AdminPage() {
                 <Label>Password</Label>
                 <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required />
               </div>
-              <div className="space-y-1.5">
-                <Label>Ruolo</Label>
-                <Select value={role} onValueChange={(v) => setRole(v as "venditore" | "tecnico")}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="venditore">Venditore — può creare e modificare</SelectItem>
-                    <SelectItem value="tecnico">Tecnico — solo lettura</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
             {error && <p className="text-sm text-destructive">{error}</p>}
             <div className="flex gap-2">
@@ -147,7 +136,7 @@ export default function AdminPage() {
         )}
 
         {users.length === 0 ? (
-          <p className="text-muted-foreground text-sm">Nessun utente secondario. Crea un venditore o tecnico con il pulsante sopra.</p>
+          <p className="text-muted-foreground text-sm">Nessun utente secondario. Crea un venditore con il pulsante sopra.</p>
         ) : (
           <div className="rounded-lg border overflow-hidden">
             <table className="w-full text-sm">

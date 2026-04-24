@@ -2,7 +2,7 @@ import bcrypt from "bcrypt";
 import { RowDataPacket } from "mysql2";
 import { pool } from "../config/db";
 
-export type UserRole = "admin" | "venditore" | "tecnico";
+export type UserRole = "admin" | "venditore";
 
 interface UserRow extends RowDataPacket {
   nome: string;
@@ -41,13 +41,13 @@ export async function initUsersTable(): Promise<void> {
       cel VARCHAR(32) NULL,
       email VARCHAR(255) NOT NULL UNIQUE,
       password_hash VARCHAR(255) NOT NULL,
-      role ENUM('admin','venditore','tecnico') NOT NULL DEFAULT 'admin',
+      role ENUM('admin','venditore') NOT NULL DEFAULT 'admin',
       parent_admin_email VARCHAR(255) NULL,
       created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
     )
   `);
 
-  await pool.execute(`ALTER TABLE users ADD COLUMN IF NOT EXISTS role ENUM('admin','venditore','tecnico') NOT NULL DEFAULT 'admin'`);
+  await pool.execute(`ALTER TABLE users ADD COLUMN IF NOT EXISTS role ENUM('admin','venditore') NOT NULL DEFAULT 'admin'`);
   await pool.execute(`ALTER TABLE users ADD COLUMN IF NOT EXISTS parent_admin_email VARCHAR(255) NULL`);
   await pool.execute(`ALTER TABLE users ADD COLUMN IF NOT EXISTS ditta VARCHAR(255) NULL`);
   await pool.execute(`ALTER TABLE users ADD COLUMN IF NOT EXISTS indirizzo VARCHAR(255) NULL`);

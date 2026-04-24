@@ -37,7 +37,7 @@ export default function Index() {
         return null;
       }
 
-      const role = (parsed?.role === "venditore" || parsed?.role === "tecnico") ? parsed.role : "admin";
+      const role = parsed?.role === "venditore" ? parsed.role : "admin";
       return {
         nome: typeof parsed?.nome === "string" ? parsed.nome : "",
         cognome: typeof parsed?.cognome === "string" ? parsed.cognome : "",
@@ -258,7 +258,7 @@ export default function Index() {
         {/* Nav tiles */}
         <div className="rounded-xl bg-card border shadow-sm p-6">
           <div className="grid grid-cols-2 gap-4">
-            {currentUser?.role !== "tecnico" && (
+            {(
               <button
                 onClick={() => { setShowForm(true); setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth" }), 50); }}
                 className="group flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-border bg-background hover:border-primary hover:bg-primary/5 transition-all duration-200 p-8 cursor-pointer"
@@ -294,7 +294,7 @@ export default function Index() {
         </div>
 
         {/* Form (visibile solo quando richiesto) */}
-        {showForm && currentUser?.role !== "tecnico" && (
+        {showForm && (
           <div ref={formRef} className="rounded-xl bg-card p-6 shadow-sm border">
             <div className="flex items-center justify-between mb-4">
               <span className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Nuovo Ritiro</span>

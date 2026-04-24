@@ -20,7 +20,7 @@ export default function Grafico() {
     try {
       const parsed = JSON.parse(localStorage.getItem("ritiri_facili_user") || "null");
       if (!parsed?.email) return null;
-      const role = (parsed.role === "venditore" || parsed.role === "tecnico") ? parsed.role : "admin";
+      const role = (parsed.role === "venditore") ? parsed.role : "admin";
       return { ...parsed, role };
     } catch { return null; }
   });

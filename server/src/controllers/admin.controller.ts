@@ -26,8 +26,8 @@ export async function createUserController(req: Request, res: Response): Promise
     res.status(400).json({ message: "Campi obbligatori mancanti." });
     return;
   }
-  if (role !== "venditore" && role !== "tecnico") {
-    res.status(400).json({ message: "Ruolo non valido. Usa venditore o tecnico." });
+  if (role !== "venditore") {
+    res.status(400).json({ message: "Ruolo non valido. Usa venditore." });
     return;
   }
   const normalizedEmail = email.trim().toLowerCase();

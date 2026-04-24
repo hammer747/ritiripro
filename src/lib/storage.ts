@@ -119,7 +119,7 @@ function getCurrentUser(): RegisteredUser | null {
       return null;
     }
 
-    const role = (parsed?.role === "venditore" || parsed?.role === "tecnico") ? parsed.role : "admin";
+    const role = parsed?.role === "venditore" ? parsed.role : "admin";
     return {
       nome: typeof parsed?.nome === "string" ? parsed.nome : "",
       cognome: typeof parsed?.cognome === "string" ? parsed.cognome : "",
@@ -292,13 +292,13 @@ export async function deleteRitiro(id: string): Promise<void> {
   }
 }
 
-export type SubUser = { nome: string; cognome: string; cel?: string | null; email: string; role: "venditore" | "tecnico" };
+export type SubUser = { nome: string; cognome: string; cel?: string | null; email: string; role: "venditore" };
 
 export async function getAdminUsers(): Promise<SubUser[]> {
   return requestJson<SubUser[]>(`${API_BASE_URL}/api/admin/users`, { headers: getAuthHeaders() });
 }
 
-export async function createAdminUser(data: { nome: string; cognome: string; cel?: string; email: string; password: string; role: "venditore" | "tecnico" }): Promise<SubUser> {
+export async function createAdminUser(data: { nome: string; cognome: string; cel?: string; email: string; password: string; role: "venditore" }): Promise<SubUser> {
   return requestJson<SubUser>(`${API_BASE_URL}/api/admin/users`, {
     method: "POST",
     headers: { ...getAuthHeaders(), "Content-Type": "application/json" },

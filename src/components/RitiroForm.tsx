@@ -25,7 +25,7 @@ interface Props {
   onCancelEdit?: () => void;
   nextNumeroRitiro?: number;
   ritiri?: Ritiro[];
-  userRole?: "admin" | "venditore" | "tecnico";
+  userRole?: "admin" | "venditore";
 }
 
 const emptyForm = {

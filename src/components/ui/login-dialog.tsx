@@ -23,7 +23,7 @@ import { saveToken, clearToken, getToken } from "@/lib/storage";
 import { ChevronDown, LogOut, UserCog, ShieldCheck } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 
-export type UserRole = "admin" | "venditore" | "tecnico";
+export type UserRole = "admin" | "venditore";
 
 export type RegisteredUser = {
   nome: string;
