@@ -32,7 +32,7 @@ export function ReportReminderDialog({ open, onLater, onDone }: Props) {
   const mese = today.toLocaleDateString("it-IT", { month: "long", year: "numeric" });
 
   return (
-    <AlertDialog open={open}>
+    <AlertDialog open={open} onOpenChange={(v) => !v && onLater()}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <div className="flex justify-center mb-2">
