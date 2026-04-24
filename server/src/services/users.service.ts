@@ -131,7 +131,7 @@ export async function updateUser(
 
 export async function listSubUsers(adminEmail: string): Promise<Omit<UserRecord, "passwordHash">[]> {
   const [rows] = await pool.query<UserRow[]>(
-    "SELECT nome, cognome, cel, email, role, parent_admin_email, ditta, indirizzo, piva, allow_registration FROM users WHERE parent_admin_email = ? ORDER BY created_at ASC",
+    "SELECT nome, cognome, cel, email, role, parent_admin_email, ditta, indirizzo, piva, allow_registration FROM users WHERE parent_admin_email = ? AND role = 'venditore' ORDER BY created_at ASC",
     [adminEmail]
   );
   return rows.map((row) => ({
