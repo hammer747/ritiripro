@@ -147,6 +147,13 @@ export async function listSubUsers(adminEmail: string): Promise<Omit<UserRecord,
   }));
 }
 
+export async function setRegistrationEnabled(adminEmail: string, enabled: boolean): Promise<void> {
+  await pool.execute(
+    "UPDATE users SET allow_registration = ? WHERE email = ? AND role = 'admin'",
+    [enabled ? 1 : 0, adminEmail]
+  );
+}
+
 export async function deleteUserByEmail(email: string): Promise<boolean> {
   const [result] = await pool.execute("DELETE FROM users WHERE email = ? AND role != 'admin'", [email]);
   return ((result as { affectedRows?: number }).affectedRows ?? 0) > 0;

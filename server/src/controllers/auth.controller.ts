@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { Request, Response } from "express";
-import { createUser, findUserByEmail, updateUser, isRegistrationEnabled } from "../services/users.service";
+import { createUser, findUserByEmail, updateUser, isRegistrationEnabled, setRegistrationEnabled } from "../services/users.service";
 import { env } from "../config/env";
 
 function userToJson(user: NonNullable<Awaited<ReturnType<typeof findUserByEmail>>>) {
@@ -95,4 +95,13 @@ export async function updateProfileController(req: Request, res: Response): Prom
   await updateUser(email, nome.trim(), cognome.trim(), cel?.trim() || null, newPassword?.trim() || undefined, ditta?.trim() || null, indirizzo?.trim() || null, piva?.trim() || null, allowRegistration === "true");
   const updated = await findUserByEmail(email);
   res.json(userToJson(updated!));
+}
+
+export async function updateRegistrationStatusController(req: Request, res: Response): Promise<void> {
+  const email = req.auth?.email ?? null;
+  if (!email) { res.status(401).json({ message: "Login richiesto." }); return; }
+  const { enabled } = req.body as { enabled: boolean };
+  if (typeof enabled !== "boolean") { res.status(400).json({ message: "Campo 'enabled' obbligatorio (boolean)." }); return; }
+  await setRegistrationEnabled(email, enabled);
+  res.json({ enabled });
 }

@@ -58,18 +58,10 @@ export default function AdminPage() {
     setTogglingReg(true);
     try {
       const token = getToken();
-      const res = await fetch(`${API_BASE_URL}/api/auth/profile`, {
+      const res = await fetch(`${API_BASE_URL}/api/auth/registration-status`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-        body: JSON.stringify({
-          nome: currentUser?.nome ?? "",
-          cognome: currentUser?.cognome ?? "",
-          cel: currentUser?.cel ?? "",
-          ditta: currentUser?.ditta ?? "",
-          indirizzo: currentUser?.indirizzo ?? "",
-          piva: currentUser?.piva ?? "",
-          allowRegistration: String(enabled),
-        }),
+        body: JSON.stringify({ enabled }),
       });
       if (!res.ok) throw new Error();
       setRegistrationEnabled(enabled);
