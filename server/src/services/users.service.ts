@@ -53,6 +53,7 @@ export async function initUsersTable(): Promise<void> {
   await pool.execute(`ALTER TABLE users ADD COLUMN IF NOT EXISTS indirizzo VARCHAR(255) NULL`);
   await pool.execute(`ALTER TABLE users ADD COLUMN IF NOT EXISTS piva VARCHAR(64) NULL`);
   await pool.execute(`ALTER TABLE users ADD COLUMN IF NOT EXISTS allow_registration TINYINT(1) NOT NULL DEFAULT 1`);
+  await pool.execute(`UPDATE users SET allow_registration = 1 WHERE allow_registration IS NULL`);
 }
 
 export async function findUserByEmail(email: string): Promise<UserRecord | null> {
@@ -148,10 +149,12 @@ export async function listSubUsers(adminEmail: string): Promise<Omit<UserRecord,
 }
 
 export async function setRegistrationEnabled(adminEmail: string, enabled: boolean): Promise<void> {
-  await pool.execute(
+  const [result] = await pool.execute(
     "UPDATE users SET allow_registration = ? WHERE email = ? AND role = 'admin'",
     [enabled ? 1 : 0, adminEmail]
   );
+  const affected = (result as { affectedRows?: number }).affectedRows ?? 0;
+  if (affected === 0) throw new Error(`Nessuna riga aggiornata per ${adminEmail}`);
 }
 
 export async function deleteUserByEmail(email: string): Promise<boolean> {

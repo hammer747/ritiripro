@@ -103,5 +103,6 @@ export async function updateRegistrationStatusController(req: Request, res: Resp
   const { enabled } = req.body as { enabled: boolean };
   if (typeof enabled !== "boolean") { res.status(400).json({ message: "Campo 'enabled' obbligatorio (boolean)." }); return; }
   await setRegistrationEnabled(email, enabled);
-  res.json({ enabled });
+  const actual = await isRegistrationEnabled();
+  res.json({ enabled: actual });
 }

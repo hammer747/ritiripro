@@ -63,11 +63,12 @@ export default function AdminPage() {
         headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         body: JSON.stringify({ enabled }),
       });
-      if (!res.ok) throw new Error();
-      setRegistrationEnabled(enabled);
-      toast.success(enabled ? "Registrazione attivata." : "Registrazione disattivata.");
-    } catch {
-      toast.error("Errore durante l'aggiornamento.");
+      const data = await res.json() as { enabled: boolean; message?: string };
+      if (!res.ok) throw new Error(data.message || "Errore");
+      setRegistrationEnabled(data.enabled);
+      toast.success(data.enabled ? "Registrazione attivata." : "Registrazione disattivata.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Errore durante l'aggiornamento.");
     } finally {
       setTogglingReg(false);
     }
