@@ -292,7 +292,7 @@ export async function deleteRitiro(id: string): Promise<void> {
   }
 }
 
-export type SubUser = { nome: string; cognome: string; cel?: string | null; email: string; role: "venditore" };
+export type SubUser = { nome: string; cognome: string; cel?: string | null; email: string; role: "venditore" | "admin" };
 
 export async function getAdminUsers(): Promise<SubUser[]> {
   return requestJson<SubUser[]>(`${API_BASE_URL}/api/admin/users`, { headers: getAuthHeaders() });
