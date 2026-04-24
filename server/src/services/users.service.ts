@@ -148,13 +148,13 @@ export async function listSubUsers(adminEmail: string): Promise<Omit<UserRecord,
   }));
 }
 
-export async function setRegistrationEnabled(adminEmail: string, enabled: boolean): Promise<void> {
+export async function setRegistrationEnabled(_adminEmail: string, enabled: boolean): Promise<void> {
   const [result] = await pool.execute(
-    "UPDATE users SET allow_registration = ? WHERE email = ? AND role = 'admin'",
-    [enabled ? 1 : 0, adminEmail]
+    "UPDATE users SET allow_registration = ? WHERE role = 'admin'",
+    [enabled ? 1 : 0]
   );
   const affected = (result as { affectedRows?: number }).affectedRows ?? 0;
-  if (affected === 0) throw new Error(`Nessuna riga aggiornata per ${adminEmail}`);
+  if (affected === 0) throw new Error("Nessun admin trovato nel database");
 }
 
 export async function deleteUserByEmail(email: string): Promise<boolean> {
