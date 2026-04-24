@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/lib/theme";
 import Index from "./pages/Index.tsx";
 import Storico from "./pages/Storico.tsx";
 import AdminPage from "./pages/AdminPage.tsx";
+import Grafico from "./pages/Grafico.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/storico" element={<Storico />} />
             <Route path="/admin" element={<AdminPage />} />
+            <Route path="/grafico" element={<Grafico />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

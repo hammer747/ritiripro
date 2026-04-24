@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { getRitiri, formatCodiceRitiro } from "@/lib/storage";
 import { Ritiro } from "@/lib/types";
@@ -9,7 +9,7 @@ import EtichettaLabel from "@/components/EtichettaLabel";
 import { generateRicevuta } from "@/lib/ricevuta";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Search, Package, Euro, List, TrendingUp } from "lucide-react";
+import { Search, Package, Euro, List, TrendingUp, PlusCircle, BarChart2, ShieldCheck } from "lucide-react";
 import { MonthWheelPicker } from "@/components/MonthWheelPicker";
 import { LoginDialog, RegisteredUser } from "@/components/ui/login-dialog";
 import LoginPage from "@/components/LoginPage";
@@ -55,6 +55,7 @@ export default function Index() {
     }
   });
   const [showReportReminder, setShowReportReminder] = useState(false);
+  const [showForm, setShowForm] = useState(false);
   const [search, setSearch] = useState("");
   const [editingRitiro, setEditingRitiro] = useState<Ritiro | null>(null);
   const [labelRitiro, setLabelRitiro] = useState<Ritiro | null>(null);
@@ -63,6 +64,7 @@ export default function Index() {
     `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`
   );
   const location = useLocation();
+  const navigate = useNavigate();
   const formRef = useRef<HTMLDivElement>(null);
 
   const reload = useCallback(async () => {
@@ -156,7 +158,8 @@ export default function Index() {
 
   const handleEdit = (ritiro: Ritiro) => {
     setEditingRitiro(ritiro);
-    formRef.current?.scrollIntoView({ behavior: "smooth" });
+    setShowForm(true);
+    setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
   };
 
   const handleSaved = async (ritiro: Ritiro) => {
@@ -213,16 +216,12 @@ export default function Index() {
                 setLabelRitiro(null);
               }}
             />
-            <Link to="/storico">
-              <Button variant="secondary" size="sm">
-                <List className="h-4 w-4 mr-1" /> <span className="hidden sm:inline">Storico</span>
-              </Button>
-            </Link>
           </div>
         </div>
       </header>
 
       <main className="container max-w-5xl py-8 space-y-8">
+        {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
           <div className="rounded-lg bg-stat-bg p-4 flex items-center justify-center">
             <MonthWheelPicker
@@ -255,12 +254,56 @@ export default function Index() {
             </div>
           </div>
         </div>
-        {currentUser?.role !== "tecnico" && (
+
+        {/* Nav tiles */}
+        <div className="rounded-xl bg-card border shadow-sm p-6">
+          <div className="grid grid-cols-2 gap-4">
+            {currentUser?.role !== "tecnico" && (
+              <button
+                onClick={() => { setShowForm(true); setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth" }), 50); }}
+                className="group flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-border bg-background hover:border-primary hover:bg-primary/5 transition-all duration-200 p-8 cursor-pointer"
+              >
+                <PlusCircle className="h-10 w-10 text-primary group-hover:scale-110 transition-transform duration-200" />
+                <span className="text-base font-semibold">Registra Ritiro</span>
+              </button>
+            )}
+            <button
+              onClick={() => navigate("/storico")}
+              className="group flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-border bg-background hover:border-primary hover:bg-primary/5 transition-all duration-200 p-8 cursor-pointer"
+            >
+              <List className="h-10 w-10 text-primary group-hover:scale-110 transition-transform duration-200" />
+              <span className="text-base font-semibold">Storico</span>
+            </button>
+            <button
+              onClick={() => navigate("/grafico")}
+              className="group flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-border bg-background hover:border-primary hover:bg-primary/5 transition-all duration-200 p-8 cursor-pointer"
+            >
+              <BarChart2 className="h-10 w-10 text-primary group-hover:scale-110 transition-transform duration-200" />
+              <span className="text-base font-semibold">Grafico Vendite</span>
+            </button>
+            {currentUser?.role === "admin" && (
+              <button
+                onClick={() => navigate("/admin")}
+                className="group flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-border bg-background hover:border-primary hover:bg-primary/5 transition-all duration-200 p-8 cursor-pointer"
+              >
+                <ShieldCheck className="h-10 w-10 text-primary group-hover:scale-110 transition-transform duration-200" />
+                <span className="text-base font-semibold">Gestione Utenti</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Form (visibile solo quando richiesto) */}
+        {showForm && currentUser?.role !== "tecnico" && (
           <div ref={formRef} className="rounded-xl bg-card p-6 shadow-sm border">
+            <div className="flex items-center justify-between mb-4">
+              <span className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Nuovo Ritiro</span>
+              <Button variant="ghost" size="sm" onClick={() => { setShowForm(false); setEditingRitiro(null); }}>✕ Chiudi</Button>
+            </div>
             <RitiroForm
-              onSaved={handleSaved}
+              onSaved={(r) => { void handleSaved(r); if (!editingRitiro) setShowForm(false); }}
               editingRitiro={editingRitiro}
-              onCancelEdit={() => setEditingRitiro(null)}
+              onCancelEdit={() => { setEditingRitiro(null); setShowForm(false); }}
               nextNumeroRitiro={Math.max(0, ...ritiri.map((r) => r.numeroRitiro ?? 0)) + 1}
               ritiri={ritiri}
               userRole={currentUser?.role}
@@ -268,6 +311,7 @@ export default function Index() {
           </div>
         )}
 
+        {/* Ultimi ritiri + ricerca */}
         <div className="space-y-4">
           <div className="relative max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -281,7 +325,7 @@ export default function Index() {
           <RitiriTable
             ritiri={filtered}
             onChanged={() => { reload().catch(() => void 0); }}
-            onEdit={handleEdit}
+            onEdit={(r) => { setEditingRitiro(r); setShowForm(true); setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth" }), 50); }}
             onPrint={(r) => setLabelRitiro(r)}
             onRicevuta={(r) => {
               if (!currentUser) return;
