@@ -31,8 +31,8 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction):
 
 // Simple in-memory rate limiter — keyed by IP
 const loginAttempts = new Map<string, { count: number; resetAt: number }>();
-const WINDOW_MS = 15 * 60 * 1000; // 15 min
-const MAX_ATTEMPTS = 20;
+const WINDOW_MS = 60 * 60 * 1000; // 60 min
+const MAX_ATTEMPTS = 10;
 
 export function loginRateLimiter(req: Request, res: Response, next: NextFunction): void {
   const ip = req.ip ?? req.socket.remoteAddress ?? "unknown";
