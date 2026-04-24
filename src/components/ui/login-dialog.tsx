@@ -187,7 +187,7 @@ export function LoginDialog({
       <div className="flex items-center gap-2">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button type="button" size="sm" variant="secondary" className="flex items-center gap-1">
+            <Button type="button" size="sm" variant="outline" className="flex items-center gap-1 border-2 border-border hover:border-primary hover:bg-primary/5 transition-all duration-200">
               Profilo <ChevronDown className="h-3 w-3" />
             </Button>
           </DropdownMenuTrigger>
