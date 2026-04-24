@@ -214,7 +214,7 @@ export function LoginDialog({
         </DropdownMenu>
 
         <Dialog open={isProfileOpen} onOpenChange={setIsProfileOpen}>
-          <DialogContent className="sm:max-w-2xl">
+          <DialogContent className="sm:max-w-2xl" onOpenAutoFocus={(e) => e.preventDefault()}>
             <DialogHeader><DialogTitle>Profilo utente</DialogTitle></DialogHeader>
             <form onSubmit={(e) => { e.preventDefault(); void handleSaveProfile(); }}>
               {currentUser.role === "admin" ? (
