@@ -48,15 +48,13 @@ export async function deleteUserController(req: Request, res: Response): Promise
   const targetEmail = (rawEmail ?? "").trim().toLowerCase();
   if (!targetEmail) { res.status(400).json({ message: "Email non valida." }); return; }
 
-  if (targetEmail === adminEmail) {
-    res.status(400).json({ message: "Non puoi eliminare il tuo account." });
+  const target = await findUserByEmail(targetEmail);
+  if (!target || target.parentAdminEmail !== adminEmail) {
+    res.status(404).json({ message: "Utente non trovato." });
     return;
   }
 
-  const target = await findUserByEmail(targetEmail);
-  if (!target) { res.status(404).json({ message: "Utente non trovato." }); return; }
-
-  const deleted = await deleteUserByEmail(targetEmail, adminEmail);
+  const deleted = await deleteUserByEmail(targetEmail);
   if (!deleted) { res.status(404).json({ message: "Utente non trovato o non eliminabile." }); return; }
   res.status(204).send();
 }

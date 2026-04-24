@@ -101,9 +101,9 @@ export default function AdminPage() {
     }
   };
 
-  const roleIcon = (r: string) => r === "admin" ? <ShieldCheck className="h-3.5 w-3.5" /> : <Store className="h-3.5 w-3.5" />;
-  const roleLabel = (r: string) => r === "admin" ? "Admin" : "Venditore";
-  const roleColor = (r: string) => r === "admin" ? "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300" : "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300";
+  const roleIcon = (_r: string) => <Store className="h-3.5 w-3.5" />;
+  const roleLabel = (_r: string) => "Venditore";
+  const roleColor = (_r: string) => "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300";
 
   return (
     <div className="min-h-screen">
@@ -177,7 +177,7 @@ export default function AdminPage() {
         )}
 
         {users.length === 0 ? (
-          <p className="text-muted-foreground text-sm">Nessun altro utente. Crea un venditore con il pulsante sopra.</p>
+          <p className="text-muted-foreground text-sm">Nessun utente secondario. Crea un venditore con il pulsante sopra.</p>
         ) : (
           <div className="rounded-lg border overflow-hidden">
             <table className="w-full text-sm">

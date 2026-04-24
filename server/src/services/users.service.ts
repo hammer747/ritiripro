@@ -131,7 +131,7 @@ export async function updateUser(
 
 export async function listSubUsers(adminEmail: string): Promise<Omit<UserRecord, "passwordHash">[]> {
   const [rows] = await pool.query<UserRow[]>(
-    "SELECT nome, cognome, cel, email, role, parent_admin_email, ditta, indirizzo, piva, allow_registration FROM users WHERE email != ? ORDER BY role ASC, created_at ASC",
+    "SELECT nome, cognome, cel, email, role, parent_admin_email, ditta, indirizzo, piva, allow_registration FROM users WHERE parent_admin_email = ? ORDER BY created_at ASC",
     [adminEmail]
   );
   return rows.map((row) => ({
@@ -157,8 +157,7 @@ export async function setRegistrationEnabled(_adminEmail: string, enabled: boole
   if (affected === 0) throw new Error("Nessun admin trovato nel database");
 }
 
-export async function deleteUserByEmail(email: string, requestingAdminEmail: string): Promise<boolean> {
-  if (email === requestingAdminEmail) return false;
-  const [result] = await pool.execute("DELETE FROM users WHERE email = ?", [email]);
+export async function deleteUserByEmail(email: string): Promise<boolean> {
+  const [result] = await pool.execute("DELETE FROM users WHERE email = ? AND role != 'admin'", [email]);
   return ((result as { affectedRows?: number }).affectedRows ?? 0) > 0;
 }
