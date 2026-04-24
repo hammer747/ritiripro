@@ -199,7 +199,7 @@ export async function generateRicevuta(ritiro: Ritiro, admin: AdminInfo): Promis
     14, y, { maxWidth: 182 }
   );
 
-  y += 16;
+  y += 32;
 
   // --- SIGNATURES ---
   doc.setDrawColor(180, 180, 180);
