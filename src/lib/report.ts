@@ -66,7 +66,7 @@ export function generateMonthlyReport(ritiri: Ritiro[], meseKey: string): void {
   });
 
   autoTable(doc, {
-    head: [["N°", "Data", "Cliente", "Articolo", "Seriale/IMEI", "Acquisto", "Spese +", "Costo Tot.", "Stato", "Vendita", "Margine"]],
+    head: [["N°", "Data", "Cliente", "Articolo", "Seriale/IMEI", "Acquisto", "Spese agg.", "Costo Tot.", "Stato", "Vendita", "Margine"]],
     body: rows,
     startY: 35,
     styles: { fontSize: 7.5, cellPadding: 2 },
