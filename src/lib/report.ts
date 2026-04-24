@@ -37,7 +37,7 @@ export function generateMonthlyReport(ritiri: Ritiro[], meseKey: string): void {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   doc.text(
-    `📦 Ritiri: ${ritiri.length}  |  📤 In stock: ${inStock.length}  |  ✅ Venduti: ${venduti.length}  |  💰 Acquisti: € ${totAcquisti.toFixed(2)}  |  📈 Guadagni: € ${totGuadagni.toFixed(2)}`,
+    `Ritiri: ${ritiri.length}  |  In stock: ${inStock.length}  |  Venduti: ${venduti.length}  |  Acquisti: € ${totAcquisti.toFixed(2)}  |  Guadagni: € ${totGuadagni.toFixed(2)}`,
     14,
     28
   );
