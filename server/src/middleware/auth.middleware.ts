@@ -40,7 +40,7 @@ export function loginRateLimiter(req: Request, res: Response, next: NextFunction
   const entry = loginAttempts.get(ip);
   if (entry && now < entry.resetAt) {
     if (entry.count >= MAX_ATTEMPTS) {
-      res.status(429).json({ message: "Troppi tentativi. Riprova tra 15 minuti." });
+      res.status(429).json({ message: "Troppi tentativi. Riprova tra 60 minuti." });
       return;
     }
     entry.count++;
