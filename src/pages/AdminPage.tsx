@@ -3,12 +3,14 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { getAdminUsers, createAdminUser, deleteAdminUser, SubUser, getAdminLogs, LogRecord } from "@/lib/storage";
+import { getAdminUsers, createAdminUser, deleteAdminUser, SubUser, getAdminLogs, LogRecord, getToken } from "@/lib/storage";
 import { RegisteredUser } from "@/components/ui/login-dialog";
-import { ArrowLeft, Trash2, UserPlus, ShieldCheck, Store } from "lucide-react";
+import { ArrowLeft, Trash2, UserPlus, ShieldCheck, Store, UserCheck } from "lucide-react";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { API_BASE_URL } from "@/lib/api";
 
 export default function AdminPage() {
   const navigate = useNavigate();
@@ -32,6 +34,8 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [confirmUser, setConfirmUser] = useState<SubUser | null>(null);
+  const [registrationEnabled, setRegistrationEnabled] = useState(true);
+  const [togglingReg, setTogglingReg] = useState(false);
 
   const reload = useCallback(async () => {
     try {
@@ -44,7 +48,38 @@ export default function AdminPage() {
   useEffect(() => {
     if (!currentUser || currentUser.role !== "admin") { navigate("/"); return; }
     void reload();
+    fetch(`${API_BASE_URL}/api/auth/registration-status`)
+      .then((r) => r.json())
+      .then((d: { enabled: boolean }) => setRegistrationEnabled(d.enabled))
+      .catch(() => {});
   }, [currentUser, navigate, reload]);
+
+  const handleToggleRegistration = async (enabled: boolean) => {
+    setTogglingReg(true);
+    try {
+      const token = getToken();
+      const res = await fetch(`${API_BASE_URL}/api/auth/profile`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({
+          nome: currentUser?.nome ?? "",
+          cognome: currentUser?.cognome ?? "",
+          cel: currentUser?.cel ?? "",
+          ditta: currentUser?.ditta ?? "",
+          indirizzo: currentUser?.indirizzo ?? "",
+          piva: currentUser?.piva ?? "",
+          allowRegistration: String(enabled),
+        }),
+      });
+      if (!res.ok) throw new Error();
+      setRegistrationEnabled(enabled);
+      toast.success(enabled ? "Registrazione attivata." : "Registrazione disattivata.");
+    } catch {
+      toast.error("Errore durante l'aggiornamento.");
+    } finally {
+      setTogglingReg(false);
+    }
+  };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,6 +139,19 @@ export default function AdminPage() {
           <Button size="sm" onClick={() => { setShowForm((v) => !v); setError(""); }}>
             <UserPlus className="h-4 w-4 mr-1" /> Nuovo utente
           </Button>
+        </div>
+
+        <div className="rounded-lg border p-4 flex items-center justify-between bg-card">
+          <div className="flex items-center gap-3">
+            <UserCheck className="h-5 w-5 text-primary" />
+            <div>
+              <p className="text-sm font-medium">Registrazione nuovi account</p>
+              <p className="text-xs text-muted-foreground">
+                {registrationEnabled ? "Il form di registrazione è visibile nella pagina di login" : "Il form di registrazione è nascosto"}
+              </p>
+            </div>
+          </div>
+          <Switch checked={registrationEnabled} onCheckedChange={handleToggleRegistration} disabled={togglingReg} />
         </div>
 
         {showForm && (
