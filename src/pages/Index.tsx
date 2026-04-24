@@ -14,7 +14,7 @@ import { MonthWheelPicker } from "@/components/MonthWheelPicker";
 import { LoginDialog, RegisteredUser } from "@/components/ui/login-dialog";
 import LoginPage from "@/components/LoginPage";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { ReportReminderDialog, shouldShowReportReminder, markReportDone, markReportShown } from "@/components/ReportReminderDialog";
+import { ReportReminderDialog, shouldShowReportReminder, markReportDone } from "@/components/ReportReminderDialog";
 import { clearToken } from "@/lib/storage";
 
 const MESI = [
@@ -84,7 +84,6 @@ export default function Index() {
 
     if (currentUser.role === "admin" && shouldShowReportReminder(currentUser.email)) {
       setShowReportReminder(true);
-      markReportShown(currentUser.email);
     }
   }, [reload, currentUser?.email]);
 
