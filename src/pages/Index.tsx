@@ -9,7 +9,7 @@ import EtichettaLabel from "@/components/EtichettaLabel";
 import { generateRicevuta } from "@/lib/ricevuta";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Search, Package, Euro, List, TrendingUp, PlusCircle, BarChart2, ShieldCheck } from "lucide-react";
+import { Search, Package, Euro, List, TrendingUp, PlusCircle, BarChart2, ShieldCheck, Users } from "lucide-react";
 import { MonthWheelPicker } from "@/components/MonthWheelPicker";
 import { LoginDialog, RegisteredUser } from "@/components/ui/login-dialog";
 import LoginPage from "@/components/LoginPage";
@@ -279,6 +279,13 @@ export default function Index() {
             >
               <BarChart2 className="h-10 w-10 text-primary group-hover:scale-110 transition-transform duration-200" />
               <span className="text-base font-semibold">Grafico Vendite</span>
+            </button>
+            <button
+              onClick={() => navigate("/clienti")}
+              className="group flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-border bg-background hover:border-primary hover:bg-primary/5 transition-all duration-200 p-8 cursor-pointer"
+            >
+              <Users className="h-10 w-10 text-primary group-hover:scale-110 transition-transform duration-200" />
+              <span className="text-base font-semibold">Registro Clienti</span>
             </button>
             {currentUser?.role === "admin" && (
               <button

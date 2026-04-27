@@ -10,6 +10,7 @@ import {
 import { findUserByEmail } from "../services/users.service";
 import { createLog } from "../services/logs.service";
 import { SaveRitiroPayload, TipoArticolo, EditEntry } from "../types/ritiro";
+import { upsertClient } from "../services/clients.service";
 
 async function resolveUser(email: string) {
   const user = await findUserByEmail(email);
@@ -222,6 +223,7 @@ export async function createRitiroController(req: Request, res: Response): Promi
 
   const id = crypto.randomUUID();
   await createRitiro(payload, id);
+  await upsertClient(resolved.effectiveOwnerEmail, payload.nomeCliente, payload.cognomeCliente, payload.codiceFiscale, payload.telefonoCliente, payload.tipoDocumento, payload.numeroDocumento).catch(() => {});
   const created = await getRitiroById(id, resolved.effectiveOwnerEmail);
   res.status(201).json(created);
 }

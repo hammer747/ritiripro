@@ -4,7 +4,7 @@ dotenv.config();
 
 function required(key: string): string {
   const val = process.env[key];
-  if (!val) throw new Error(`Variabile d'ambiente obbligatoria mancante: ${key}`);
+  if (val === undefined) throw new Error(`Variabile d'ambiente obbligatoria mancante: ${key}`);
   return val;
 }
 

@@ -319,3 +319,15 @@ export type LogRecord = { id: string; userEmail: string; userName: string; userR
 export async function getAdminLogs(): Promise<LogRecord[]> {
   return requestJson<LogRecord[]>(`${API_BASE_URL}/api/admin/logs`, { headers: getAuthHeaders() });
 }
+
+export type ClientRecord = { id: string; nome: string; cognome: string; codiceFiscale: string; telefono: string | null; tipoDocumento: string; numeroDocumento: string; ownerEmail: string; createdAt: string; updatedAt: string };
+
+export async function getClients(search?: string): Promise<ClientRecord[]> {
+  const url = search?.trim() ? `${API_BASE_URL}/api/clients?q=${encodeURIComponent(search)}` : `${API_BASE_URL}/api/clients`;
+  return requestJson<ClientRecord[]>(url, { headers: getAuthHeaders() });
+}
+
+export async function deleteClient(id: string): Promise<void> {
+  const res = await fetch(`${API_BASE_URL}/api/clients/${id}`, { method: "DELETE", headers: getAuthHeaders() });
+  if (!res.ok) throw new Error("Errore eliminazione cliente");
+}

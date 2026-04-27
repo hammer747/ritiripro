@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import heic2any from "heic2any";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,10 +14,11 @@ import {
 import { Ritiro } from "@/lib/types";
 import { saveRitiro, updateRitiro, markRitiroAsSold, unmarkRitiroAsSold, formatCodiceRitiro } from "@/lib/storage";
 import { toast } from "sonner";
-import { UserPlus, Pencil, Upload, X, FileText, Download, Plus, Trash2 } from "lucide-react";
+import { UserPlus, Pencil, Upload, X, FileText, Download, Plus, Trash2, Search } from "lucide-react";
 import { SpeseAggiuntiva } from "@/lib/types";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AuthenticatedImage, fetchAuthenticatedBlob } from "@/components/ui/authenticated-image";
+import { getClients, ClientRecord } from "@/lib/storage";
 
 interface Props {
   onSaved: (ritiro: Ritiro) => void;
@@ -85,6 +86,34 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
   const [form, setForm] = useState(emptyForm);
   const [fieldErrors, setFieldErrors] = useState<Set<string>>(new Set());
   const [speseVoci, setSpeseVoci] = useState<SpeseVoce[]>([]);
+  const [clientSearch, setClientSearch] = useState("");
+  const [clientResults, setClientResults] = useState<ClientRecord[]>([]);
+  const [showClientDropdown, setShowClientDropdown] = useState(false);
+
+  const searchClients = useCallback(async (q: string) => {
+    if (!q.trim()) { setClientResults([]); return; }
+    try { setClientResults(await getClients(q)); } catch { setClientResults([]); }
+  }, []);
+
+  useEffect(() => {
+    const t = setTimeout(() => void searchClients(clientSearch), 250);
+    return () => clearTimeout(t);
+  }, [clientSearch, searchClients]);
+
+  const fillFromClient = (c: ClientRecord) => {
+    setForm((f) => ({
+      ...f,
+      nomeCliente: c.nome,
+      cognomeCliente: c.cognome,
+      codiceFiscale: c.codiceFiscale || "",
+      telefonoCliente: c.telefono || "",
+      tipoDocumento: c.tipoDocumento || "",
+      numeroDocumento: c.numeroDocumento || "",
+    }));
+    setClientSearch("");
+    setClientResults([]);
+    setShowClientDropdown(false);
+  };
   const [removedRitiroIds, setRemovedRitiroIds] = useState<string[]>([]);
   const fileFronteRef = useRef<HTMLInputElement>(null);
   const fileRetroRef = useRef<HTMLInputElement>(null);
@@ -376,6 +405,35 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
         <legend className="px-2 text-sm font-medium text-muted-foreground">
           Dati Cliente / Venditore
         </legend>
+        {/* Ricerca cliente esistente */}
+        <div className="relative">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Cerca cliente esistente..."
+              value={clientSearch}
+              onChange={(e) => { setClientSearch(e.target.value); setShowClientDropdown(true); }}
+              onFocus={() => setShowClientDropdown(true)}
+              onBlur={() => setTimeout(() => setShowClientDropdown(false), 150)}
+              className="pl-9"
+            />
+          </div>
+          {showClientDropdown && clientResults.length > 0 && (
+            <div className="absolute z-50 w-full mt-1 bg-card border rounded-lg shadow-lg overflow-hidden">
+              {clientResults.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  className="w-full text-left px-4 py-2.5 hover:bg-muted/60 transition-colors text-sm flex items-center justify-between"
+                  onMouseDown={() => fillFromClient(c)}
+                >
+                  <span className="font-medium">{c.cognome} {c.nome}</span>
+                  <span className="text-muted-foreground text-xs">{c.codiceFiscale}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <Label htmlFor="nome">Nome:</Label>
