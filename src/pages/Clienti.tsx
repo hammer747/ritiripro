@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LoginDialog, RegisteredUser } from "@/components/ui/login-dialog";
 import { getClients, deleteClient, ClientRecord, clearToken } from "@/lib/storage";
-import { ArrowLeft, Search, Trash2, Users } from "lucide-react";
+import { ArrowLeft, Search, Trash2, Users, PlusCircle } from "lucide-react";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
@@ -125,9 +125,14 @@ export default function Clienti() {
                     </td>
                     <td className="p-3 text-muted-foreground">{c.telefono || "—"}</td>
                     <td className="p-3">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => setConfirmClient(c)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:text-primary" title="Nuovo ritiro per questo cliente" onClick={() => navigate("/", { state: { prefillCliente: c } })}>
+                          <PlusCircle className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => setConfirmClient(c)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}

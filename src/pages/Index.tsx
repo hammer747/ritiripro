@@ -56,6 +56,7 @@ export default function Index() {
   });
   const [showReportReminder, setShowReportReminder] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [prefillClient, setPrefillClient] = useState<import("@/lib/storage").ClientRecord | null>(null);
   const [search, setSearch] = useState("");
   const [editingRitiro, setEditingRitiro] = useState<Ritiro | null>(null);
   const [labelRitiro, setLabelRitiro] = useState<Ritiro | null>(null);
@@ -88,9 +89,16 @@ export default function Index() {
   }, [reload, currentUser?.email]);
 
   useEffect(() => {
-    const state = location.state as { editRitiro?: Ritiro } | null;
+    const state = location.state as { editRitiro?: Ritiro; prefillCliente?: import("@/lib/storage").ClientRecord } | null;
     if (state?.editRitiro) {
       setEditingRitiro(state.editRitiro);
+      setShowForm(true);
+      setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+      window.history.replaceState({}, "");
+    } else if (state?.prefillCliente) {
+      const c = state.prefillCliente;
+      setPrefillClient(c);
+      setShowForm(true);
       setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
       window.history.replaceState({}, "");
     }
@@ -304,15 +312,16 @@ export default function Index() {
           <div ref={formRef} className="rounded-xl bg-card p-6 shadow-sm border">
             <div className="flex items-center justify-between mb-4">
               <span className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Nuovo Ritiro</span>
-              <Button variant="ghost" size="sm" onClick={() => { setShowForm(false); setEditingRitiro(null); }}>✕ Chiudi</Button>
+              <Button variant="ghost" size="sm" onClick={() => { setShowForm(false); setEditingRitiro(null); setPrefillClient(null); }}>✕ Chiudi</Button>
             </div>
             <RitiroForm
-              onSaved={(r) => { void handleSaved(r); if (!editingRitiro) setShowForm(false); }}
+              onSaved={(r) => { void handleSaved(r); if (!editingRitiro) { setShowForm(false); setPrefillClient(null); } }}
               editingRitiro={editingRitiro}
-              onCancelEdit={() => { setEditingRitiro(null); setShowForm(false); }}
+              onCancelEdit={() => { setEditingRitiro(null); setShowForm(false); setPrefillClient(null); }}
               nextNumeroRitiro={Math.max(0, ...ritiri.map((r) => r.numeroRitiro ?? 0)) + 1}
               ritiri={ritiri}
               userRole={currentUser?.role}
+              prefillClient={prefillClient}
             />
           </div>
         )}

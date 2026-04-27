@@ -19,6 +19,7 @@ import { SpeseAggiuntiva } from "@/lib/types";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AuthenticatedImage, fetchAuthenticatedBlob } from "@/components/ui/authenticated-image";
 import { getClients, ClientRecord } from "@/lib/storage";
+type PrefillClient = Pick<ClientRecord, "nome" | "cognome" | "codiceFiscale" | "telefono" | "tipoDocumento" | "numeroDocumento">;
 
 interface Props {
   onSaved: (ritiro: Ritiro) => void;
@@ -27,6 +28,7 @@ interface Props {
   nextNumeroRitiro?: number;
   ritiri?: Ritiro[];
   userRole?: "admin" | "venditore";
+  prefillClient?: PrefillClient | null;
 }
 
 const emptyForm = {
@@ -82,7 +84,7 @@ function generateUUID(): string {
 
 type SpeseVoce = { mode: "manuale" | "automatico"; descrizione: string; prezzo: string; ritiroId: string };
 
-export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextNumeroRitiro, ritiri = [], userRole = "admin" }: Props) {
+export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextNumeroRitiro, ritiri = [], userRole = "admin", prefillClient }: Props) {
   const [form, setForm] = useState(emptyForm);
   const [fieldErrors, setFieldErrors] = useState<Set<string>>(new Set());
   const [speseVoci, setSpeseVoci] = useState<SpeseVoce[]>([]);
@@ -169,6 +171,19 @@ export default function RitiroForm({ onSaved, editingRitiro, onCancelEdit, nextN
   const capitalizeFirstLetter = (value: string) => {
     return value.replace(/(?:^|\s)\S/g, (char) => char.toUpperCase());
   };
+
+  useEffect(() => {
+    if (!prefillClient) return;
+    setForm((f) => ({
+      ...f,
+      nomeCliente: prefillClient.nome,
+      cognomeCliente: prefillClient.cognome,
+      codiceFiscale: prefillClient.codiceFiscale || "",
+      telefonoCliente: prefillClient.telefono || "",
+      tipoDocumento: prefillClient.tipoDocumento || "",
+      numeroDocumento: prefillClient.numeroDocumento || "",
+    }));
+  }, [prefillClient]);
 
   const set = (key: string, value: string) => {
     setFieldErrors((prev) => { const n = new Set(prev); n.delete(key); return n; });
